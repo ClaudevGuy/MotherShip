@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft } from "lucide-react";
+import { ChevronsLeft, Zap } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useUIStore } from "@/stores/ui-store";
 import { useIncidentsStore } from "@/stores/incidents-store";
@@ -44,13 +44,42 @@ export function Sidebar() {
       {/* Top ambient glow */}
       <div className="pointer-events-none absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#00D4FF]/[0.04] to-transparent z-0" />
 
-      {/* ── Logo / Brand ─────────────────────────────────────────── */}
-      <div className="relative z-20">
-        <ProjectSwitcher collapsed={collapsed} />
+      {/* ── Logo (static brand) ─────────────────────────────────── */}
+      <div
+        className={cn(
+          "relative z-20 flex h-[54px] shrink-0 items-center border-b border-border/40",
+          collapsed ? "justify-center" : "gap-2.5 px-4"
+        )}
+      >
+        <div className="relative flex size-[28px] shrink-0 items-center justify-center">
+          <div className="absolute inset-0 rounded-lg bg-[#00D4FF]/[0.12] border border-[#00D4FF]/20" />
+          <Zap
+            className="relative z-10 size-[13px] text-[#00D4FF]"
+            strokeWidth={2.5}
+            fill="rgba(0,212,255,0.2)"
+          />
+          <div
+            className="absolute inset-0 rounded-lg pointer-events-none"
+            style={{ boxShadow: "0 0 10px rgba(0,212,255,0.12)" }}
+          />
+        </div>
+        {!collapsed && (
+          <span className="font-heading text-[12px] font-bold uppercase tracking-[0.14em] text-foreground/80 whitespace-nowrap leading-none">
+            Mission Control
+          </span>
+        )}
       </div>
 
       {/* ── Navigation ────────────────────────────────────────────── */}
-      <nav className="relative z-20 flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
+      <nav className="relative z-20 flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-0.5">
+
+        {/* Project switcher — first nav item */}
+        <ProjectSwitcher collapsed={collapsed} />
+
+        {/* Divider below project switcher */}
+        <div className={cn("my-2 h-px bg-border/25", collapsed ? "mx-1" : "mx-0.5")} />
+
+        {/* Nav groups */}
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi}>
             <div className="space-y-[2px]">
