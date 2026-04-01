@@ -11,16 +11,14 @@ import { useUIStore } from "@/stores/ui-store";
 const GO_SHORTCUTS: Record<string, string> = {
   o: "/overview",
   a: "/agents",
-  c: "/codebase",
+  w: "/workflows",
   d: "/deployments",
-  i: "/infrastructure",
-  $: "/costs",
-  n: "/analytics",
   l: "/logs",
   t: "/team",
-  p: "/integrations",
-  "!": "/incidents",
   s: "/settings",
+  $: "/costs",
+  n: "/analytics",
+  "!": "/incidents",
 };
 
 export default function DashboardLayout({
