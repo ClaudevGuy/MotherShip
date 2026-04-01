@@ -55,12 +55,12 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
       ]);
       set({
         data: {
-          overview: overviewData.data,
-          retention: retentionData.data,
-          geo: geoData.data,
-          features: featuresData.data,
-          funnel: funnelData.data,
-          growth: growthData.data,
+          overview: overviewData.data.snapshot,
+          retention: retentionData.data.cohorts,
+          geo: geoData.data.data,
+          features: featuresData.data.features,
+          funnel: funnelData.data.steps,
+          growth: growthData.data.metrics,
         },
         isLoading: false,
       });

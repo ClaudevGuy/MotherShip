@@ -54,10 +54,10 @@ export const useLogsStore = create<LogsStore>((set, get) => ({
         tracesRes.json(),
       ]);
       set({
-        logs: logsData.data,
-        errorGroups: errorsData.data,
-        llmCalls: llmData.data,
-        traceSpans: tracesData.data,
+        logs: logsData.data.entries,
+        errorGroups: errorsData.data.groups,
+        llmCalls: llmData.data.calls,
+        traceSpans: tracesData.data.spans,
         isLoading: false,
       });
     } catch (error) {

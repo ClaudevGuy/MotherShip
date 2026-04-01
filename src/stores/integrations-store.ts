@@ -36,8 +36,8 @@ export const useIntegrationsStore = create<IntegrationsStore>((set, get) => ({
         webhooksRes.json(),
       ]);
       set({
-        integrations: integrationsData.data,
-        webhooks: webhooksData.data,
+        integrations: integrationsData.data.integrations,
+        webhooks: webhooksData.data.webhooks,
         isLoading: false,
       });
     } catch (error) {

@@ -31,7 +31,7 @@ export function TopIssues() {
                 <p className="text-sm font-medium text-foreground truncate">{incident.title}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <StatusBadge status={incident.status} size="sm" />
-                  <span className="text-[10px] text-muted-foreground">{incident.assignee}</span>
+                  <span className="text-[10px] text-muted-foreground">{incident.assignee?.name ?? "Unassigned"}</span>
                 </div>
               </div>
               <span className="text-[10px] text-muted-foreground shrink-0">{formatRelativeTime(incident.createdAt)}</span>

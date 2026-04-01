@@ -45,9 +45,9 @@ export const useDeploymentsStore = create<DeploymentsStore>((set, get) => ({
         flagsRes.json(),
       ]);
       set({
-        deployments: deploymentsData.data,
-        environments: environmentsData.data,
-        featureFlags: flagsData.data,
+        deployments: deploymentsData.data.deployments,
+        environments: environmentsData.data.configs,
+        featureFlags: flagsData.data.flags,
         isLoading: false,
       });
     } catch (error) {

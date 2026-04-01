@@ -40,10 +40,10 @@ export const useInfrastructureStore = create<InfrastructureStore>((set, get) => 
         queuesRes.json(),
       ]);
       set({
-        resources: resourcesData.data,
-        services: servicesData.data,
-        endpoints: endpointsData.data,
-        queues: queuesData.data,
+        resources: resourcesData.data.resources,
+        services: servicesData.data.services,
+        endpoints: endpointsData.data.endpoints,
+        queues: queuesData.data.queues,
         isLoading: false,
       });
     } catch (error) {

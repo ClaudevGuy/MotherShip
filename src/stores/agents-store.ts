@@ -14,6 +14,7 @@ interface AgentsStore {
   setStatusFilter: (status: AgentStatus | "all") => void;
   setModelFilter: (model: ModelProvider | "all") => void;
   updateAgentStatus: (id: string, status: AgentStatus) => void;
+  killAllAgents: () => Promise<number>;
   addRun: (agentId: string, run: AgentRun) => void;
   getFilteredAgents: () => Agent[];
 }
@@ -32,7 +33,7 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
       const res = await fetch("/api/agents");
       if (!res.ok) throw new Error("Failed to fetch agents");
       const { data } = await res.json();
-      set({ agents: data, isLoading: false });
+      set({ agents: data.agents, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -60,6 +61,19 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
       // Revert on failure by refetching
       get().fetch();
     }
+  },
+
+  killAllAgents: async () => {
+    const res = await fetch("/api/agents/kill-all", { method: "POST" });
+    if (!res.ok) throw new Error("Failed to stop agents");
+    const { data } = await res.json();
+    // Reflect the status change locally
+    set((state) => ({
+      agents: state.agents.map((a) =>
+        a.status === "running" ? { ...a, status: "idle" as AgentStatus } : a
+      ),
+    }));
+    return data.stopped as number;
   },
 
   addRun: (agentId, run) =>
