@@ -59,10 +59,10 @@ export const useCodebaseStore = create<CodebaseStore>((set, get) => ({
         healthRes.json(),
       ]);
       set({
-        repositories: reposData.data,
-        commits: commitsData.data,
-        pullRequests: prsData.data,
-        codeHealth: healthData.data,
+        repositories: reposData.data.repositories,
+        commits: commitsData.data.commits,
+        pullRequests: prsData.data.pullRequests,
+        codeHealth: healthData.data.health,
         isLoading: false,
       });
     } catch (error) {

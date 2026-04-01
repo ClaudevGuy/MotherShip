@@ -46,9 +46,9 @@ export const useIncidentsStore = create<IncidentsStore>((set, get) => ({
         onCallRes.json(),
       ]);
       set({
-        incidents: incidentsData.data,
-        alertRules: alertsData.data,
-        onCallSchedule: onCallData.data,
+        incidents: incidentsData.data.incidents,
+        alertRules: alertsData.data.rules,
+        onCallSchedule: onCallData.data.schedules,
         isLoading: false,
       });
     } catch (error) {

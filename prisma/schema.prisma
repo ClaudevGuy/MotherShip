@@ -149,6 +149,13 @@ enum RunStatus {
   RUN_RUNNING
 }
 
+enum WorkflowStatus {
+  IDLE
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
 enum AlertCondition {
   GT
   LT
@@ -275,6 +282,7 @@ model Project {
   conversionSteps    ConversionStep[]
   growthMetrics      GrowthMetric[]
   notifications      Notification[]
+  workflows          Workflow[]
 }
 
 model ProjectMember {
@@ -946,6 +954,41 @@ model GrowthMetric {
 
   @@index([projectId])
   @@index([projectId, snapshotDate])
+}
+
+// ============================================================================
+// WORKFLOWS DOMAIN
+// ============================================================================
+
+model Workflow {
+  id          String         @id @default(cuid())
+  projectId   String
+  name        String
+  description String         @db.Text
+  status      WorkflowStatus @default(IDLE)
+  createdAt   DateTime       @default(now())
+  lastRun     DateTime?
+  createdBy   String
+  totalRuns   Int            @default(0)
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  steps   WorkflowStep[]
+
+  @@index([projectId])
+  @@index([projectId, status])
+}
+
+model WorkflowStep {
+  id         String  @id @default(cuid())
+  workflowId String
+  agentId    String
+  agentName  String
+  position   Int
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, position])
+  @@index([workflowId])
 }
 
 // ============================================================================

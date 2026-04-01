@@ -33,7 +33,7 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
       const res = await fetch("/api/notifications");
       if (!res.ok) throw new Error("Failed to fetch notifications");
       const { data } = await res.json();
-      set({ notifications: data, isLoading: false });
+      set({ notifications: data.notifications, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

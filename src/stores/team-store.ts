@@ -39,9 +39,9 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
         keysRes.json(),
       ]);
       set({
-        members: membersData.data,
-        auditLog: auditData.data,
-        apiKeys: keysData.data,
+        members: membersData.data.members,
+        auditLog: auditData.data.entries,
+        apiKeys: keysData.data.keys,
         isLoading: false,
       });
     } catch (error) {

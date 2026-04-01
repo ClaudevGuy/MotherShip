@@ -50,11 +50,11 @@ export const useCostsStore = create<CostsStore>((set, get) => ({
         dailyRes.json(),
       ]);
       set({
-        breakdown: breakdownData.data,
-        agentCosts: agentCostsData.data,
-        budgets: budgetsData.data,
-        invoices: invoicesData.data,
-        dailyCosts: dailyData.data,
+        breakdown: breakdownData.data.breakdowns,
+        agentCosts: agentCostsData.data.costs,
+        budgets: budgetsData.data.budgets,
+        invoices: invoicesData.data.invoices,
+        dailyCosts: dailyData.data.costs,
         isLoading: false,
       });
     } catch (error) {
