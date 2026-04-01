@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 interface SettingsStore {
   projectName: string;
+  projectDescription: string;
   theme: "light" | "dark" | "system";
   pollingInterval: number;
   pollingEnabled: boolean;
@@ -9,6 +10,7 @@ interface SettingsStore {
   animationsEnabled: boolean;
   timezone: string;
   setProjectName: (name: string) => void;
+  setProjectDescription: (desc: string) => void;
   setTheme: (theme: "light" | "dark" | "system") => void;
   setPollingInterval: (interval: number) => void;
   setPollingEnabled: (enabled: boolean) => void;
@@ -19,6 +21,7 @@ interface SettingsStore {
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
   projectName: "Mission Control",
+  projectDescription: "AI-powered project command center for monitoring agents, deployments, and infrastructure.",
   theme: "dark",
   pollingInterval: 5000,
   pollingEnabled: true,
@@ -27,6 +30,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   timezone: "America/New_York",
 
   setProjectName: (name) => set({ projectName: name }),
+  setProjectDescription: (desc) => set({ projectDescription: desc }),
   setTheme: (theme) => set({ theme }),
   setPollingInterval: (interval) => set({ pollingInterval: interval }),
   setPollingEnabled: (enabled) => set({ pollingEnabled: enabled }),

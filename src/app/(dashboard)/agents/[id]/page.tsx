@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle } from "lucide-react";
 import { useAgentsStore } from "@/stores/agents-store";
@@ -103,9 +103,9 @@ const runColumns = [
 export default function AgentDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = use(params);
+  const { id } = params;
   const [tab, setTab] = useState<string>("overview");
   const { agents, simulateTick } = useAgentsStore();
 

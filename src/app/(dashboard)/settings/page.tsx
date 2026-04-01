@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Download, Trash2, Pause, RotateCcw, ShieldX, CreditCard } from "lucide-react";
+import { useSettingsStore } from "@/stores/settings-store";
 
 const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Billing", "Danger Zone"];
 
@@ -50,8 +51,10 @@ export default function SettingsPage() {
   const [require2FA, setRequire2FA] = useState(false);
   const [polling, setPolling] = useState(true);
   const [pollInterval, setPollInterval] = useState("5s");
-  const [projectName, setProjectName] = useState("Mission Control");
-  const [projectDescription, setProjectDescription] = useState("AI-powered project command center for monitoring agents, deployments, and infrastructure.");
+  const projectName = useSettingsStore((s) => s.projectName);
+  const projectDescription = useSettingsStore((s) => s.projectDescription);
+  const storeSetProjectName = useSettingsStore((s) => s.setProjectName);
+  const storeSetProjectDescription = useSettingsStore((s) => s.setProjectDescription);
 
   return (
     <div className="space-y-6">
@@ -86,8 +89,8 @@ export default function SettingsPage() {
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Project Identity</h3>
               <div className="space-y-4 max-w-lg">
-                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" /></div>
-                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50" /></div>
                 <div><label className="text-xs text-muted-foreground block mb-1">Timezone</label>
                   <select className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none"><option>America/Los_Angeles (PST)</option><option>America/New_York (EST)</option><option>Europe/London (GMT)</option><option>UTC</option></select>
                 </div>
