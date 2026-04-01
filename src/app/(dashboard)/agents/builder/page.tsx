@@ -1,0 +1,443 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Rocket, Check } from "lucide-react";
+import { toast } from "sonner";
+import { GlassPanel, PageHeader } from "@/components/shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const STEPS = [
+  "Identity",
+  "System Prompt",
+  "Tools",
+  "Memory",
+  "Triggers",
+  "Review",
+] as const;
+
+const AVAILABLE_TOOLS = [
+  { id: "file_system", label: "File System" },
+  { id: "web_search", label: "Web Search" },
+  { id: "code_execution", label: "Code Execution" },
+  { id: "api_access", label: "API Access" },
+  { id: "database", label: "Database" },
+  { id: "notifications", label: "Notifications" },
+];
+
+const CONTEXT_SIZES = ["4K", "8K", "16K", "32K", "64K", "128K"];
+const MEMORY_MODES = ["none", "session", "persistent"];
+
+export default function AgentBuilderPage() {
+  const [step, setStep] = useState(0);
+
+  // Step 1 - Identity
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [model, setModel] = useState("Claude");
+
+  // Step 2 - System Prompt
+  const [systemPrompt, setSystemPrompt] = useState("");
+
+  // Step 3 - Tools
+  const [enabledTools, setEnabledTools] = useState<Record<string, boolean>>({
+    file_system: true,
+    web_search: false,
+    code_execution: true,
+    api_access: false,
+    database: false,
+    notifications: false,
+  });
+
+  // Step 4 - Memory
+  const [contextSize, setContextSize] = useState("32K");
+  const [memoryMode, setMemoryMode] = useState("session");
+
+  // Step 5 - Triggers
+  const [triggerType, setTriggerType] = useState("manual");
+  const [cronExpression, setCronExpression] = useState("0 */6 * * *");
+  const [eventType, setEventType] = useState("pr_opened");
+
+  const toggleTool = (id: string) => {
+    setEnabledTools((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const canNext = () => {
+    if (step === 0) return name.trim().length > 0;
+    if (step === 1) return systemPrompt.trim().length > 0;
+    return true;
+  };
+
+  const handleDeploy = () => {
+    toast.success(`Agent "${name}" deployed successfully!`, {
+      description: `Model: ${model} | Tools: ${Object.values(enabledTools).filter(Boolean).length} enabled`,
+    });
+  };
+
+  const tokenEstimate = Math.round(systemPrompt.split(/\s+/).filter(Boolean).length * 1.3);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Agent Builder" description="Design and configure a new AI agent">
+        <Link href="/agents">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="size-3.5 mr-1" />
+            Back
+          </Button>
+        </Link>
+      </PageHeader>
+
+      {/* Progress Bar */}
+      <div className="flex items-center gap-2">
+        {STEPS.map((label, i) => (
+          <React.Fragment key={label}>
+            <button
+              onClick={() => i < step && setStep(i)}
+              className={cn(
+                "flex items-center gap-2 text-xs font-medium transition-colors",
+                i < step
+                  ? "text-cyan-400 cursor-pointer"
+                  : i === step
+                  ? "text-foreground"
+                  : "text-muted-foreground cursor-default"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex items-center justify-center size-6 rounded-full text-xs font-semibold border transition-colors",
+                  i < step
+                    ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400"
+                    : i === step
+                    ? "bg-foreground/10 border-foreground/20 text-foreground"
+                    : "bg-muted/40 border-border text-muted-foreground"
+                )}
+              >
+                {i < step ? <Check className="size-3" /> : i + 1}
+              </span>
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+            {i < STEPS.length - 1 && (
+              <div
+                className={cn(
+                  "flex-1 h-px",
+                  i < step ? "bg-cyan-500/40" : "bg-muted/50"
+                )}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Step Content */}
+      <GlassPanel padding="lg" className="min-h-[320px]">
+        {/* Step 1 - Identity */}
+        {step === 0 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">Agent Identity</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
+                <Input
+                  placeholder="e.g., CodeReviewer"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="max-w-md"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Description</label>
+                <Textarea
+                  placeholder="Describe what this agent does..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="max-w-lg min-h-[80px]"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Model</label>
+                <Select value={model} onValueChange={(v) => v && setModel(v)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Claude">Claude</SelectItem>
+                    <SelectItem value="GPT-4">GPT-4</SelectItem>
+                    <SelectItem value="Gemini">Gemini</SelectItem>
+                    <SelectItem value="Custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 - System Prompt */}
+        {step === 1 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">System Prompt</h3>
+            <Textarea
+              placeholder="You are a helpful AI agent that..."
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              className="min-h-[200px] font-mono text-sm"
+            />
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span>{systemPrompt.length} characters</span>
+              <span>~{tokenEstimate} tokens</span>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 - Tools */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">Tools</h3>
+            <p className="text-sm text-muted-foreground">Select the tools this agent can use.</p>
+            <div className="space-y-3">
+              {AVAILABLE_TOOLS.map((tool) => (
+                <div
+                  key={tool.id}
+                  className="flex items-center justify-between py-3 px-4 rounded-lg border border-border bg-muted/30"
+                >
+                  <span className="text-sm text-foreground">{tool.label}</span>
+                  <Switch
+                    checked={enabledTools[tool.id] ?? false}
+                    onCheckedChange={() => toggleTool(tool.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 - Memory */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">Memory Configuration</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Context Window Size</label>
+                <Select value={contextSize} onValueChange={(v) => v && setContextSize(v)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTEXT_SIZES.map((size) => (
+                      <SelectItem key={size} value={size}>{size}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Memory Mode</label>
+                <Select value={memoryMode} onValueChange={(v) => v && setMemoryMode(v)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MEMORY_MODES.map((mode) => (
+                      <SelectItem key={mode} value={mode}>
+                        {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 5 - Triggers */}
+        {step === 4 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">Triggers</h3>
+            <div className="space-y-3">
+              {[
+                { value: "manual", label: "Manual", desc: "Trigger manually from the dashboard" },
+                { value: "schedule", label: "Schedule", desc: "Run on a cron schedule" },
+                { value: "webhook", label: "Webhook", desc: "Trigger via HTTP webhook" },
+                { value: "event", label: "Event-based", desc: "React to system events" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setTriggerType(option.value)}
+                  className={cn(
+                    "flex items-start gap-3 w-full p-4 rounded-lg border text-left transition-colors",
+                    triggerType === option.value
+                      ? "border-cyan-500/40 bg-cyan-500/[0.06]"
+                      : "border-border bg-muted/30 hover:border-border"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "mt-0.5 size-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                      triggerType === option.value ? "border-cyan-400" : "border-white/20"
+                    )}
+                  >
+                    {triggerType === option.value && (
+                      <div className="size-2 rounded-full bg-cyan-400" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.desc}</p>
+                  </div>
+                </button>
+              ))}
+
+              {triggerType === "schedule" && (
+                <div className="ml-7 mt-2">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Cron Expression
+                  </label>
+                  <Input
+                    value={cronExpression}
+                    onChange={(e) => setCronExpression(e.target.value)}
+                    className="max-w-xs font-mono"
+                    placeholder="0 */6 * * *"
+                  />
+                </div>
+              )}
+
+              {triggerType === "webhook" && (
+                <div className="ml-7 mt-2">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Webhook URL
+                  </label>
+                  <div className="flex items-center gap-2 max-w-lg">
+                    <Input
+                      readOnly
+                      value={`https://api.missioncontrol.dev/webhooks/${name.toLowerCase().replace(/\s+/g, "-") || "agent"}`}
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {triggerType === "event" && (
+                <div className="ml-7 mt-2">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Event Type
+                  </label>
+                  <Select value={eventType} onValueChange={(v) => v && setEventType(v)}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pr_opened">PR Opened</SelectItem>
+                      <SelectItem value="pr_merged">PR Merged</SelectItem>
+                      <SelectItem value="deploy_complete">Deploy Complete</SelectItem>
+                      <SelectItem value="error_alert">Error Alert</SelectItem>
+                      <SelectItem value="incident_created">Incident Created</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 6 - Review */}
+        {step === 5 && (
+          <div className="space-y-5">
+            <h3 className="text-lg font-semibold text-foreground">Review &amp; Deploy</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className="text-sm font-semibold text-foreground">{name || "Untitled"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Description</p>
+                  <p className="text-sm text-foreground">{description || "No description"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Model</p>
+                  <Badge variant="outline" className="mt-1">{model}</Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">System Prompt</p>
+                  <p className="text-sm text-foreground truncate max-w-xs">
+                    {systemPrompt.slice(0, 100) || "Not set"}{systemPrompt.length > 100 ? "..." : ""}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Tools</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {AVAILABLE_TOOLS.filter((t) => enabledTools[t.id]).map((t) => (
+                      <Badge key={t.id} variant="outline" className="text-[10px] h-5">
+                        {t.label}
+                      </Badge>
+                    ))}
+                    {AVAILABLE_TOOLS.filter((t) => enabledTools[t.id]).length === 0 && (
+                      <span className="text-xs text-muted-foreground">None</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Context Window</p>
+                  <p className="text-sm text-foreground">{contextSize}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Memory Mode</p>
+                  <p className="text-sm text-foreground capitalize">{memoryMode}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Trigger</p>
+                  <p className="text-sm text-foreground capitalize">{triggerType}</p>
+                  {triggerType === "schedule" && (
+                    <p className="text-xs text-muted-foreground font-mono">{cronExpression}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <Button onClick={handleDeploy} size="lg">
+                <Rocket className="size-4 mr-1.5" />
+                Deploy Agent
+              </Button>
+            </div>
+          </div>
+        )}
+      </GlassPanel>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setStep((s) => s - 1)}
+          disabled={step === 0}
+        >
+          <ArrowLeft className="size-3.5 mr-1" />
+          Back
+        </Button>
+        {step < STEPS.length - 1 && (
+          <Button
+            size="sm"
+            onClick={() => setStep((s) => s + 1)}
+            disabled={!canNext()}
+          >
+            Next
+            <ArrowRight className="size-3.5 ml-1" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
