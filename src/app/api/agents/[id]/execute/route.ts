@@ -47,6 +47,7 @@ export const POST = withErrorHandler(
   async (request: NextRequest, context?: { params: Record<string, string> }) => {
     const user = await requireRole("developer");
     // Rate limit: 20 executions per minute per user (prevents runaway LLM cost)
+    // NOTE: x-forwarded-for can be spoofed without a trusted reverse proxy — user.id is the real guard
     const ip = (await headers()).get("x-forwarded-for") ?? "anon";
     const rl = rateLimit(`execute:${user.id}:${ip}`, { limit: 20, windowMs: 60_000 });
     if (!rl.success) {

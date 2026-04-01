@@ -16,6 +16,7 @@ import { logAuditEvent } from "@/lib/audit";
 export const POST = withErrorHandler(async () => {
   const user = await requireRole("developer");
   // Rate limit: 5 kill-all calls per minute per user (destructive action)
+  // NOTE: x-forwarded-for can be spoofed without a trusted reverse proxy — user.id is the real guard
   const ip = (await headers()).get("x-forwarded-for") ?? "anon";
   const rl = rateLimit(`kill-all:${user.id}:${ip}`, { limit: 5, windowMs: 60_000 });
   if (!rl.success) {
