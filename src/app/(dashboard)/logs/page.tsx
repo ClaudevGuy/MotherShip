@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useLogsStore } from "@/stores/logs-store";
-import { usePolling } from "@/lib/hooks/use-polling";
 import {
   PageHeader,
   LiveIndicator,
@@ -47,9 +46,7 @@ export default function LogsPage() {
 
   const logs = getFilteredLogs();
 
-  usePolling(() => {
-    // Simulate new log arriving
-  }, 5000, isLive);
+  // usePolling removed — was an empty callback only used for live indicator
 
   const tabs = [
     { id: "stream" as const, label: "Log Stream" },
@@ -170,7 +167,7 @@ export default function LogsPage() {
             </div>
             <div className="flex items-center justify-between px-4 py-2 border-t border-border text-[10px] text-muted-foreground">
               <span>{logs.length} logs shown</span>
-              <button className="text-[#00D4FF] hover:underline">Load more</button>
+              <button className="text-[#00D4FF] hover:underline" onClick={() => toast.success("Loading more logs...")}>Load more</button>
             </div>
           </GlassPanel>
         </div>
@@ -225,7 +222,7 @@ export default function LogsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  {["Time", "Agent", "Model", "Tokens In", "Tokens Out", "Latency", "Cost", ""].map((h) => (
+                  {["Time", "Model", "Provider", "Tokens In", "Tokens Out", "Latency", "Cost", ""].map((h) => (
                     <th key={h} className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{h}</th>
                   ))}
                 </tr>

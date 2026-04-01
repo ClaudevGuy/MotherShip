@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Bell, ChevronRight, Search, User, Sun, Moon } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { useTheme } from "next-themes";
@@ -30,6 +30,7 @@ function useBreadcrumbs() {
 
 export function Topbar() {
   const breadcrumbs = useBreadcrumbs();
+  const router = useRouter();
   const { toggleCommandPalette } = useUIStore();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -108,11 +109,11 @@ export function Topbar() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => window.location.href = "/profile"}>
+            <DropdownMenuItem onClick={() => router.push("/profile")}>
               <User className="mr-2 size-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />

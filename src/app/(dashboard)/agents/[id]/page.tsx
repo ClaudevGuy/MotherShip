@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle } from "lucide-react";
 import { useAgentsStore } from "@/stores/agents-store";
@@ -22,9 +22,9 @@ import {
   CodeBlock,
   DataTable,
 } from "@/components/shared";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import type { AgentRun } from "@/types/agents";
 
 const MODEL_COLORS: Record<string, string> = {
@@ -54,7 +54,7 @@ const runColumns = [
     label: "Started",
     sortable: true,
     render: (item: AgentRun) => (
-      <span className="text-xs text-muted-foreground">
+      <span className="text-xs text-muted-foreground" suppressHydrationWarning>
         {formatRelativeTime(item.startedAt)}
       </span>
     ),
@@ -106,6 +106,7 @@ export default function AgentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const [tab, setTab] = useState<string>("overview");
   const { agents, simulateTick } = useAgentsStore();
 
   usePolling(simulateTick, 4000);
@@ -146,18 +147,33 @@ export default function AgentDetailPage({
         Back to Agents
       </Link>
 
-      <Tabs defaultValue="overview">
-        <TabsList variant="line" className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="execution">Execution</TabsTrigger>
-          <TabsTrigger value="system-prompt">System Prompt</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="evals">Evals</TabsTrigger>
-          <TabsTrigger value="config">Config</TabsTrigger>
-        </TabsList>
+      <div className="border-b border-border mb-6">
+          <div className="flex gap-6">
+            {([
+              { id: "overview", label: "Overview" },
+              { id: "execution", label: "Execution" },
+              { id: "system-prompt", label: "System Prompt" },
+              { id: "history", label: "History" },
+              { id: "evals", label: "Evals" },
+              { id: "config", label: "Config" },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "pb-2.5 text-sm font-medium transition-colors relative",
+                  tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70"
+                )}
+              >
+                {t.label}
+                {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* ===== OVERVIEW TAB ===== */}
-        <TabsContent value="overview">
+        {tab === "overview" && (
           <div className="space-y-6">
             {/* Identity */}
             <GlassPanel padding="lg">
@@ -241,10 +257,10 @@ export default function AgentDetailPage({
               </ChartCard>
             </div>
           </div>
-        </TabsContent>
+        )}
 
         {/* ===== EXECUTION TAB ===== */}
-        <TabsContent value="execution">
+        {tab === "execution" && (
           <div className="space-y-6">
             {/* Tool Usage */}
             <GlassPanel padding="lg">
@@ -292,10 +308,10 @@ export default function AgentDetailPage({
               </GlassPanel>
             )}
           </div>
-        </TabsContent>
+        )}
 
         {/* ===== SYSTEM PROMPT TAB ===== */}
-        <TabsContent value="system-prompt">
+        {tab === "system-prompt" && (
           <div className="space-y-4">
             <CodeBlock
               code={agent.systemPrompt}
@@ -306,20 +322,20 @@ export default function AgentDetailPage({
               Estimated tokens: ~{Math.round(agent.systemPrompt.split(" ").length * 1.3)}
             </p>
           </div>
-        </TabsContent>
+        )}
 
         {/* ===== HISTORY TAB ===== */}
-        <TabsContent value="history">
+        {tab === "history" && (
           <DataTable
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             columns={runColumns as any}
             data={agent.runs as unknown as Record<string, unknown>[]}
             emptyMessage="No runs recorded yet."
           />
-        </TabsContent>
+        )}
 
         {/* ===== EVALS TAB ===== */}
-        <TabsContent value="evals">
+        {tab === "evals" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {agent.evalResults.map((ev) => (
               <GlassPanel key={ev.name} padding="lg" hover>
@@ -363,10 +379,10 @@ export default function AgentDetailPage({
               </GlassPanel>
             )}
           </div>
-        </TabsContent>
+        )}
 
         {/* ===== CONFIG TAB ===== */}
-        <TabsContent value="config">
+        {tab === "config" && (
           <div className="space-y-4">
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Model Configuration</h3>
@@ -420,8 +436,7 @@ export default function AgentDetailPage({
               </div>
             </GlassPanel>
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
     </div>
   );
 }

@@ -187,7 +187,7 @@ export default function IntegrationsPage() {
                   </button>
                 )}
                 {integ.status === "disconnected" && (
-                  <button className="text-[10px] font-medium text-[#0A0A0F] bg-[#00D4FF] rounded px-3 py-1 hover:bg-[#00D4FF]/80 transition-colors" onClick={() => toast.success(`${integ.name} connected`)}>
+                  <button className="text-[10px] font-medium text-primary-foreground bg-[#00D4FF] rounded px-3 py-1 hover:bg-[#00D4FF]/80 transition-colors" onClick={() => toast.success(`${integ.name} connected`)}>
                     Connect
                   </button>
                 )}

@@ -106,7 +106,7 @@ const columns = [
     label: "Last Run",
     sortable: true,
     render: (item: Agent) => (
-      <span className="text-xs text-muted-foreground">
+      <span className="text-xs text-muted-foreground" suppressHydrationWarning>
         {formatRelativeTime(item.lastRun)}
       </span>
     ),

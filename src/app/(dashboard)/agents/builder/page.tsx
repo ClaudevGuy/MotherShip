@@ -283,7 +283,7 @@ export default function AgentBuilderPage() {
                   <div
                     className={cn(
                       "mt-0.5 size-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                      triggerType === option.value ? "border-cyan-400" : "border-white/20"
+                      triggerType === option.value ? "border-cyan-400" : "border-muted-foreground/20"
                     )}
                   >
                     {triggerType === option.value && (

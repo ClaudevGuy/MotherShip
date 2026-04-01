@@ -176,7 +176,7 @@ export default function DeploymentsPage() {
                                     <StatusBadge status={d.status} size="sm" />
                                     <span className="font-mono text-[11px] text-[#00D4FF]">{d.version}</span>
                                   </div>
-                                  <span className="text-[10px] text-muted-foreground">{formatRelativeTime(d.timestamp)}</span>
+                                  <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>{formatRelativeTime(d.timestamp)}</span>
 
                                   {/* In-progress indicator */}
                                   {d.status === "in_progress" && (
@@ -234,7 +234,7 @@ export default function DeploymentsPage() {
                                   <span className="text-muted-foreground">Changelog</span>
                                   <p className="text-foreground mt-0.5">{anyDeploy.changelog}</p>
                                 </div>
-                                <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors shrink-0 mt-2">
+                                <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors shrink-0 mt-2" onClick={(e) => { e.stopPropagation(); toast.success("Opening deployment logs..."); }}>
                                   <ScrollText className="size-3" /> View Logs
                                 </button>
                               </div>
@@ -272,7 +272,7 @@ export default function DeploymentsPage() {
                         <div><span className="text-muted-foreground">Version</span><p className="font-mono text-foreground">{env.currentVersion}</p></div>
                         <div><span className="text-muted-foreground">Uptime</span><p className="font-mono text-foreground">{env.uptime}%</p></div>
                         <div><span className="text-muted-foreground">Users</span><p className="font-mono text-foreground">{env.activeUsers.toLocaleString()}</p></div>
-                        <div><span className="text-muted-foreground">Last Deploy</span><p className="font-mono text-foreground text-[10px]">{formatRelativeTime(env.lastDeploy)}</p></div>
+                        <div><span className="text-muted-foreground">Last Deploy</span><p className="font-mono text-foreground text-[10px]" suppressHydrationWarning>{formatRelativeTime(env.lastDeploy)}</p></div>
                       </div>
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-[10px] text-muted-foreground">24h uptime</span>
@@ -288,7 +288,7 @@ export default function DeploymentsPage() {
                         ))}
                       </div>
                       <div className="flex justify-end mt-3">
-                        <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors">
+                        <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors" onClick={() => toast.success("Opening environment logs...")}>
                           <ScrollText className="size-2.5" /> View Logs
                         </button>
                       </div>
@@ -327,10 +327,10 @@ export default function DeploymentsPage() {
                         {d.triggeredBy}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{formatRelativeTime(d.timestamp)}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground" suppressHydrationWarning>{formatRelativeTime(d.timestamp)}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors">View Logs</button>
+                        <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors" onClick={() => toast.success("Opening deployment logs...")}>View Logs</button>
                         {d.status === "success" && (
                           <button
                             onClick={() => setRollbackTarget(d)}

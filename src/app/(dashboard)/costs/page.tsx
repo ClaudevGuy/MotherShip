@@ -68,8 +68,9 @@ export default function CostsPage() {
   const thisMonth = 16481;
   const lastMonth = 15892;
   const monthlyBudget = 20500;
-  const daysInMonth = 31;
-  const daysElapsed = 31; // March 31
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysElapsed = Math.max(now.getDate(), 1);
   const projected = Math.round((thisMonth / daysElapsed) * daysInMonth);
   const underBudget = monthlyBudget - projected;
   const budgetPct = Math.round((thisMonth / monthlyBudget) * 100);

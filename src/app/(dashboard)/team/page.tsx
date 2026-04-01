@@ -151,7 +151,7 @@ export default function TeamPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF]">Edit Role</button>
+                          <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF]" onClick={() => toast.success("Role editor opened")}>Edit Role</button>
                           <button className="text-[10px] text-muted-foreground hover:text-red-400" onClick={() => setRemoveTarget(m.name)}>Remove</button>
                         </div>
                       </td>
@@ -173,7 +173,7 @@ export default function TeamPage() {
                     <p className="text-sm text-foreground/60 italic">{inv.email}</p>
                     <p className="text-[10px] text-muted-foreground">Sent {inv.sent}</p>
                   </div>
-                  <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium" style={{ ...ROLE_STYLES[inv.role] }}>{inv.role}</span>
+                  <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium" style={{ background: ROLE_STYLES[inv.role].bg, border: `1px solid ${ROLE_STYLES[inv.role].border}`, color: ROLE_STYLES[inv.role].text }}>{inv.role}</span>
                   <StatusBadge status="paused" size="sm" />
                   <button className="text-[10px] text-[#00D4FF] hover:underline" onClick={() => toast.success("Invite resent")}>Resend</button>
                   <button className="text-[10px] text-red-400 hover:underline" onClick={() => toast.success("Invite revoked")}>Revoke</button>

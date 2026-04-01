@@ -68,5 +68,9 @@ export const KEYBOARD_SHORTCUTS = [
   { keys: ["g", "l"], description: "Go to Logs" },
   { keys: ["g", "t"], description: "Go to Team" },
   { keys: ["g", "s"], description: "Go to Settings" },
+  { keys: ["g", "$"], description: "Go to Costs" },
+  { keys: ["g", "n"], description: "Go to Analytics" },
+  { keys: ["g", "p"], description: "Go to Integrations" },
+  { keys: ["g", "!"], description: "Go to Incidents" },
   { keys: ["Esc"], description: "Close dialogs" },
 ];

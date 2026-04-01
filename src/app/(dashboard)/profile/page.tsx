@@ -59,7 +59,7 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground mt-0.5">{jobTitle}</p>
           </div>
 
-          <button className="text-xs font-medium text-[#0A0A0F] bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80 shrink-0" onClick={() => toast.success("Profile updated")}>
+          <button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80 shrink-0" onClick={() => toast.success("Profile updated")}>
             Edit Profile
           </button>
         </div>
@@ -96,7 +96,7 @@ export default function ProfilePage() {
             </select>
           </div>
         </div>
-        <button className="mt-4 text-xs font-medium text-[#0A0A0F] bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Profile saved")}>Save Changes</button>
+        <button className="mt-4 text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Profile saved")}>Save Changes</button>
       </GlassPanel>
 
       {/* ─── Security ─── */}
@@ -223,7 +223,7 @@ export default function ProfilePage() {
                   <button className="text-[10px] text-muted-foreground hover:text-red-400" onClick={() => toast.success(`${acc.name} disconnected`)}>Disconnect</button>
                 </div>
               ) : (
-                <button className="text-[10px] font-medium text-[#0A0A0F] bg-[#00D4FF] rounded px-3 py-1.5 hover:bg-[#00D4FF]/80" onClick={() => toast.success(`${acc.name} connected`)}>Connect</button>
+                <button className="text-[10px] font-medium text-primary-foreground bg-[#00D4FF] rounded px-3 py-1.5 hover:bg-[#00D4FF]/80" onClick={() => toast.success(`${acc.name} connected`)}>Connect</button>
               )}
             </div>
           ))}

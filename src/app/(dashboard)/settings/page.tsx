@@ -50,6 +50,8 @@ export default function SettingsPage() {
   const [require2FA, setRequire2FA] = useState(false);
   const [polling, setPolling] = useState(true);
   const [pollInterval, setPollInterval] = useState("5s");
+  const [projectName, setProjectName] = useState("Mission Control");
+  const [projectDescription, setProjectDescription] = useState("AI-powered project command center for monitoring agents, deployments, and infrastructure.");
 
   return (
     <div className="space-y-6">
@@ -84,12 +86,12 @@ export default function SettingsPage() {
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Project Identity</h3>
               <div className="space-y-4 max-w-lg">
-                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input defaultValue="Mission Control" className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" /></div>
-                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea defaultValue="AI-powered project command center for monitoring agents, deployments, and infrastructure." rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50" /></div>
                 <div><label className="text-xs text-muted-foreground block mb-1">Timezone</label>
                   <select className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none"><option>America/Los_Angeles (PST)</option><option>America/New_York (EST)</option><option>Europe/London (GMT)</option><option>UTC</option></select>
                 </div>
-                <button className="text-xs font-medium text-[#0A0A0F] bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
+                <button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
               </div>
             </GlassPanel>
           )}
@@ -151,7 +153,7 @@ export default function SettingsPage() {
                   ))}
                 </tbody>
               </table>
-              <div className="px-4 py-3"><button className="text-xs font-medium text-[#0A0A0F] bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
+              <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
             </GlassPanel>
           )}
 
@@ -218,7 +220,7 @@ export default function SettingsPage() {
               <GlassPanel padding="lg">
                 <h3 className="text-sm font-semibold text-foreground mb-2">Single Sign-On (SSO)</h3>
                 <p className="text-xs text-muted-foreground mb-3">Not configured. Supports Google, GitHub, and SAML.</p>
-                <button className="text-xs text-foreground bg-muted/50 rounded-lg px-4 py-2 hover:bg-muted">Configure SSO</button>
+                <button className="text-xs text-foreground bg-muted/50 rounded-lg px-4 py-2 hover:bg-muted" onClick={() => toast.success("SSO configuration opened")}>Configure SSO</button>
               </GlassPanel>
             </div>
           )}
@@ -240,14 +242,14 @@ export default function SettingsPage() {
                   <div><div className="flex justify-between text-xs mb-1"><span className="text-muted-foreground">Team Seats</span><span className="font-mono text-foreground">5/10 used</span></div>
                     <div className="w-full h-1.5 rounded-full bg-muted/50"><div className="h-1.5 rounded-full bg-green-500" style={{ width: "50%" }} /></div></div>
                 </div>
-                <button className="mt-4 text-xs font-medium text-[#0A0A0F] bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80">Upgrade Plan</button>
+                <button className="mt-4 text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80">Upgrade Plan</button>
               </GlassPanel>
               <GlassPanel padding="lg">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Payment Method</h3>
                 <div className="flex items-center gap-3">
                   <CreditCard className="size-5 text-muted-foreground" />
                   <div><p className="text-sm text-foreground">Visa ending in 4242</p><p className="text-[10px] text-muted-foreground">Expires 12/27</p></div>
-                  <button className="ml-auto text-xs text-foreground bg-muted/50 rounded-lg px-3 py-1.5 hover:bg-muted">Update Card</button>
+                  <button className="ml-auto text-xs text-foreground bg-muted/50 rounded-lg px-3 py-1.5 hover:bg-muted" onClick={() => toast.success("Payment method update initiated")}>Update Card</button>
                 </div>
               </GlassPanel>
             </div>

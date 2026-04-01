@@ -79,7 +79,7 @@ const COMMIT_TYPE_COLORS: Record<string, { bg: string; border: string; text: str
   fix: { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.3)", text: "#EF4444" },
   perf: { bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.3)", text: "#F59E0B" },
   test: { bg: "rgba(57,255,20,0.12)", border: "rgba(57,255,20,0.3)", text: "#39FF14" },
-  docs: { bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.12)", text: "#888" },
+  docs: { bg: "rgba(128,128,128,0.05)", border: "rgba(128,128,128,0.12)", text: "#888" },
   chore: { bg: "rgba(168,85,247,0.12)", border: "rgba(168,85,247,0.3)", text: "#A855F7" },
   refactor: { bg: "rgba(0,212,255,0.12)", border: "rgba(0,212,255,0.3)", text: "#00D4FF" },
 };
@@ -192,7 +192,7 @@ export default function CodebasePage() {
                     <span className="text-[10px] text-muted-foreground">{repo.language}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground font-mono">{formatRelativeTime(repo.lastCommit)}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono" suppressHydrationWarning>{formatRelativeTime(repo.lastCommit)}</span>
                     <SparklineChart data={[3,5,2,7,4,6,8]} color="#00D4FF" width={40} height={16} />
                   </div>
                   <div className="flex items-center gap-2 pt-1 border-t border-border/50">
@@ -286,7 +286,7 @@ export default function CodebasePage() {
                     <span className="shrink-0 font-mono text-[10px] text-muted-foreground rounded px-1.5 py-0.5" style={{ background: "var(--bg-hover, rgba(255,255,255,0.06))", borderRadius: 4 }}>
                       {c.filesChanged} {c.filesChanged === 1 ? "file" : "files"}
                     </span>
-                    <span className="font-mono text-[10px] text-muted-foreground shrink-0 w-20 text-right">
+                    <span className="font-mono text-[10px] text-muted-foreground shrink-0 w-20 text-right" suppressHydrationWarning>
                       {formatRelativeTime(c.timestamp)}
                     </span>
                   </div>
@@ -328,7 +328,7 @@ export default function CodebasePage() {
                   <span className="text-muted-foreground mx-0.5">/</span>
                   <span className="text-red-400">-{c.deletions}</span>
                 </span>
-                <span className="font-mono text-[11px] text-muted-foreground shrink-0 w-24 text-right">
+                <span className="font-mono text-[11px] text-muted-foreground shrink-0 w-24 text-right" suppressHydrationWarning>
                   {formatRelativeTime(c.timestamp)}
                 </span>
               </div>
@@ -348,7 +348,7 @@ export default function CodebasePage() {
               { key: "labels", label: "Labels", render: (r: Record<string, unknown>) => (
                 <div className="flex gap-1 flex-wrap">{(r.labels as string[]).map((l) => <Badge key={l} variant="secondary" className="text-[10px]">{l}</Badge>)}</div>
               )},
-              { key: "createdAt", label: "Created", sortable: true, render: (r: Record<string, unknown>) => <span className="text-xs text-muted-foreground">{formatRelativeTime(r.createdAt as string)}</span> },
+              { key: "createdAt", label: "Created", sortable: true, render: (r: Record<string, unknown>) => <span className="text-xs text-muted-foreground" suppressHydrationWarning>{formatRelativeTime(r.createdAt as string)}</span> },
               { key: "additions", label: "+/-", render: (r: Record<string, unknown>) => (
                 <span className="font-mono text-xs"><span className="text-green-400">+{r.additions as number}</span>{" / "}<span className="text-red-400">-{r.deletions as number}</span></span>
               )},

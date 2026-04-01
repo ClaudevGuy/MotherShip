@@ -12,7 +12,7 @@ import type { IncidentSeverity } from "@/types/common";
 const SEV_STYLES: Record<IncidentSeverity, { bg: string; border: string; text: string; glow: string }> = {
   P1: { bg: "bg-[#EF4444]/[0.03]", border: "border-l-[3px] border-l-[#EF4444]", text: "text-foreground", glow: "shadow-[0_0_8px_rgba(239,68,68,0.15)]" },
   P2: { bg: "bg-[#F59E0B]/[0.03]", border: "border-l-[3px] border-l-[#F59E0B]", text: "text-foreground", glow: "" },
-  P3: { bg: "", border: "border-l-[3px] border-l-white/10", text: "text-muted-foreground", glow: "" },
+  P3: { bg: "", border: "border-l-[3px] border-l-muted-foreground/20", text: "text-muted-foreground", glow: "" },
 };
 
 const SEV_BADGE: Record<IncidentSeverity, { bg: string; text: string }> = {
@@ -310,7 +310,7 @@ export default function IncidentsPage() {
               {HISTORY.map((h, i) => {
                 const sevBadge = SEV_BADGE[h.severity];
                 return (
-                  <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer">
+                  <tr key={i} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5 font-medium text-foreground">{h.title}</td>
                     <td className="px-4 py-2.5">
                       <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: sevBadge.bg, color: sevBadge.text }}>{h.severity}</span>

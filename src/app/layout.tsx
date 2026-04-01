@@ -41,12 +41,7 @@ export default function RootLayout({
           <Toaster
             position="bottom-right"
             toastOptions={{
-              style: {
-                background: "rgba(14, 14, 19, 0.9)",
-                border: "1px solid rgba(255, 255, 255, 0.06)",
-                color: "#E4E4E7",
-                backdropFilter: "blur(24px)",
-              },
+              className: "!bg-card !border-border !text-foreground",
             }}
           />
         </ThemeProvider>

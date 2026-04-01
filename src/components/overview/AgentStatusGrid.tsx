@@ -39,7 +39,7 @@ export function AgentStatusGrid() {
                 <span className="font-mono text-foreground">{agent.healthScore}%</span>
               </div>
               <Progress value={agent.healthScore} className="h-1" />
-              <div className="text-[10px] text-muted-foreground">
+              <div className="text-[10px] text-muted-foreground" suppressHydrationWarning>
                 Last run {formatRelativeTime(agent.lastRun)}
               </div>
             </div>
