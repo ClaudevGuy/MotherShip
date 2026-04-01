@@ -9,6 +9,7 @@ import {
   Users,
   AlertTriangle,
   Settings,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Team",           href: "/team",        icon: Users,           shortcut: "g t" },
   { label: "Incidents",      href: "/incidents",   icon: AlertTriangle,   shortcut: "g !" },
   { label: "Settings",       href: "/settings",    icon: Settings,        shortcut: "g s" },
+  { label: "Tutorial",       href: "/tutorial",    icon: BookOpen,        shortcut: "g h" },
 ];
 
 export const STATUS_COLORS = {
@@ -66,5 +68,6 @@ export const KEYBOARD_SHORTCUTS = [
   { keys: ["g", "$"],   description: "Go to Costs" },
   { keys: ["g", "n"],   description: "Go to Analytics" },
   { keys: ["g", "!"],   description: "Go to Incidents" },
+  { keys: ["g", "h"],   description: "Go to Tutorial" },
   { keys: ["Esc"],      description: "Close dialogs" },
 ];

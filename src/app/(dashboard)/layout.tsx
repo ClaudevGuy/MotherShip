@@ -19,6 +19,7 @@ const GO_SHORTCUTS: Record<string, string> = {
   $: "/costs",
   n: "/analytics",
   "!": "/incidents",
+  h: "/tutorial",
 };
 
 export default function DashboardLayout({
