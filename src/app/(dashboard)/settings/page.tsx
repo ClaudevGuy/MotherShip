@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Download, Trash2, Pause, RotateCcw, ShieldX, CreditCard, Puzzle } from "lucide-react";
+import { Download, Trash2, Pause, RotateCcw, ShieldX, CreditCard } from "lucide-react";
 import { useSettingsStore } from "@/stores/settings-store";
 
 const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Billing", "Integrations", "Danger Zone"];
