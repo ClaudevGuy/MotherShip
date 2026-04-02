@@ -26,7 +26,7 @@ export function AgentStatusGrid() {
           </div>
           <Link
             href="/agents/builder"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#00D4FF] px-4 py-2 text-xs font-medium text-black hover:bg-[#00D4FF]/90 transition-colors mt-1"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#00d992] px-4 py-2 text-xs font-medium text-black hover:bg-[#00d992]/90 transition-colors mt-1"
           >
             <Rocket className="size-3.5" />
             Deploy your first agent

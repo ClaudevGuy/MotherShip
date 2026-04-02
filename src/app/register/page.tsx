@@ -47,8 +47,8 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative flex size-12 items-center justify-center">
-            <div className="absolute inset-0 rounded-xl bg-[#00D4FF]/[0.08]" />
-            <Zap className="relative z-10 size-6 text-[#00D4FF]" strokeWidth={2.5} fill="rgba(0,212,255,0.15)" />
+            <div className="absolute inset-0 rounded-xl bg-[#00d992]/[0.08]" />
+            <Zap className="relative z-10 size-6 text-[#00d992]" strokeWidth={2.5} fill="rgba(0,217,146,0.15)" />
           </div>
           <h1 className="font-heading text-xl font-bold uppercase tracking-[0.12em] text-foreground">
             Mission Control
@@ -72,7 +72,7 @@ export default function RegisterPage() {
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="John Doe"
-              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00D4FF]/50 transition-colors"
+              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00d992]/50 transition-colors"
             />
           </div>
 
@@ -84,7 +84,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@company.com"
-              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00D4FF]/50 transition-colors"
+              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00d992]/50 transition-colors"
             />
           </div>
 
@@ -97,14 +97,14 @@ export default function RegisterPage() {
               required
               minLength={8}
               placeholder="Min 8 characters"
-              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00D4FF]/50 transition-colors"
+              className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-[#00d992]/50 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="h-10 w-full rounded-lg bg-[#00D4FF] text-sm font-medium text-primary-foreground hover:bg-[#00D4FF]/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="h-10 w-full rounded-lg bg-[#00d992] text-sm font-medium text-primary-foreground hover:bg-[#00d992]/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             {loading ? "Creating account..." : "Create Account"}
@@ -113,7 +113,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-[#00D4FF] hover:underline">
+          <Link href="/login" className="text-[#00d992] hover:underline">
             Sign in
           </Link>
         </p>

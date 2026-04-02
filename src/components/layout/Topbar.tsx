@@ -36,7 +36,7 @@ function useBreadcrumbs() {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  info: "bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/20",
+  info: "bg-[#00d992]/10 text-[#00d992] border-[#00d992]/20",
   success: "bg-green-500/10 text-green-400 border-green-500/20",
   warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   error: "bg-red-500/10 text-red-400 border-red-500/20",
@@ -173,7 +173,7 @@ export function Topbar() {
                     className={cn(
                       "group relative flex gap-3 px-4 py-3 border-b border-border/30 last:border-0 transition-colors",
                       n.actionUrl ? "cursor-pointer hover:bg-muted/30" : "cursor-default",
-                      !n.read && "bg-[#00D4FF]/[0.03]"
+                      !n.read && "bg-[#00d992]/[0.03]"
                     )}
                   >
                     {/* Type indicator */}
@@ -188,7 +188,7 @@ export function Topbar() {
                           {n.title}
                         </p>
                         {!n.read && (
-                          <span className="mt-1 size-1.5 shrink-0 rounded-full bg-[#00D4FF]" />
+                          <span className="mt-1 size-1.5 shrink-0 rounded-full bg-[#00d992]" />
                         )}
                       </div>
                       <p className="mt-0.5 text-[11px] text-muted-foreground/70 line-clamp-2">{n.message}</p>
@@ -219,7 +219,7 @@ export function Topbar() {
             }
           >
             <Avatar className="size-7">
-              <AvatarFallback className="bg-[#00D4FF]/10 text-xs font-medium text-[#00D4FF]">
+              <AvatarFallback className="bg-[#00d992]/10 text-xs font-medium text-[#00d992]">
                 MC
               </AvatarFallback>
             </Avatar>

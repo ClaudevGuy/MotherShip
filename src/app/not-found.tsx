@@ -7,8 +7,8 @@ export default function NotFound() {
       {/* Logo */}
       <div className="flex items-center gap-2.5">
         <div className="relative flex size-8 shrink-0 items-center justify-center">
-          <div className="absolute inset-0 rounded-lg bg-[#00D4FF]/[0.08]" />
-          <Zap className="relative z-10 size-4 text-[#00D4FF]" strokeWidth={2.5} aria-hidden="true" />
+          <div className="absolute inset-0 rounded-lg bg-[#00d992]/[0.08]" />
+          <Zap className="relative z-10 size-4 text-[#00d992]" strokeWidth={2.5} aria-hidden="true" />
         </div>
         <span className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-foreground">
           Mission Control
@@ -20,7 +20,7 @@ export default function NotFound() {
         <p
           className="text-[120px] font-bold leading-none tracking-tighter"
           style={{
-            background: "linear-gradient(135deg, #00D4FF 0%, #A855F7 100%)",
+            background: "linear-gradient(135deg, #00d992 0%, #A855F7 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}

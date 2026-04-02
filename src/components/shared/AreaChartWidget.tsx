@@ -43,7 +43,7 @@ function ChartTooltip({
 
 export function AreaChartWidget({
   data,
-  color = "#00D4FF",
+  color = "#00d992",
   height = 200,
   formatValue = formatNumber,
 }: AreaChartWidgetProps) {

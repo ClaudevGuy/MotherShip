@@ -166,7 +166,7 @@ export default function AgentDetailPage({
                 )}
               >
                 {t.label}
-                {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+                {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
               </button>
             ))}
           </div>
@@ -218,7 +218,7 @@ export default function AgentDetailPage({
                 value={agent.avgLatency}
                 format="number"
                 icon={Clock}
-                color="#00D4FF"
+                color="#00d992"
                 trend={-1.3}
               />
               <MetricCard
@@ -251,7 +251,7 @@ export default function AgentDetailPage({
               <ChartCard title="Latency Trend" subtitle="Last 14 days">
                 <AreaChartWidget
                   data={latencyTrendData}
-                  color="#00D4FF"
+                  color="#00d992"
                   formatValue={(v) => `${Math.round(v)}ms`}
                 />
               </ChartCard>
@@ -414,7 +414,7 @@ export default function AgentDetailPage({
                 {/* Model Strategy */}
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Model Strategy</p>
-                  <Badge variant="outline" className="bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30">
+                  <Badge variant="outline" className="bg-[#00d992]/10 text-[#00d992] border-[#00d992]/30">
                     {agent.modelStrategy === "cost_first" ? "Cost-First" :
                      agent.modelStrategy === "quality_first" ? "Quality-First" :
                      agent.modelStrategy === "manual" ? "Manual" : "Auto"}
@@ -428,7 +428,7 @@ export default function AgentDetailPage({
                   <div className="flex-1 space-y-2">
                     {[
                       { label: "Tier 1 (Complex)", color: "bg-purple-500/70", percent: 15 },
-                      { label: "Tier 2 (Balanced)", color: "bg-[#00D4FF]/70", percent: 45 },
+                      { label: "Tier 2 (Balanced)", color: "bg-[#00d992]/70", percent: 45 },
                       { label: "Tier 3 (Simple)", color: "bg-green-500/70", percent: 40 },
                     ].map((tier) => (
                       <div key={tier.label} className="flex items-center gap-2">

@@ -42,12 +42,12 @@ export default function DeploymentsPage() {
   const [envCardsOpen, setEnvCardsOpen] = useState(true);
 
   const SERVICE_ICONS: Record<string, { icon: typeof Globe; color: string }> = {
-    "api-gateway": { icon: Globe, color: "#00D4FF" },
+    "api-gateway": { icon: Globe, color: "#00d992" },
     "web-app": { icon: Layers, color: "#A855F7" },
     "worker-service": { icon: Cog, color: "#F59E0B" },
     "analytics-service": { icon: BarChart3, color: "#39FF14" },
     "notification-service": { icon: Radio, color: "#EC4899" },
-    "ml-pipeline": { icon: Database, color: "#00D4FF" },
+    "ml-pipeline": { icon: Database, color: "#00d992" },
     "cache-service": { icon: Database, color: "#F59E0B" },
     "search-service": { icon: Search, color: "#4285F4" },
     "auth-service": { icon: Shield, color: "#10A37F" },
@@ -97,7 +97,7 @@ export default function DeploymentsPage() {
               className={cn("pb-2.5 text-sm font-medium transition-colors relative", tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70")}
             >
               {t.label}
-              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
             </button>
           ))}
         </div>
@@ -144,7 +144,7 @@ export default function DeploymentsPage() {
                           {/* Service name — sticky left */}
                           <td className="px-4 sticky left-0 bg-card/95 backdrop-blur-sm z-10 min-w-[200px] w-[200px]">
                             <div className="flex items-center gap-2.5">
-                              {isExpanded ? <ChevronDown className="size-3 text-[#00D4FF] shrink-0" /> : <ChevronRight className="size-3 text-muted-foreground/50 shrink-0" />}
+                              {isExpanded ? <ChevronDown className="size-3 text-[#00d992] shrink-0" /> : <ChevronRight className="size-3 text-muted-foreground/50 shrink-0" />}
                               {(() => {
                                 const svcInfo = SERVICE_ICONS[service];
                                 const SvcIcon = svcInfo?.icon || Globe;
@@ -168,13 +168,13 @@ export default function DeploymentsPage() {
                             return (
                               <td key={stage} className="px-3 py-3">
                                 <div className={cn(
-                                  "group/cell relative rounded-lg px-2.5 py-2 transition-all hover:shadow-[0_0_8px_rgba(0,212,255,0.06)]",
+                                  "group/cell relative rounded-lg px-2.5 py-2 transition-all hover:shadow-[0_0_8px_rgba(0,217,146,0.06)]",
                                   d.status === "failed" && "border-l-[3px] border-l-[#EF4444]",
                                   "bg-muted/30 hover:bg-muted/40"
                                 )}>
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <StatusBadge status={d.status} size="sm" />
-                                    <span className="font-mono text-[11px] text-[#00D4FF]">{d.version}</span>
+                                    <span className="font-mono text-[11px] text-[#00d992]">{d.version}</span>
                                   </div>
                                   <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>{formatRelativeTime(d.timestamp)}</span>
 
@@ -182,9 +182,9 @@ export default function DeploymentsPage() {
                                   {d.status === "in_progress" && (
                                     <div className="mt-1.5">
                                       <div className="w-full h-[3px] rounded-full bg-muted/50 overflow-hidden">
-                                        <div className="h-full bg-[#00D4FF] rounded-full animate-pulse" style={{ width: "35%" }} />
+                                        <div className="h-full bg-[#00d992] rounded-full animate-pulse" style={{ width: "35%" }} />
                                       </div>
-                                      <span className="inline-flex items-center mt-1 text-[9px] font-mono text-[#00D4FF] bg-[#00D4FF]/10 rounded px-1 py-px">
+                                      <span className="inline-flex items-center mt-1 text-[9px] font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-px">
                                         10% traffic
                                       </span>
                                     </div>
@@ -218,7 +218,7 @@ export default function DeploymentsPage() {
                                 <div>
                                   <span className="text-muted-foreground">Triggered by</span>
                                   <p className="flex items-center gap-1 mt-0.5 text-foreground">
-                                    {anyDeploy.isAgent ? <Bot className="size-3 text-[#00D4FF]" /> : <User className="size-3" />}
+                                    {anyDeploy.isAgent ? <Bot className="size-3 text-[#00d992]" /> : <User className="size-3" />}
                                     {anyDeploy.triggeredBy}
                                   </p>
                                 </div>
@@ -228,13 +228,13 @@ export default function DeploymentsPage() {
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">Commit</span>
-                                  <p className="font-mono text-[#00D4FF] mt-0.5">{anyDeploy.commitHash}</p>
+                                  <p className="font-mono text-[#00d992] mt-0.5">{anyDeploy.commitHash}</p>
                                 </div>
                                 <div className="flex-1">
                                   <span className="text-muted-foreground">Changelog</span>
                                   <p className="text-foreground mt-0.5">{anyDeploy.changelog}</p>
                                 </div>
-                                <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors shrink-0 mt-2" onClick={(e) => { e.stopPropagation(); toast.success("Opening deployment logs..."); }}>
+                                <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00d992] transition-colors shrink-0 mt-2" onClick={(e) => { e.stopPropagation(); toast.success("Opening deployment logs..."); }}>
                                   <ScrollText className="size-3" /> View Logs
                                 </button>
                               </div>
@@ -288,7 +288,7 @@ export default function DeploymentsPage() {
                         ))}
                       </div>
                       <div className="flex justify-end mt-3">
-                        <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors" onClick={() => toast.success("Opening environment logs...")}>
+                        <button className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#00d992] transition-colors" onClick={() => toast.success("Opening environment logs...")}>
                           <ScrollText className="size-2.5" /> View Logs
                         </button>
                       </div>
@@ -317,20 +317,20 @@ export default function DeploymentsPage() {
                 {deployments.map((d) => (
                   <tr key={d.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5 font-medium text-foreground">{d.service}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs text-[#00D4FF]">{d.version}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs text-[#00d992]">{d.version}</td>
                     <td className="px-4 py-2.5 text-xs text-muted-foreground capitalize">{d.environment}</td>
                     <td className="px-4 py-2.5"><StatusBadge status={d.status} size="sm" /></td>
                     <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">{d.duration > 0 ? formatDuration(d.duration * 1000) : "—"}</td>
                     <td className="px-4 py-2.5">
                       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        {d.isAgent ? <Bot className="size-3 text-[#00D4FF]" /> : <User className="size-3" />}
+                        {d.isAgent ? <Bot className="size-3 text-[#00d992]" /> : <User className="size-3" />}
                         {d.triggeredBy}
                       </span>
                     </td>
                     <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground" suppressHydrationWarning>{formatRelativeTime(d.timestamp)}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF] transition-colors" onClick={() => toast.success("Opening deployment logs...")}>View Logs</button>
+                        <button className="text-[10px] text-muted-foreground hover:text-[#00d992] transition-colors" onClick={() => toast.success("Opening deployment logs...")}>View Logs</button>
                         {d.status === "success" && (
                           <button
                             onClick={() => setRollbackTarget(d)}
@@ -373,7 +373,7 @@ export default function DeploymentsPage() {
                         <Switch
                           checked={ff.environments[env]}
                           onCheckedChange={() => toggleFeatureFlag(ff.id, env)}
-                          className="data-[state=checked]:bg-[#00D4FF]"
+                          className="data-[state=checked]:bg-[#00d992]"
                         />
                       </td>
                     ))}

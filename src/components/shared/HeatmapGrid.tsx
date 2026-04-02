@@ -23,7 +23,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 const COLOR_MAP: Record<string, string> = {
-  cyan: "#00D4FF",
+  cyan: "#00d992",
   green: "#22C55E",
   amber: "#F59E0B",
   crimson: "#EF4444",

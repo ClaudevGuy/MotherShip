@@ -30,7 +30,7 @@ export default function ProfilePage() {
         <div className="flex items-start gap-6">
           {/* Avatar */}
           <div className="relative group shrink-0">
-            <div className="size-20 rounded-full bg-[#00D4FF]/15 flex items-center justify-center text-2xl font-bold text-[#00D4FF]">
+            <div className="size-20 rounded-full bg-[#00d992]/15 flex items-center justify-center text-2xl font-bold text-[#00d992]">
               MC
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-[#39FF14] border-[3px] border-card" style={{ boxShadow: "0 0 6px rgba(57,255,20,0.5)", animation: "badge-pulse 2s ease-in-out infinite" }} />
@@ -51,7 +51,7 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground mt-0.5">{jobTitle}</p>
           </div>
 
-          <button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80 shrink-0" onClick={() => toast.success("Profile updated")}>
+          <button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80 shrink-0" onClick={() => toast.success("Profile updated")}>
             Edit Profile
           </button>
         </div>
@@ -63,19 +63,19 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Full Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" />
+            <input value={name} onChange={(e) => setName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Display Name</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" />
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Job Title</label>
-            <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" />
+            <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" />
           </div>
           <div className="md:col-span-2">
             <label className="text-xs text-muted-foreground block mb-1">Timezone</label>
@@ -88,7 +88,7 @@ export default function ProfilePage() {
             </select>
           </div>
         </div>
-        <button className="mt-4 text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Profile saved")}>Save Changes</button>
+        <button className="mt-4 text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Profile saved")}>Save Changes</button>
       </GlassPanel>
 
       {/* ─── Security ─── */}
@@ -204,7 +204,7 @@ export default function ProfilePage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{acc.name}</p>
                 {acc.connected && acc.handle && (
-                  <p className="text-[11px] font-mono text-[#00D4FF]">{acc.handle}</p>
+                  <p className="text-[11px] font-mono text-[#00d992]">{acc.handle}</p>
                 )}
               </div>
               {acc.connected ? (
@@ -215,7 +215,7 @@ export default function ProfilePage() {
                   <button className="text-[10px] text-muted-foreground hover:text-red-400" onClick={() => toast.success(`${acc.name} disconnected`)}>Disconnect</button>
                 </div>
               ) : (
-                <button className="text-[10px] font-medium text-primary-foreground bg-[#00D4FF] rounded px-3 py-1.5 hover:bg-[#00D4FF]/80" onClick={() => toast.success(`${acc.name} connected`)}>Connect</button>
+                <button className="text-[10px] font-medium text-primary-foreground bg-[#00d992] rounded px-3 py-1.5 hover:bg-[#00d992]/80" onClick={() => toast.success(`${acc.name} connected`)}>Connect</button>
               )}
             </div>
           ))}

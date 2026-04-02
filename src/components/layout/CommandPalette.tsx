@@ -96,9 +96,9 @@ export function CommandPalette() {
               className="overflow-hidden rounded-xl"
               style={{
                 background: "var(--bg-card, #0D0D14)",
-                border: "1px solid rgba(0,212,255,0.25)",
+                border: "1px solid rgba(0,217,146,0.25)",
                 boxShadow:
-                  "0 0 0 1px rgba(0,212,255,0.12), 0 24px 60px rgba(0,0,0,0.8), 0 0 80px rgba(0,212,255,0.06)",
+                  "0 0 0 1px rgba(0,217,146,0.12), 0 24px 60px rgba(0,0,0,0.8), 0 0 80px rgba(0,217,146,0.06)",
               }}
             >
               <CommandPrimitive
@@ -136,14 +136,14 @@ export function CommandPalette() {
                           key={item.href}
                           value={item.label}
                           onSelect={() => handleNavSelect(item.href)}
-                          className="group mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] text-foreground/80 outline-none transition-colors duration-100 data-[selected=true]:bg-[rgba(0,212,255,0.05)] data-[selected=true]:text-foreground"
+                          className="group mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] text-foreground/80 outline-none transition-colors duration-100 data-[selected=true]:bg-[rgba(0,217,146,0.05)] data-[selected=true]:text-foreground"
                           style={{ animationDelay: `${i * 20}ms` }}
                         >
                           {/* Hover/selected left accent */}
-                          <div className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-transparent group-data-[selected=true]:bg-[#00D4FF] transition-colors duration-100" />
+                          <div className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-transparent group-data-[selected=true]:bg-[#00d992] transition-colors duration-100" />
 
                           <Icon
-                            className="size-4 shrink-0 text-muted-foreground group-data-[selected=true]:text-[#00D4FF] transition-colors duration-100"
+                            className="size-4 shrink-0 text-muted-foreground group-data-[selected=true]:text-[#00d992] transition-colors duration-100"
                             strokeWidth={1.5}
                           />
                           <span className="flex-1">{item.label}</span>
@@ -177,11 +177,11 @@ export function CommandPalette() {
                           key={action.label}
                           value={action.label}
                           onSelect={() => handleActionSelect(action.label)}
-                          className="group mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] text-foreground/80 outline-none transition-colors duration-100 data-[selected=true]:bg-[rgba(0,212,255,0.05)] data-[selected=true]:text-foreground"
+                          className="group mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] text-foreground/80 outline-none transition-colors duration-100 data-[selected=true]:bg-[rgba(0,217,146,0.05)] data-[selected=true]:text-foreground"
                         >
-                          <div className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-transparent group-data-[selected=true]:bg-[#00D4FF] transition-colors duration-100" />
+                          <div className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-transparent group-data-[selected=true]:bg-[#00d992] transition-colors duration-100" />
                           <Icon
-                            className="size-4 shrink-0 text-muted-foreground group-data-[selected=true]:text-[#00D4FF] transition-colors duration-100"
+                            className="size-4 shrink-0 text-muted-foreground group-data-[selected=true]:text-[#00d992] transition-colors duration-100"
                             strokeWidth={1.5}
                           />
                           <span className="flex-1">{action.label}</span>

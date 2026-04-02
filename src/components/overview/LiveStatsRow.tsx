@@ -55,11 +55,11 @@ export function LiveStatsRow() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <StatCard label="Active Agents" value={activeAgents} icon={Bot} color="#22C55E" />
-      <StatCard label="API Calls 24h" value={apiCalls > 0 ? apiCalls.toLocaleString() : "0"} icon={Zap} color="#00D4FF" />
+      <StatCard label="API Calls 24h" value={apiCalls > 0 ? apiCalls.toLocaleString() : "0"} icon={Zap} color="#00d992" />
       <StatCard label="Tokens 24h" value={totalTokens > 0 ? `${(totalTokens / 1000).toFixed(1)}k` : "0"} icon={Coins} color="#A855F7" />
       <StatCard label="Cost Today" value={todayCost > 0 ? `$${todayCost.toFixed(2)}` : "$0"} icon={DollarSign} color="#F59E0B" />
       <StatCard label="Active Users" value={agents.length > 0 ? "1" : "0"} icon={Users} color="#EC4899" />
-      <StatCard label="Deploys Live" value={prodDeploys} icon={Rocket} color="#00D4FF" />
+      <StatCard label="Deploys Live" value={prodDeploys} icon={Rocket} color="#00d992" />
       <StatCard label="Incidents Open" value={openIncidents} icon={AlertTriangle} color="#EF4444" />
       <StatCard label="Uptime" value={openIncidents === 0 ? "100%" : "99.9%"} icon={ShieldCheck} color="#39FF14" />
     </div>

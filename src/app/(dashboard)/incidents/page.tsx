@@ -69,7 +69,7 @@ export default function IncidentsPage() {
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} className={cn("pb-2.5 text-sm font-medium transition-colors relative", tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70")}>
               {t.label}
-              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
             </button>
           ))}
         </div>
@@ -81,7 +81,7 @@ export default function IncidentsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <MetricCard label="Open Incidents" value={allIncidents.filter((i) => i.status !== "resolved").length} format="number" icon={AlertTriangle} color="#EF4444" />
             <MetricCard label="Avg Response" value={0} format="number" icon={Clock} color="#F59E0B" />
-            <MetricCard label="MTTR (month)" value={0} format="number" icon={Activity} color="#00D4FF" />
+            <MetricCard label="MTTR (month)" value={0} format="number" icon={Activity} color="#00d992" />
             <MetricCard label="This Month" value={allIncidents.length} format="number" icon={TrendingDown} color="#39FF14" />
           </div>
 
@@ -127,7 +127,7 @@ export default function IncidentsPage() {
                                 <span className="font-mono" suppressHydrationWarning>{timeAgo(inc.createdAt)}</span>
                               </div>
                               {inc.severity === "P1" && inc.status === "open" && (
-                                <button className="mt-2 w-full text-[11px] font-medium text-[#00D4FF] bg-[#00D4FF]/10 rounded py-1.5 hover:bg-[#00D4FF]/20 transition-colors" onClick={(e) => { e.stopPropagation(); toast.success("Incident acknowledged"); }}>
+                                <button className="mt-2 w-full text-[11px] font-medium text-[#00d992] bg-[#00d992]/10 rounded py-1.5 hover:bg-[#00d992]/20 transition-colors" onClick={(e) => { e.stopPropagation(); toast.success("Incident acknowledged"); }}>
                                   Acknowledge
                                 </button>
                               )}
@@ -172,7 +172,7 @@ export default function IncidentsPage() {
       {tab === "rules" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button className="flex items-center gap-1.5 text-xs font-medium text-[#00D4FF] bg-[#00D4FF]/10 rounded-lg px-3 py-1.5 hover:bg-[#00D4FF]/20" onClick={() => setAlertRuleOpen(true)}>
+            <button className="flex items-center gap-1.5 text-xs font-medium text-[#00d992] bg-[#00d992]/10 rounded-lg px-3 py-1.5 hover:bg-[#00d992]/20" onClick={() => setAlertRuleOpen(true)}>
               <Plus className="size-3" /> Create Alert Rule
             </button>
           </div>
@@ -206,11 +206,11 @@ export default function IncidentsPage() {
                       </td>
                       <td className="px-4 py-2.5 text-xs text-muted-foreground font-mono">{rule.lastTriggered}</td>
                       <td className="px-4 py-2.5">
-                        <Switch checked={rule.enabled} className="data-[state=checked]:bg-[#00D4FF]" onCheckedChange={() => toast.success(`Rule ${rule.enabled ? "paused" : "enabled"}`)} />
+                        <Switch checked={rule.enabled} className="data-[state=checked]:bg-[#00d992]" onCheckedChange={() => toast.success(`Rule ${rule.enabled ? "paused" : "enabled"}`)} />
                       </td>
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <button className="text-muted-foreground hover:text-[#00D4FF]"><Pencil className="size-3" /></button>
+                          <button className="text-muted-foreground hover:text-[#00d992]"><Pencil className="size-3" /></button>
                           <button className="text-muted-foreground hover:text-red-400"><Trash2 className="size-3" /></button>
                         </div>
                       </td>
@@ -233,13 +233,13 @@ export default function IncidentsPage() {
                 const isToday = (i + 1) % 7 === today;
                 const color = AVATAR_COLORS[slot.person] || "#888";
                 return (
-                  <div key={slot.day} className={cn("rounded-lg p-3 text-center", isToday ? "bg-[#00D4FF]/[0.06] border border-[#00D4FF]/30" : "bg-muted/30")}>
+                  <div key={slot.day} className={cn("rounded-lg p-3 text-center", isToday ? "bg-[#00d992]/[0.06] border border-[#00d992]/30" : "bg-muted/30")}>
                     <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-2">{slot.day}</p>
                     <div className="size-8 rounded-full mx-auto flex items-center justify-center text-[10px] font-bold mb-1" style={{ background: `${color}20`, color }}>
                       {slot.person.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <p className="text-[11px] text-foreground truncate">{slot.person.split(" ")[0]}</p>
-                    {isToday && <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[8px] font-bold mt-1 bg-[#00D4FF]/20 text-[#00D4FF]">ON-CALL</span>}
+                    {isToday && <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[8px] font-bold mt-1 bg-[#00d992]/20 text-[#00d992]">ON-CALL</span>}
                   </div>
                 );
               })}
@@ -247,7 +247,7 @@ export default function IncidentsPage() {
           </GlassPanel>
 
           <GlassPanel padding="lg">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Shield className="size-4 text-[#00D4FF]" /> Escalation Policy</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2"><Shield className="size-4 text-[#00d992]" /> Escalation Policy</h3>
             <div className="space-y-2">
               {[
                 { level: 1, action: "Notify assigned on-call", delay: "Immediately" },
@@ -255,7 +255,7 @@ export default function IncidentsPage() {
                 { level: 3, action: "Notify all admins", delay: "After 30 min" },
               ].map((esc) => (
                 <div key={esc.level} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30">
-                  <span className="font-mono text-xs text-[#00D4FF] w-6 shrink-0">L{esc.level}</span>
+                  <span className="font-mono text-xs text-[#00d992] w-6 shrink-0">L{esc.level}</span>
                   <span className="text-xs text-foreground flex-1">{esc.action}</span>
                   <span className="text-[10px] text-muted-foreground font-mono">{esc.delay}</span>
                 </div>
@@ -355,7 +355,7 @@ export default function IncidentsPage() {
               </div>
               <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
                 <button className="px-3 py-1.5 text-xs rounded-lg border border-border text-muted-foreground hover:text-foreground" onClick={() => setAlertRuleOpen(false)}>Cancel</button>
-                <button className="px-4 py-1.5 text-xs rounded-lg bg-[#00D4FF] text-black font-medium hover:bg-[#00D4FF]/90" onClick={() => { setAlertRuleOpen(false); toast.success("Alert rule created"); }}>Create Rule</button>
+                <button className="px-4 py-1.5 text-xs rounded-lg bg-[#00d992] text-black font-medium hover:bg-[#00d992]/90" onClick={() => { setAlertRuleOpen(false); toast.success("Alert rule created"); }}>Create Rule</button>
               </div>
             </div>
           </div>

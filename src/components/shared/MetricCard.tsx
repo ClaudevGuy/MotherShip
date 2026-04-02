@@ -25,7 +25,7 @@ export function MetricCard({
   trend,
   sparkData,
   icon: Icon,
-  color = "#00D4FF",
+  color = "#00d992",
   className,
 }: MetricCardProps) {
   const trendUp = trend !== undefined && trend >= 0;

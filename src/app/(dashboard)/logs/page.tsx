@@ -21,7 +21,7 @@ import type { LogLevel } from "@/types/common";
 
 const LEVEL_STYLES: Record<string, { bg: string; text: string; rowBg: string }> = {
   debug: { bg: "rgba(255,255,255,0.05)", text: "#888", rowBg: "" },
-  info: { bg: "rgba(0,212,255,0.1)", text: "#00D4FF", rowBg: "" },
+  info: { bg: "rgba(0,217,146,0.1)", text: "#00d992", rowBg: "" },
   warn: { bg: "rgba(245,158,11,0.1)", text: "#F59E0B", rowBg: "bg-[#F59E0B]/[0.03]" },
   error: { bg: "rgba(239,68,68,0.1)", text: "#EF4444", rowBg: "bg-[#EF4444]/[0.03]" },
 };
@@ -91,7 +91,7 @@ export default function LogsPage() {
             <button key={t.id} onClick={() => setTab(t.id)} className={cn("pb-2.5 text-sm font-medium transition-colors relative", tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70")}>
               {t.label}
               {t.id === "errors" && <span className="ml-1.5 text-[10px] font-mono text-red-400">{errorGroups.length}</span>}
-              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
             </button>
           ))}
         </div>
@@ -162,7 +162,7 @@ export default function LogsPage() {
                         {log.level.toUpperCase()}
                       </span>
                       <span className="font-mono text-[11px] text-muted-foreground shrink-0 w-[72px]" suppressHydrationWarning>{formatTime(log.timestamp)}</span>
-                      <span className="text-[10px] font-mono text-[#00D4FF]/60 shrink-0 w-[130px] truncate">{log.service}</span>
+                      <span className="text-[10px] font-mono text-[#00d992]/60 shrink-0 w-[130px] truncate">{log.service}</span>
                       <span className="text-xs text-foreground/80 flex-1 truncate">{log.message}</span>
                       <Copy className="size-3 text-transparent group-hover:text-muted-foreground/30 shrink-0 transition-colors" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(log.message); toast.success("Copied"); }} />
                     </div>
@@ -173,7 +173,7 @@ export default function LogsPage() {
                           <pre className="text-[11px] font-mono text-muted-foreground bg-muted/30 rounded p-2">{JSON.stringify(log.metadata, null, 2)}</pre>
                         )}
                         <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                          {log.traceId && <span className="font-mono text-[#00D4FF] cursor-pointer hover:underline">Trace: {log.traceId}</span>}
+                          {log.traceId && <span className="font-mono text-[#00d992] cursor-pointer hover:underline">Trace: {log.traceId}</span>}
                           {log.userId && <span>User: {log.userId}</span>}
                           {log.agentId && <span>Agent: {log.agentId}</span>}
                         </div>
@@ -185,7 +185,7 @@ export default function LogsPage() {
             </div>
             <div className="flex items-center justify-between px-4 py-2 border-t border-border text-[10px] text-muted-foreground">
               <span>{logs.length} logs shown</span>
-              <button className="text-[#00D4FF] hover:underline" onClick={() => toast.success("Loading more logs...")}>Load more</button>
+              <button className="text-[#00d992] hover:underline" onClick={() => toast.success("Loading more logs...")}>Load more</button>
             </div>
           </GlassPanel>
         </div>
@@ -202,7 +202,7 @@ export default function LogsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{eg.message}</p>
                     <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
-                      <span className="font-mono text-[#00D4FF]/60">{eg.service}</span>
+                      <span className="font-mono text-[#00d992]/60">{eg.service}</span>
                       <span>First: <span className="font-mono" suppressHydrationWarning>{formatTime(eg.firstSeen)}</span></span>
                       <span>Last: <span className="font-mono" suppressHydrationWarning>{formatTime(eg.lastSeen)}</span></span>
                       <span>{eg.affectedUsers} users</span>
@@ -228,10 +228,10 @@ export default function LogsPage() {
         <div className="space-y-4">
           {/* Stats bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <MetricCard label="Calls Today" value={totalLLMCalls} format="number" icon={Zap} color="#00D4FF" />
+            <MetricCard label="Calls Today" value={totalLLMCalls} format="number" icon={Zap} color="#00d992" />
             <MetricCard label="Total Tokens" value={totalTokens} format="tokens" icon={Zap} color="#A855F7" />
             <MetricCard label="Total Cost" value={totalLLMCost} format="currency" icon={DollarSign} color="#F59E0B" />
-            <MetricCard label="Avg Latency" value={avgLatency} format="number" icon={Clock} color="#00D4FF" />
+            <MetricCard label="Avg Latency" value={avgLatency} format="number" icon={Clock} color="#00d992" />
             <MetricCard label="Error Rate" value={0.8} format="percent" icon={AlertTriangle} color="#EF4444" />
           </div>
 
@@ -256,7 +256,7 @@ export default function LogsPage() {
                           <span className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold",
                             call.selectedTier === 1 ? "bg-purple-500/15 text-purple-400" :
-                            call.selectedTier === 2 ? "bg-[#00D4FF]/15 text-[#00D4FF]" :
+                            call.selectedTier === 2 ? "bg-[#00d992]/15 text-[#00d992]" :
                             "bg-green-500/15 text-green-400"
                           )}>
                             T{call.selectedTier}
@@ -270,7 +270,7 @@ export default function LogsPage() {
                       <td className="px-4 py-2.5 font-mono text-xs">{call.tokensOut.toLocaleString()}</td>
                       <td className="px-4 py-2.5 font-mono text-xs"><span className={call.latency > 5000 ? "text-amber-400" : "text-muted-foreground"}>{call.latency.toLocaleString()}ms</span></td>
                       <td className="px-4 py-2.5 font-mono text-xs">{formatCurrency(call.cost)}</td>
-                      <td className="px-4 py-2.5"><button className="text-[10px] text-[#00D4FF] hover:underline">View</button></td>
+                      <td className="px-4 py-2.5"><button className="text-[10px] text-[#00d992] hover:underline">View</button></td>
                     </tr>
                     {expandedLLM === call.id && (
                       <tr className="border-b border-border">
@@ -334,7 +334,7 @@ export default function LogsPage() {
             const hasError = spans.some((s) => s.status === "error");
 
             const SVC_COLORS: Record<string, string> = {
-              "api-gateway": "#00D4FF", "auth-service": "#10A37F", "cache-service": "#F59E0B",
+              "api-gateway": "#00d992", "auth-service": "#10A37F", "cache-service": "#F59E0B",
               "search-service": "#4285F4", "worker-service": "#A855F7", "database": "#EC4899",
               "analytics-service": "#39FF14",
             };
@@ -348,7 +348,7 @@ export default function LogsPage() {
             return (
               <GlassPanel key={traceId} padding="none" className={hasError ? "border-l-[3px] border-l-[#EF4444]" : ""}>
                 <div className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setExpandedTrace(isExp ? null : traceId)}>
-                  <span className="font-mono text-xs text-[#00D4FF] shrink-0">{traceId}</span>
+                  <span className="font-mono text-xs text-[#00d992] shrink-0">{traceId}</span>
                   <span className="text-xs text-foreground flex-1 truncate">{root?.name}</span>
                   <span className="text-[10px] text-muted-foreground">{spans.length} spans</span>
                   <span className="font-mono text-xs text-foreground">{totalDuration}ms</span>

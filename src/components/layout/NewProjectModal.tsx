@@ -37,8 +37,8 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-[#00D4FF]/10 border border-[#00D4FF]/20">
-              <FolderPlus className="size-3.5 text-[#00D4FF]" />
+            <div className="flex size-7 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20">
+              <FolderPlus className="size-3.5 text-[#00d992]" />
             </div>
             <h2 className="text-sm font-semibold text-foreground">New Project</h2>
           </div>
@@ -62,7 +62,7 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. My SaaS App"
               maxLength={64}
-              className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50 placeholder:text-muted-foreground/30 transition-colors"
+              className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50 placeholder:text-muted-foreground/30 transition-colors"
             />
           </div>
 
@@ -77,7 +77,7 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
               placeholder="What are you building?"
               rows={2}
               maxLength={200}
-              className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50 placeholder:text-muted-foreground/30 transition-colors"
+              className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00d992]/50 placeholder:text-muted-foreground/30 transition-colors"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
             <button
               type="submit"
               disabled={!name.trim()}
-              className="rounded-lg bg-[#00D4FF] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#00D4FF]/90 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg bg-[#00d992] px-4 py-2 text-xs font-semibold text-black transition-all hover:bg-[#00d992]/90 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Create Project
             </button>

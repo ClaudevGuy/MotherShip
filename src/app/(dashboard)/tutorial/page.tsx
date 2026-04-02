@@ -22,8 +22,8 @@ interface Section {
 
 // ── Section registry ──────────────────────────────────────────────────────────
 const SECTIONS: Section[] = [
-  { id: "getting-started",  label: "Getting Started",  icon: Zap,            color: "#00D4FF", tagline: "First steps with Mission Control" },
-  { id: "overview",         label: "Overview",         icon: LayoutDashboard, color: "#00D4FF", tagline: "Your real-time command centre" },
+  { id: "getting-started",  label: "Getting Started",  icon: Zap,            color: "#00d992", tagline: "First steps with Mission Control" },
+  { id: "overview",         label: "Overview",         icon: LayoutDashboard, color: "#00d992", tagline: "Your real-time command centre" },
   { id: "ai-agents",        label: "AI Agents",        icon: Bot,            color: "#A78BFA", tagline: "Create, run, and monitor agents" },
   { id: "workflows",        label: "Workflows",        icon: GitBranch,      color: "#34D399", tagline: "Multi-agent automation pipelines" },
   { id: "deployments",      label: "Deployments",      icon: Rocket,         color: "#F59E0B", tagline: "Ship and track every release" },
@@ -34,7 +34,7 @@ const SECTIONS: Section[] = [
   { id: "incidents",        label: "Incidents",        icon: AlertTriangle,  color: "#EF4444", tagline: "Alert rules and on-call" },
   { id: "settings",         label: "Settings",         icon: Settings,       color: "#6B7280", tagline: "Project configuration" },
   { id: "projects",         label: "Projects",         icon: FolderOpen,     color: "#8B5CF6", tagline: "Multi-project workspace" },
-  { id: "shortcuts",        label: "Shortcuts",        icon: Keyboard,       color: "#00D4FF", tagline: "Navigate without a mouse" },
+  { id: "shortcuts",        label: "Shortcuts",        icon: Keyboard,       color: "#00d992", tagline: "Navigate without a mouse" },
 ];
 
 // ── Small reusable components ──────────────────────────────────────────────────
@@ -53,7 +53,7 @@ function Callout({ icon: Icon, color, title, children }: { icon: React.ElementTy
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[10px] font-bold text-[#00D4FF]">{n}</div>
+      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#00d992]/10 border border-[#00d992]/25 text-[10px] font-bold text-[#00d992]">{n}</div>
       <div className="space-y-1 pb-4 border-b border-border/30 last:border-0 last:pb-0 flex-1">
         <p className="text-sm font-medium text-foreground">{title}</p>
         <div className="text-xs text-muted-foreground leading-relaxed">{children}</div>
@@ -88,7 +88,7 @@ function SectionCard({ section, active, onClick }: { section: Section; active: b
       className={cn(
         "flex flex-col gap-1.5 rounded-xl border p-3.5 text-left transition-all duration-150 hover:scale-[1.02]",
         active
-          ? "border-[#00D4FF]/30 bg-[#00D4FF]/[0.06]"
+          ? "border-[#00d992]/30 bg-[#00d992]/[0.06]"
           : "border-border bg-card/60 hover:border-border/80 hover:bg-muted/30"
       )}
     >
@@ -203,11 +203,11 @@ function WorkflowsSection() {
       <div className="space-y-3">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Example: PR review pipeline</p>
         <div className="rounded-xl border border-border bg-muted/20 p-4 font-mono text-[11px] text-muted-foreground space-y-1.5 leading-relaxed">
-          <p><span className="text-[#00D4FF]">Step 1</span> — SecurityScanner: analyse diff for vulnerabilities</p>
+          <p><span className="text-[#00d992]">Step 1</span> — SecurityScanner: analyse diff for vulnerabilities</p>
           <p className="pl-4 text-muted-foreground/50">↓ output: {"{"} issues: [...] {"}"}</p>
-          <p><span className="text-[#00D4FF]">Step 2</span> — TestWriter: write tests for changed functions</p>
+          <p><span className="text-[#00d992]">Step 2</span> — TestWriter: write tests for changed functions</p>
           <p className="pl-4 text-muted-foreground/50">↓ output: {"{"} tests: &quot;...&quot; {"}"}</p>
-          <p><span className="text-[#00D4FF]">Step 3</span> — PRCommenter: post summary as PR comment</p>
+          <p><span className="text-[#00d992]">Step 3</span> — PRCommenter: post summary as PR comment</p>
         </div>
       </div>
       <Callout icon={Info} color="#60A5FA" title="New Workflow shortcut">
@@ -477,8 +477,8 @@ export default function TutorialPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#00D4FF]/10 border border-[#00D4FF]/20">
-          <BookOpen className="size-5 text-[#00D4FF]" />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#00d992]/10 border border-[#00d992]/20">
+          <BookOpen className="size-5 text-[#00d992]" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">Tutorial</h1>

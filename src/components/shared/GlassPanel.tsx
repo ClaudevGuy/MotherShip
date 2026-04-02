@@ -36,7 +36,7 @@ export function GlassPanel({
   return (
     <div
       className={cn(
-        "rounded-xl backdrop-blur-xl transition-all duration-200",
+        "rounded-lg backdrop-blur-xl transition-all duration-200",
         glow && glowMap[glow],
         hover && "hover:border-[var(--glass-hover-border)]",
         paddingMap[padding],

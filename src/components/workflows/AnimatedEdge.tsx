@@ -30,7 +30,7 @@ export function AnimatedEdge({
         id={`${id}-glow`}
         path={edgePath}
         style={{
-          stroke: selected ? "#00D4FF" : "rgba(0,212,255,0.25)",
+          stroke: selected ? "#00d992" : "rgba(0,217,146,0.25)",
           strokeWidth: selected ? 6 : 4,
           filter: "blur(4px)",
         }}
@@ -40,12 +40,12 @@ export function AnimatedEdge({
         id={id}
         path={edgePath}
         style={{
-          stroke: selected ? "#00D4FF" : "rgba(0,212,255,0.5)",
+          stroke: selected ? "#00d992" : "rgba(0,217,146,0.5)",
           strokeWidth: 2,
         }}
       />
       {/* Animated dot */}
-      <circle r="3" fill="#00D4FF" filter="drop-shadow(0 0 3px #00D4FF)">
+      <circle r="3" fill="#00d992" filter="drop-shadow(0 0 3px #00d992)">
         <animateMotion dur="2s" repeatCount="indefinite" path={edgePath} />
       </circle>
     </>

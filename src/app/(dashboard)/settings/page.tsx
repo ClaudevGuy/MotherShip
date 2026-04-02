@@ -16,7 +16,7 @@ const NOTIF_EVENTS: { name: string; app: boolean; email: boolean; slack: boolean
 const LOGINS: { ip: string; location: string; device: string; time: string; status: string }[] = [];
 
 const ACCENT_COLORS = [
-  { name: "Cyan", value: "#00D4FF" }, { name: "Purple", value: "#A855F7" }, { name: "Green", value: "#39FF14" },
+  { name: "Cyan", value: "#00d992" }, { name: "Purple", value: "#A855F7" }, { name: "Green", value: "#39FF14" },
   { name: "Amber", value: "#F59E0B" }, { name: "Red", value: "#EF4444" }, { name: "White", value: "#FFFFFF" },
 ];
 
@@ -25,7 +25,7 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const { theme, setTheme } = useTheme();
-  const [accent, setAccent] = useState("#00D4FF");
+  const [accent, setAccent] = useState("#00d992");
   const [notifs, setNotifs] = useState(NOTIF_EVENTS);
   const [logRetention, setLogRetention] = useState(30);
   const [metricsRetention, setMetricsRetention] = useState(90);
@@ -89,8 +89,8 @@ export default function SettingsPage() {
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Project Identity</h3>
               <div className="space-y-4 max-w-lg">
-                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50" /></div>
-                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00D4FF]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00d992]/50" /></div>
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">Logo URL</label>
                   <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export default function SettingsPage() {
                       value={projectLogo}
                       onChange={(e) => storeSetProjectLogo(e.target.value)}
                       placeholder="https://example.com/logo.png"
-                      className="h-9 flex-1 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00D4FF]/50 placeholder:text-muted-foreground/30"
+                      className="h-9 flex-1 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50 placeholder:text-muted-foreground/30"
                     />
                   </div>
                   <p className="mt-1 text-[11px] text-muted-foreground/50">Appears in the sidebar. Use a square image for best results.</p>
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                 <div><label className="text-xs text-muted-foreground block mb-1">Timezone</label>
                   <select className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none"><option>America/Los_Angeles (PST)</option><option>America/New_York (EST)</option><option>Europe/London (GMT)</option><option>UTC</option></select>
                 </div>
-                <button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
+                <button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
               </div>
             </GlassPanel>
           )}
@@ -152,7 +152,7 @@ export default function SettingsPage() {
               <GlassPanel padding="lg">
                 <h3 className="text-sm font-semibold text-foreground mb-4">Live Polling</h3>
                 <div className="flex items-center gap-4">
-                  <Switch checked={polling} onCheckedChange={setPolling} className="data-[state=checked]:bg-[#00D4FF]" />
+                  <Switch checked={polling} onCheckedChange={setPolling} className="data-[state=checked]:bg-[#00d992]" />
                   <span className="text-sm text-foreground">{polling ? "Enabled" : "Disabled"}</span>
                   {polling && (
                     <select value={pollInterval} onChange={(e) => setPollInterval(e.target.value)} className="h-8 rounded-lg border border-border bg-muted/30 px-3 text-xs text-foreground outline-none">
@@ -178,14 +178,14 @@ export default function SettingsPage() {
                       <td className="px-4 py-2 text-foreground">{n.name}</td>
                       {(["app", "email", "slack"] as const).map((ch) => (
                         <td key={ch} className="px-4 py-2">
-                          <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#00D4FF]" />
+                          <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#00d992]" />
                         </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00D4FF] rounded-lg px-4 py-2 hover:bg-[#00D4FF]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
+              <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
             </GlassPanel>
           )}
 
@@ -202,7 +202,7 @@ export default function SettingsPage() {
                   ].map((s) => (
                     <div key={s.label}>
                       <div className="flex justify-between text-xs mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-mono text-foreground">{s.value} days</span></div>
-                      <input type="range" min={7} max={90} step={1} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-[#00D4FF]" />
+                      <input type="range" min={7} max={90} step={1} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-[#00d992]" />
                     </div>
                   ))}
                 </div>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
                     <div><p className="text-sm text-foreground">Require 2FA for all members</p>
                       {!require2FA && <p className="text-[10px] text-amber-400 flex items-center gap-1 mt-0.5"><ShieldX className="size-3" /> 2 team members don&apos;t have 2FA enabled</p>}
                     </div>
-                    <Switch checked={require2FA} onCheckedChange={setRequire2FA} className="data-[state=checked]:bg-[#00D4FF]" />
+                    <Switch checked={require2FA} onCheckedChange={setRequire2FA} className="data-[state=checked]:bg-[#00d992]" />
                   </div>
                 </div>
               </GlassPanel>

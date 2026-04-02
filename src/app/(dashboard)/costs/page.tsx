@@ -84,7 +84,7 @@ export default function CostsPage() {
               className={cn("pb-2.5 text-sm font-medium transition-colors relative", tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70")}
             >
               {t.label}
-              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
             </button>
           ))}
         </div>
@@ -95,7 +95,7 @@ export default function CostsPage() {
         <div className="space-y-6">
           {/* Top stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MetricCard label="This Month" value={thisMonth} format="currency" trend={((thisMonth - lastMonth) / lastMonth) * 100} icon={DollarSign} color="#00D4FF" />
+            <MetricCard label="This Month" value={thisMonth} format="currency" trend={((thisMonth - lastMonth) / lastMonth) * 100} icon={DollarSign} color="#00d992" />
             <MetricCard label="Last Month" value={lastMonth} format="currency" icon={TrendingUp} color="#A855F7" />
             <GlassPanel padding="md">
               <div className="flex items-center gap-1.5 mb-2">
@@ -131,7 +131,7 @@ export default function CostsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">Last 30 days — dashed line = daily budget ({formatCurrency(DAILY_BUDGET)}/day)</p>
                 </div>
               </div>
-              <AreaChartWidget data={DAILY_COSTS} color="#00D4FF" height={240} formatValue={(v) => formatCurrency(v)} />
+              <AreaChartWidget data={DAILY_COSTS} color="#00d992" height={240} formatValue={(v) => formatCurrency(v)} />
             </GlassPanel>
 
             {/* Donut + legend */}
@@ -206,7 +206,7 @@ export default function CostsPage() {
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Actual Cost</p>
-                    <p className="text-lg font-bold text-[#00D4FF] mt-1">{formatCurrency(savings.actualCost)}</p>
+                    <p className="text-lg font-bold text-[#00d992] mt-1">{formatCurrency(savings.actualCost)}</p>
                   </div>
                   <div className="rounded-lg border border-border p-3">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Savings</p>
@@ -221,7 +221,7 @@ export default function CostsPage() {
                       <div className="bg-purple-500/70 transition-all" style={{ width: `${savings.tierDistribution.tier1.percent}%` }} title={`Tier 1: ${savings.tierDistribution.tier1.percent}%`} />
                     )}
                     {savings.tierDistribution.tier2.percent > 0 && (
-                      <div className="bg-[#00D4FF]/70 transition-all" style={{ width: `${savings.tierDistribution.tier2.percent}%` }} title={`Tier 2: ${savings.tierDistribution.tier2.percent}%`} />
+                      <div className="bg-[#00d992]/70 transition-all" style={{ width: `${savings.tierDistribution.tier2.percent}%` }} title={`Tier 2: ${savings.tierDistribution.tier2.percent}%`} />
                     )}
                     {savings.tierDistribution.tier3.percent > 0 && (
                       <div className="bg-green-500/70 transition-all" style={{ width: `${savings.tierDistribution.tier3.percent}%` }} title={`Tier 3: ${savings.tierDistribution.tier3.percent}%`} />
@@ -229,7 +229,7 @@ export default function CostsPage() {
                   </div>
                   <div className="flex justify-between mt-1.5 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-purple-500/70" />T1: {savings.tierDistribution.tier1.percent}%</span>
-                    <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-[#00D4FF]/70" />T2: {savings.tierDistribution.tier2.percent}%</span>
+                    <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-[#00d992]/70" />T2: {savings.tierDistribution.tier2.percent}%</span>
                     <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-green-500/70" />T3: {savings.tierDistribution.tier3.percent}%</span>
                     {savings.upgradeEvents > 0 && <span className="text-amber-400">{savings.upgradeEvents} upgrade{savings.upgradeEvents !== 1 ? "s" : ""}</span>}
                   </div>
@@ -344,7 +344,7 @@ export default function CostsPage() {
                 max={100}
                 value={budgetAlert}
                 onChange={(e) => setBudgetAlert(Number(e.target.value))}
-                className="flex-1 accent-[#00D4FF]"
+                className="flex-1 accent-[#00d992]"
               />
               <span className="font-mono text-sm text-foreground w-12 text-right">{budgetAlert}%</span>
             </div>

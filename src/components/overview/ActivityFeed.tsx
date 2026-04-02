@@ -22,7 +22,7 @@ const LEVEL_ICONS: Record<string, typeof Activity> = {
 };
 
 const LEVEL_COLORS: Record<string, string> = {
-  info: "#00D4FF",
+  info: "#00d992",
   warn: "#F59E0B",
   error: "#EF4444",
   debug: "#888",

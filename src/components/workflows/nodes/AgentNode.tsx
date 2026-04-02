@@ -22,7 +22,7 @@ export function AgentNode({ data, selected }: NodeProps) {
       className={cn(
         "relative flex flex-col rounded-xl border min-w-[180px] transition-all",
         selected
-          ? "border-[#00D4FF]/50 bg-card shadow-[0_0_16px_rgba(0,212,255,0.15)]"
+          ? "border-[#00d992]/50 bg-card shadow-[0_0_16px_rgba(0,217,146,0.15)]"
           : "border-border bg-card hover:border-border/80"
       )}
     >
@@ -30,13 +30,13 @@ export function AgentNode({ data, selected }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="!size-3 !rounded-full !border-2 !border-white/20 !bg-white/10 hover:!bg-[#00D4FF] hover:!border-[#00D4FF] transition-colors"
+        className="!size-3 !rounded-full !border-2 !border-white/20 !bg-white/10 hover:!bg-[#00d992] hover:!border-[#00d992] transition-colors"
       />
 
       {/* Content */}
       <div className="px-3.5 py-3 space-y-1.5">
         <div className="flex items-center gap-2">
-          <Bot className="size-3.5 text-[#00D4FF]/70" strokeWidth={1.8} />
+          <Bot className="size-3.5 text-[#00d992]/70" strokeWidth={1.8} />
           <span className="text-[13px] font-medium text-foreground truncate">{agentName}</span>
         </div>
         {model && (
@@ -51,7 +51,7 @@ export function AgentNode({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="!size-3 !rounded-full !border-2 !border-white/20 !bg-white/10 hover:!bg-[#00D4FF] hover:!border-[#00D4FF] transition-colors"
+        className="!size-3 !rounded-full !border-2 !border-white/20 !bg-white/10 hover:!bg-[#00d992] hover:!border-[#00d992] transition-colors"
       />
     </div>
   );

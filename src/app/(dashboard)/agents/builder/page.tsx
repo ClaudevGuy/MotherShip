@@ -207,16 +207,16 @@ export default function AgentBuilderPage() {
                     className={cn(
                       "relative flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-all",
                       modelStrategy === opt.id
-                        ? "border-[#00D4FF]/40 bg-[#00D4FF]/[0.06]"
+                        ? "border-[#00d992]/40 bg-[#00d992]/[0.06]"
                         : "border-border hover:border-border/80 hover:bg-muted/30"
                     )}
                   >
                     {"recommended" in opt && opt.recommended && (
-                      <span className="absolute top-2.5 right-2.5 text-[9px] font-medium text-[#00D4FF] bg-[#00D4FF]/10 rounded-full px-2 py-0.5">
+                      <span className="absolute top-2.5 right-2.5 text-[9px] font-medium text-[#00d992] bg-[#00d992]/10 rounded-full px-2 py-0.5">
                         Recommended
                       </span>
                     )}
-                    <Icon className={cn("size-5", modelStrategy === opt.id ? "text-[#00D4FF]" : "text-muted-foreground")} />
+                    <Icon className={cn("size-5", modelStrategy === opt.id ? "text-[#00d992]" : "text-muted-foreground")} />
                     <div>
                       <span className="text-sm font-medium text-foreground block">{opt.label}</span>
                       <span className="text-xs text-muted-foreground">{opt.desc}</span>
@@ -231,7 +231,7 @@ export default function AgentBuilderPage() {
                 <p className="text-xs font-medium text-foreground">Estimated distribution for this agent:</p>
                 <div className="space-y-1.5 text-xs text-muted-foreground font-mono">
                   <div className="flex justify-between"><span>~40% of runs → Tier 3 (simple tasks)</span><span className="text-green-400">lowest cost</span></div>
-                  <div className="flex justify-between"><span>~45% of runs → Tier 2 (standard tasks)</span><span className="text-[#00D4FF]">balanced</span></div>
+                  <div className="flex justify-between"><span>~45% of runs → Tier 2 (standard tasks)</span><span className="text-[#00d992]">balanced</span></div>
                   <div className="flex justify-between"><span>~15% of runs → Tier 1 (complex tasks)</span><span className="text-purple-400">highest quality</span></div>
                 </div>
                 <p className="text-[10px] text-muted-foreground/60 mt-2">Est. savings vs always using Tier 2: ~30%</p>

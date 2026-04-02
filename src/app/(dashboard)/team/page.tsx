@@ -14,7 +14,7 @@ import { CreateApiKeyModal } from "@/components/team/CreateApiKeyModal";
 import { PendingInvites } from "@/components/team/PendingInvites";
 
 // Generate consistent avatar color from name
-const PALETTE = ["#00D4FF", "#A855F7", "#F59E0B", "#39FF14", "#EF4444", "#EC4899", "#10A37F"];
+const PALETTE = ["#00d992", "#A855F7", "#F59E0B", "#39FF14", "#EF4444", "#EC4899", "#10A37F"];
 function avatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -24,7 +24,7 @@ const AVATAR_COLORS: Record<string, string> = {};
 
 const ROLE_STYLES: Record<TeamRole, { bg: string; border: string; text: string }> = {
   admin: { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.3)", text: "#EF4444" },
-  developer: { bg: "rgba(0,212,255,0.12)", border: "rgba(0,212,255,0.3)", text: "#00D4FF" },
+  developer: { bg: "rgba(0,217,146,0.12)", border: "rgba(0,217,146,0.3)", text: "#00d992" },
   agent_manager: { bg: "rgba(168,85,247,0.12)", border: "rgba(168,85,247,0.3)", text: "#A855F7" },
   viewer: { bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.12)", text: "#888" },
 };
@@ -42,14 +42,14 @@ const PERM_MATRIX: Record<string, boolean[]> = {
 
 const ACTION_COLORS: Record<string, string> = {
   create: "#39FF14", connect: "#39FF14", invite: "#39FF14",
-  update: "#00D4FF", toggle: "#00D4FF", restart: "#00D4FF", update_role: "#F59E0B",
-  trigger: "#00D4FF", rollback: "#F59E0B",
+  update: "#00d992", toggle: "#00d992", restart: "#00d992", update_role: "#F59E0B",
+  trigger: "#00d992", rollback: "#F59E0B",
   delete: "#EF4444", revoke: "#EF4444", pause: "#F59E0B",
   resolve: "#39FF14",
 };
 
 const SCOPE_COLORS: Record<string, string> = {
-  read: "#39FF14", write: "#00D4FF", admin: "#EF4444", agents: "#A855F7", deploy: "#F59E0B",
+  read: "#39FF14", write: "#00d992", admin: "#EF4444", agents: "#A855F7", deploy: "#F59E0B",
 };
 
 function formatTime(ts: string) {
@@ -89,7 +89,7 @@ export default function TeamPage() {
           {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} className={cn("pb-2.5 text-sm font-medium transition-colors relative", tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground/70")}>
               {t.label}
-              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00D4FF]" />}
+              {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
             </button>
           ))}
         </div>
@@ -171,7 +171,7 @@ export default function TeamPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="text-[10px] text-muted-foreground hover:text-[#00D4FF]" onClick={() => toast.success("Role editor opened")}>Edit Role</button>
+                          <button className="text-[10px] text-muted-foreground hover:text-[#00d992]" onClick={() => toast.success("Role editor opened")}>Edit Role</button>
                           <button className="text-[10px] text-muted-foreground hover:text-red-400" onClick={() => setRemoveTarget(name)}>Remove</button>
                         </div>
                       </td>
@@ -277,7 +277,7 @@ export default function TeamPage() {
                 <Key className="size-8 text-muted-foreground/20" />
                 <p className="text-sm font-medium text-muted-foreground">No API keys yet</p>
                 <p className="text-xs text-muted-foreground/50">Create a key to access the API programmatically</p>
-                <button className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-[#00D4FF] px-4 py-2 text-xs font-medium text-black hover:bg-[#00D4FF]/90" onClick={() => setApiKeyOpen(true)}>
+                <button className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-[#00d992] px-4 py-2 text-xs font-medium text-black hover:bg-[#00d992]/90" onClick={() => setApiKeyOpen(true)}>
                   <Key className="size-3.5" /> Create your first key
                 </button>
               </div>
@@ -302,7 +302,7 @@ export default function TeamPage() {
                             <span className={cn("font-mono text-xs", isRevoked ? "text-muted-foreground/50 line-through" : "text-muted-foreground")}>sk-{key.prefix}-••••••••</span>
                             {!isRevoked && (
                               <button onClick={() => { navigator.clipboard.writeText(`sk-${key.prefix}-mock`); toast.success("Copied"); }}>
-                                <Copy className="size-3 text-muted-foreground/30 hover:text-[#00D4FF]" />
+                                <Copy className="size-3 text-muted-foreground/30 hover:text-[#00d992]" />
                               </button>
                             )}
                           </div>

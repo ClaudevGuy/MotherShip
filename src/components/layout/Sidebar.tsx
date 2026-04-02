@@ -46,12 +46,12 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
 
       {/* ── Ambient top glow ── */}
       <div className="pointer-events-none absolute top-0 inset-x-0 h-40 z-[1]"
-        style={{ background: "radial-gradient(ellipse 80% 70% at 50% -10%, rgba(0,212,255,0.07) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse 80% 70% at 50% -10%, rgba(0,217,146,0.07) 0%, transparent 70%)" }}
       />
 
       {/* ── Right border (gradient fade) ── */}
       <div className="absolute right-0 top-0 bottom-0 w-px z-[15]"
-        style={{ background: "linear-gradient(180deg, rgba(0,212,255,0.15) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.04) 60%, transparent 100%)" }}
+        style={{ background: "linear-gradient(180deg, rgba(0,217,146,0.15) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.04) 60%, transparent 100%)" }}
       />
 
       {/* ═══════════ LOGO ═══════════ */}
@@ -62,18 +62,18 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
         {/* Logo mark */}
         <div className="sidebar-logo-mark relative flex size-[30px] shrink-0 items-center justify-center">
           {/* Outer ring */}
-          <div className="absolute inset-0 rounded-[9px] border border-[#00D4FF]/25" />
+          <div className="absolute inset-0 rounded-[9px] border border-[#00d992]/25" />
           {/* Inner glow */}
-          <div className="absolute inset-[2px] rounded-[7px] bg-gradient-to-br from-[#00D4FF]/20 via-[#00D4FF]/8 to-transparent" />
+          <div className="absolute inset-[2px] rounded-[7px] bg-gradient-to-br from-[#00d992]/20 via-[#00d992]/8 to-transparent" />
           {/* Icon */}
           <Zap
-            className="relative z-10 size-[13px] text-[#00D4FF]"
+            className="relative z-10 size-[13px] text-[#00d992]"
             strokeWidth={2.5}
-            fill="rgba(0,212,255,0.3)"
+            fill="rgba(0,217,146,0.3)"
           />
           {/* Ambient shadow */}
           <div className="absolute inset-0 rounded-[9px]"
-            style={{ boxShadow: "0 0 14px rgba(0,212,255,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+            style={{ boxShadow: "0 0 14px rgba(0,217,146,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
           />
         </div>
 
@@ -82,7 +82,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
             <span className="font-heading text-[11.5px] font-bold uppercase tracking-[0.16em] text-foreground/90 whitespace-nowrap">
               Mission Control
             </span>
-            <span className="text-[9px] tracking-[0.08em] text-[#00D4FF]/40 font-medium uppercase mt-[2px]">
+            <span className="text-[9px] tracking-[0.08em] text-[#00d992]/40 font-medium uppercase mt-[2px]">
               Command Center
             </span>
           </div>
@@ -141,11 +141,11 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       <div className={cn(
                         "absolute inset-0 rounded-lg",
                         collapsed
-                          ? "bg-[#00D4FF]/[0.08]"
-                          : "bg-gradient-to-r from-[#00D4FF]/[0.10] via-[#00D4FF]/[0.03] to-transparent"
+                          ? "bg-[#00d992]/[0.08]"
+                          : "bg-gradient-to-r from-[#00d992]/[0.10] via-[#00d992]/[0.03] to-transparent"
                       )}>
                         {/* Top edge highlight */}
-                        <div className="absolute inset-x-[1px] top-0 h-px bg-gradient-to-r from-transparent via-[#00D4FF]/20 to-transparent" />
+                        <div className="absolute inset-x-[1px] top-0 h-px bg-gradient-to-r from-transparent via-[#00d992]/20 to-transparent" />
                       </div>
                     )}
 
@@ -156,10 +156,10 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
 
                     {/* Active indicator bar */}
                     {isActive && !collapsed && (
-                      <div className="sidebar-active-bar absolute left-0 top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00D4FF]" />
+                      <div className="sidebar-active-bar absolute left-0 top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00d992]" />
                     )}
                     {isActive && collapsed && (
-                      <div className="sidebar-active-bar absolute left-[3px] top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00D4FF]" />
+                      <div className="sidebar-active-bar absolute left-[3px] top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00d992]" />
                     )}
 
                     {/* Icon */}
@@ -169,7 +169,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                           "transition-all duration-200",
                           collapsed ? "size-[17px]" : "size-[15px]",
                           isActive
-                            ? "text-[#00D4FF]"
+                            ? "text-[#00d992]"
                             : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
                         )}
                         strokeWidth={isActive ? 2 : 1.6}
@@ -177,7 +177,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       {/* Icon glow for active */}
                       {isActive && (
                         <div className="absolute inset-0 -m-1 pointer-events-none"
-                          style={{ filter: "blur(6px)", background: "radial-gradient(circle, rgba(0,212,255,0.3) 0%, transparent 70%)" }}
+                          style={{ filter: "blur(6px)", background: "radial-gradient(circle, rgba(0,217,146,0.3) 0%, transparent 70%)" }}
                         />
                       )}
                       {/* Badge */}
@@ -202,7 +202,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       <span className={cn(
                         "relative z-10 ml-auto inline-flex items-center rounded-md px-1.5 py-[3px] font-mono text-[9px] leading-none animate-fade-in-up",
                         isActive
-                          ? "bg-[#00D4FF]/10 text-[#00D4FF]/60 border border-[#00D4FF]/15"
+                          ? "bg-[#00d992]/10 text-[#00d992]/60 border border-[#00d992]/15"
                           : "bg-white/[0.04] text-muted-foreground/30 border border-white/[0.04]"
                       )}>
                         {item.shortcut.split(" ")[1]}
@@ -227,7 +227,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
       <div className="relative z-20 shrink-0 border-t border-white/[0.04]">
         {/* Subtle top gradient on the border */}
         <div className="absolute inset-x-0 -top-px h-px"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, rgba(0,217,146,0.08), transparent)" }}
         />
 
         <div className="px-2 py-2.5">
