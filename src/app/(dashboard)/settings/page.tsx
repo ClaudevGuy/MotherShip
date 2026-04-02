@@ -395,7 +395,7 @@ export default function SettingsPage() {
                           <div>
                             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">API Key</label>
                             <Input type="password" placeholder="sk-..." value={addIntKey} onChange={(e) => { setAddIntKey(e.target.value); setAddIntError(null); }} className="h-9 font-mono" />
-                            <p className="text-[10px] text-muted-foreground/50 mt-1">Stored encrypted. Never shared or logged.</p>
+                            <p className="text-[10px] text-muted-foreground/50 mt-1">Stored encrypted in the database. Agents will use this key automatically.</p>
                           </div>
                           <div>
                             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Category</label>

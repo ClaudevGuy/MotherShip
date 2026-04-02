@@ -48,10 +48,42 @@ export async function POST(
     });
     if (!agent) throw new ApiError("Agent not found", 404);
 
-    // Check for API key
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    // Resolve API key: check integrations DB first, then fall back to .env
+    const providerNames: Record<string, string> = { CLAUDE: "Anthropic", GPT4: "OpenAI", GEMINI: "Google AI" };
+    const envKeys: Record<string, string> = { CLAUDE: "ANTHROPIC_API_KEY", GPT4: "OPENAI_API_KEY", GEMINI: "GOOGLE_AI_API_KEY" };
+    const providerName = providerNames[agent.model] || "Anthropic";
+
+    let apiKey: string | null = null;
+
+    // 1. Try integrations DB (keys added via Settings → Add Integration)
+    const integration = await prisma.integration.findFirst({
+      where: { projectId, name: providerName, status: "CONNECTED" },
+    });
+    if (integration) {
+      const rawConfig = (integration.config as Record<string, string>) || {};
+      for (const [, value] of Object.entries(rawConfig)) {
+        try {
+          const { decrypt } = await import("@/lib/encryption");
+          apiKey = decrypt(value);
+          break;
+        } catch {
+          apiKey = value;
+          break;
+        }
+      }
+    }
+
+    // 2. Fall back to .env
     if (!apiKey) {
-      return apiError("Add ANTHROPIC_API_KEY to your .env file", 500);
+      const envKey = envKeys[agent.model] || "ANTHROPIC_API_KEY";
+      apiKey = process.env[envKey] || null;
+    }
+
+    if (!apiKey) {
+      return apiError(
+        `No API key found for ${providerName}. Add one via Settings → Integrations, or set ${envKeys[agent.model] || "ANTHROPIC_API_KEY"} in your .env file.`,
+        400
+      );
     }
 
     // Parse body
