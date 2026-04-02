@@ -274,90 +274,52 @@ export default function SettingsPage() {
 
           {/* ─── INTEGRATIONS ─── */}
           {section === "Integrations" && (() => {
-            const INTEGRATIONS = [
-              { name: "Anthropic (Claude)", desc: "AI model provider for agent execution", envKey: "ANTHROPIC_API_KEY", color: "#CC785C", category: "AI Provider" },
-              { name: "OpenAI", desc: "GPT models for agent execution", envKey: "OPENAI_API_KEY", color: "#10A37F", category: "AI Provider" },
-              { name: "Neon", desc: "Serverless PostgreSQL database", envKey: "DATABASE_URL", color: "#00d992", category: "Database" },
-              { name: "GitHub", desc: "Repository sync, PRs, and CI status", envKey: "GITHUB_TOKEN", color: "#f2f2f2", category: "DevOps" },
-              { name: "Vercel", desc: "Deployment and hosting platform", envKey: "VERCEL_TOKEN", color: "#f2f2f2", category: "DevOps" },
-              { name: "Slack", desc: "Incident alerts and agent notifications", envKey: "SLACK_WEBHOOK_URL", color: "#E01E5A", category: "Communication" },
-              { name: "PagerDuty", desc: "On-call escalation and incident management", envKey: "PAGERDUTY_API_KEY", color: "#06AC38", category: "Monitoring" },
-              { name: "Datadog", desc: "Forward metrics, traces, and logs", envKey: "DATADOG_API_KEY", color: "#632CA6", category: "Monitoring" },
-              { name: "Sentry", desc: "Error tracking and performance monitoring", envKey: "SENTRY_DSN", color: "#362D59", category: "Monitoring" },
-              { name: "Linear", desc: "Auto-create issues from agent findings", envKey: "LINEAR_API_KEY", color: "#5E6AD2", category: "Productivity" },
+            const connected = [
+              { name: "Anthropic (Claude)", desc: "AI model provider — powers agent execution", color: "#CC785C", status: "Active" },
+              { name: "Neon PostgreSQL", desc: "Serverless database — stores all project data", color: "#00d992", status: "Active" },
             ];
-
-            // Check which are connected via the integrations store (API data)
-            // For now, we check based on common knowledge:
-            // DATABASE_URL and ANTHROPIC_API_KEY are always connected if the app works
-            const knownConnected = new Set(["DATABASE_URL", "ANTHROPIC_API_KEY"]);
-
-            const connected = INTEGRATIONS.filter((i) => knownConnected.has(i.envKey));
-            const available = INTEGRATIONS.filter((i) => !knownConnected.has(i.envKey));
 
             return (
               <div className="space-y-6">
-                {/* Connected */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Connected ({connected.length})
-                  </p>
-                  <div className="space-y-2">
-                    {connected.map((integration) => (
-                      <div key={integration.name} className="flex items-center justify-between rounded-lg border border-[#00d992]/20 bg-[#00d992]/[0.03] px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${integration.color}15`, color: integration.color }}>
-                            {integration.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{integration.name}</p>
-                            <p className="text-xs text-muted-foreground">{integration.desc}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
-                            <span className="size-1.5 rounded-full bg-green-400" /> Connected
-                          </span>
-                          <button className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors" onClick={() => toast.success(`${integration.name} settings opened`)}>
-                            Configure
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Connected Services ({connected.length})</p>
                   </div>
+                  <button
+                    className="text-xs font-medium text-black bg-[#00d992] rounded-lg px-3 py-1.5 hover:bg-[#00d992]/90 transition-colors"
+                    onClick={() => toast.success("To add an integration, add its API key to your .env file and restart the server")}
+                  >
+                    + Add Integration
+                  </button>
                 </div>
 
-                {/* Available to connect */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Available ({available.length})
-                  </p>
-                  <div className="space-y-2">
-                    {available.map((integration) => (
-                      <div key={integration.name} className="flex items-center justify-between rounded-lg border border-border bg-card/50 px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${integration.color}10`, color: `${integration.color}80` }}>
-                            {integration.name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{integration.name}</p>
-                            <p className="text-xs text-muted-foreground">{integration.desc}</p>
-                          </div>
+                <div className="space-y-2">
+                  {connected.map((svc) => (
+                    <div key={svc.name} className="flex items-center justify-between rounded-lg border border-[#00d992]/20 bg-[#00d992]/[0.03] px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: `${svc.color}15`, color: svc.color }}>
+                          {svc.name.charAt(0)}
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-muted-foreground/50">{integration.category}</span>
-                          <button className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors" onClick={() => toast.success(`Add ${integration.envKey} to your .env file to connect`)}>
-                            Connect
-                          </button>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{svc.name}</p>
+                          <p className="text-xs text-muted-foreground">{svc.desc}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
+                        <span className="size-1.5 rounded-full bg-green-400 animate-pulse" />
+                        {svc.status}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="rounded-lg border border-border bg-muted/10 p-4">
+                <div className="rounded-lg border border-border bg-muted/10 p-4 space-y-2">
+                  <p className="text-xs font-medium text-foreground">How to add integrations</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Add the service&apos;s API key to your <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">.env</code> file and restart the dev server. Any service with an API key can be connected — there are no limits on what you can integrate.
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    To connect a service, add its API key to your <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">.env</code> file. See <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">.env.example</code> for all available keys.
+                    See <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">.env.example</code> for common keys (OpenAI, GitHub, Slack, Vercel, Datadog, Sentry, Linear, PagerDuty).
                   </p>
                 </div>
               </div>
