@@ -97,7 +97,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
         {/* Project Switcher */}
         <ProjectSwitcher collapsed={collapsed} />
         <div className={cn("my-3 h-px", collapsed ? "mx-1" : "mx-1")}
-          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent 100%)" }}
+          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(61,58,57,0.6) 30%, rgba(61,58,57,0.6) 70%, transparent 100%)" }}
         />
 
         {NAV_SECTIONS.map((section, si) => (

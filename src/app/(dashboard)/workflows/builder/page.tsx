@@ -466,7 +466,7 @@ function WorkflowBuilderInner() {
           style={{
             width: "100%",
             height: "100%",
-            backgroundColor: isDark ? "#0A0A0F" : "#F5F5F8",
+            backgroundColor: isDark ? "#050507" : "#F5F5F8",
             backgroundImage: `radial-gradient(circle, ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 1px, transparent 1px)`,
             backgroundSize: "24px 24px",
           }}
@@ -501,7 +501,7 @@ function WorkflowBuilderInner() {
             {/* T14: Minimap with proper dark background */}
             <MiniMap
               style={{
-                backgroundColor: isDark ? "#0A0A0F" : "#FFFFFF",
+                backgroundColor: isDark ? "#050507" : "#FFFFFF",
                 border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`,
                 borderRadius: "8px",
                 boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.08)",

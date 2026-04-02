@@ -72,7 +72,7 @@ function HealthRing({ score }: { score: number }) {
   return (
     <div className="relative flex items-center justify-center">
       <svg width="140" height="140" viewBox="0 0 140 140">
-        <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-subtle, rgba(255,255,255,0.06))" strokeWidth="6" />
+        <circle cx="70" cy="70" r={radius} fill="none" stroke="var(--border-subtle, rgba(61,58,57,0.6))" strokeWidth="6" />
         <circle
           cx="70" cy="70" r={radius} fill="none" stroke={color} strokeWidth="6"
           strokeDasharray={circumference} strokeDashoffset={circumference - progress}
@@ -259,7 +259,7 @@ export default function CodebasePage() {
                       </div>
                       <span className="text-[11px] text-muted-foreground">{c.author}</span>
                     </div>
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground rounded px-1.5 py-0.5" style={{ background: "var(--bg-hover, rgba(255,255,255,0.06))", borderRadius: 4 }}>
+                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground rounded px-1.5 py-0.5" style={{ background: "var(--bg-hover, rgba(61,58,57,0.6))", borderRadius: 4 }}>
                       {c.filesChanged} {c.filesChanged === 1 ? "file" : "files"}
                     </span>
                     <span className="font-mono text-[10px] text-muted-foreground shrink-0 w-20 text-right" suppressHydrationWarning>

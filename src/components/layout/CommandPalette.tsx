@@ -194,7 +194,7 @@ export function CommandPalette() {
                 {/* Footer hints */}
                 <div
                   className="flex items-center gap-4 border-t px-4 py-2"
-                  style={{ borderColor: "var(--border-subtle, rgba(255,255,255,0.06))" }}
+                  style={{ borderColor: "var(--border-subtle, rgba(61,58,57,0.6))" }}
                 >
                   <span className="font-mono text-[11px] text-muted-foreground/60">
                     <kbd className="text-muted-foreground">↑↓</kbd> navigate

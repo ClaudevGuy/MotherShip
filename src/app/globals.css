@@ -13,7 +13,7 @@
 
   /* ═══ DARK THEME (default) — VoltAgent Design System ═══ */
   :root {
-    --background: #0A0A0F;
+    --background: #050507;
     --foreground: #f2f2f2;
     --card: #0E0E13;
     --card-foreground: #f2f2f2;
@@ -28,8 +28,8 @@
     --accent: #1A1A24;
     --accent-foreground: #f2f2f2;
     --destructive: #EF4444;
-    --border: rgba(255, 255, 255, 0.06);
-    --input: rgba(255, 255, 255, 0.08);
+    --border: #3d3a39;
+    --input: rgba(61, 58, 57, 0.5);
     --ring: #00d992;
     --radius: 0.5rem;
 
@@ -40,13 +40,13 @@
     --color-purple: #A855F7;
     --color-pink: #EC4899;
 
-    --sidebar: #0A0A0F;
+    --sidebar: #050507;
     --sidebar-foreground: #f2f2f2;
     --sidebar-primary: #00d992;
     --sidebar-primary-foreground: #050507;
     --sidebar-accent: #1A1A24;
     --sidebar-accent-foreground: #f2f2f2;
-    --sidebar-border: rgba(255, 255, 255, 0.06);
+    --sidebar-border: #3d3a39;
     --sidebar-ring: #00d992;
 
     --chart-1: #00d992;
@@ -56,34 +56,34 @@
     --chart-5: #EC4899;
 
     /* Theme-specific */
-    --bg-primary: #0A0A0F;
+    --bg-primary: #050507;
     --bg-secondary: #0D0D14;
     --bg-card: #0E0E13;
     --bg-hover: rgba(255, 255, 255, 0.03);
-    --border-subtle: rgba(255, 255, 255, 0.06);
-    --border-strong: rgba(255, 255, 255, 0.12);
+    --border-subtle: rgba(61, 58, 57, 0.6);
+    --border-strong: rgba(61, 58, 57, 1);
     --text-primary: #f2f2f2;
     --text-secondary: #b8b3b0;
     --text-muted: #8b949e;
-    --glass-bg: rgba(14, 14, 19, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-hover-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(5, 5, 7, 0.85);
+    --glass-border: #3d3a39;
+    --glass-hover-border: rgba(61, 58, 57, 0.8);
     --card-shadow: none;
-    --sidebar-bg: linear-gradient(180deg, #0F0F18 0%, #0A0A10 100%);
-    --topbar-bg: rgba(14, 14, 19, 0.8);
+    --sidebar-bg: linear-gradient(180deg, #0A0A10 0%, #050507 100%);
+    --topbar-bg: rgba(5, 5, 7, 0.85);
     --dot-color: rgba(255, 255, 255, 0.08);
     --ambient-top: rgba(0, 217, 146, 0.04);
     --ambient-bottom-right: rgba(99, 102, 241, 0.03);
-    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
-    --scrollbar-hover: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb: rgba(61, 58, 57, 0.7);
+    --scrollbar-hover: rgba(61, 58, 57, 1);
 
     /* React Flow canvas */
-    --reactflow-bg: #0A0A0F;
+    --reactflow-bg: #050507;
     --reactflow-dot: rgba(255, 255, 255, 0.10);
     --reactflow-minimap-bg: #0D0D14;
     --reactflow-controls-bg: #0D0D14;
-    --reactflow-controls-border: rgba(255, 255, 255, 0.06);
-    --reactflow-controls-text: #888;
+    --reactflow-controls-border: #3d3a39;
+    --reactflow-controls-text: #8b949e;
   }
 
   /* ═══ LIGHT THEME ═══ */
@@ -123,8 +123,8 @@
     --border-subtle: rgba(0, 0, 0, 0.08);
     --border-strong: rgba(0, 0, 0, 0.15);
     --text-primary: #1A1A2E;
-    --text-secondary: #666666;
-    --text-muted: #999999;
+    --text-secondary: #5a5856;
+    --text-muted: #7a7775;
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(0, 0, 0, 0.08);
     --glass-hover-border: rgba(0, 0, 0, 0.15);
@@ -132,7 +132,7 @@
     --sidebar-bg: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
     --topbar-bg: rgba(255, 255, 255, 0.9);
     --dot-color: rgba(0, 0, 0, 0.06);
-    --ambient-top: rgba(0, 180, 220, 0.04);
+    --ambient-top: rgba(0, 179, 119, 0.04);
     --ambient-bottom-right: rgba(99, 102, 241, 0.03);
     --scrollbar-thumb: rgba(0, 0, 0, 0.12);
     --scrollbar-hover: rgba(0, 0, 0, 0.2);
