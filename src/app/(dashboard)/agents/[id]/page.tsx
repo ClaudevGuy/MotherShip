@@ -23,6 +23,7 @@ import {
 } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { LiveExecutionPanel } from "@/components/agents/LiveExecutionPanel";
 import { cn } from "@/lib/utils";
 import type { AgentRun } from "@/types/agents";
 
@@ -262,26 +263,34 @@ export default function AgentDetailPage({
         {/* ===== EXECUTION TAB ===== */}
         {tab === "execution" && (
           <div className="space-y-6">
-            {/* Tool Usage */}
+            {/* Live Execution Panel */}
             <GlassPanel padding="lg">
-              <h3 className="text-sm font-semibold text-foreground mb-4">Tool Usage</h3>
-              <div className="space-y-3">
-                {agent.tools.map((tool) => (
-                  <div
-                    key={tool.name}
-                    className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Switch checked={tool.enabled} size="sm" />
-                      <span className="text-sm font-mono text-foreground">{tool.name}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {tool.usageCount.toLocaleString()} calls
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <h3 className="text-sm font-semibold text-foreground mb-4">Execute Agent</h3>
+              <LiveExecutionPanel agentId={agent.id} agentName={agent.name} />
             </GlassPanel>
+
+            {/* Tool Usage */}
+            {agent.tools.length > 0 && (
+              <GlassPanel padding="lg">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Tool Usage</h3>
+                <div className="space-y-3">
+                  {agent.tools.map((tool) => (
+                    <div
+                      key={tool.name}
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Switch checked={tool.enabled} size="sm" />
+                        <span className="text-sm font-mono text-foreground">{tool.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {tool.usageCount.toLocaleString()} calls
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </GlassPanel>
+            )}
 
             {/* Context Window */}
             <GlassPanel padding="lg">
@@ -295,18 +304,6 @@ export default function AgentDetailPage({
                 />
               </div>
             </GlassPanel>
-
-            {/* Streaming Output */}
-            {agent.status === "running" && agent.runs[0] && (
-              <GlassPanel padding="lg">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Live Output</h3>
-                <CodeBlock
-                  code={agent.runs[0].output}
-                  language="output"
-                  maxHeight={200}
-                />
-              </GlassPanel>
-            )}
           </div>
         )}
 

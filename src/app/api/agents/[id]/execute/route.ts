@@ -1,64 +1,45 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import {
-  withErrorHandler,
   requireRole,
   getProjectId,
-  apiResponse,
   apiError,
   ApiError,
-  validateBody,
 } from "@/lib/api-helpers";
 import { z } from "zod";
-import { decrypt } from "@/lib/encryption";
-import { chat as anthropicChat } from "@/lib/integrations/adapters/anthropic";
-import { chat as openaiChat } from "@/lib/integrations/adapters/openai";
-import type { ChatMessage, ChatConfig } from "@/lib/integrations/types";
+import Anthropic from "@anthropic-ai/sdk";
 import { selectModel, getTierConfig, type Tier, type ProviderKey } from "@/lib/model-selector";
 import { profileTask } from "@/lib/agent-profiler";
 
 const executeSchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        role: z.string(),
-        content: z.string(),
-      })
-    )
-    .optional(),
-  input: z.string().optional(),
+  input: z.string().min(1, "Input is required"),
 });
 
-// Model provider to integration name mapping
-const PROVIDER_INTEGRATION_MAP: Record<string, string> = {
-  CLAUDE: "Anthropic",
-  GPT4: "OpenAI",
-};
-
-// Default model per provider
+// Default model per provider (used for "manual" strategy)
 const PROVIDER_DEFAULT_MODEL: Record<string, string> = {
   CLAUDE: "claude-sonnet-4-6",
   GPT4: "gpt-4o",
   GEMINI: "gemini-2.0-flash",
 };
 
-// ── POST /api/agents/[id]/execute ──
+// ── POST /api/agents/[id]/execute — Streaming SSE ──
 
-export const POST = withErrorHandler(
-  async (request: NextRequest, context?: { params: Record<string, string> }) => {
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
     const user = await requireRole("developer");
-    // Rate limit: 20 executions per minute per user (prevents runaway LLM cost)
-    // NOTE: x-forwarded-for can be spoofed without a trusted reverse proxy — user.id is the real guard
     const ip = (await headers()).get("x-forwarded-for") ?? "anon";
     const rl = rateLimit(`execute:${user.id}:${ip}`, { limit: 20, windowMs: 60_000 });
     if (!rl.success) {
       return apiError("Rate limit exceeded — max 20 executions per minute", 429);
     }
-    const projectId = await getProjectId();
-    const agentId = context?.params?.id;
 
+    const projectId = await getProjectId();
+    const { id: agentId } = await context.params;
     if (!agentId) return apiError("Agent ID is required", 400);
 
     // Load agent
@@ -67,91 +48,37 @@ export const POST = withErrorHandler(
     });
     if (!agent) throw new ApiError("Agent not found", 404);
 
-    // Determine AI provider
-    const providerKey = agent.model; // e.g. "CLAUDE", "GPT4"
-    const integrationName = PROVIDER_INTEGRATION_MAP[providerKey];
-    if (!integrationName) {
-      return apiError(
-        `Unsupported model provider: ${providerKey}. Supported: ${Object.keys(PROVIDER_INTEGRATION_MAP).join(", ")}`,
-        400
-      );
-    }
-
-    // Find the connected integration for this provider
-    const integration = await prisma.integration.findFirst({
-      where: {
-        projectId,
-        name: integrationName,
-        status: "CONNECTED",
-      },
-    });
-    if (!integration) {
-      return apiError(
-        `No connected ${integrationName} integration found. Connect it in Integrations settings first.`,
-        400
-      );
-    }
-
-    // Decrypt API key from integration config
-    const rawConfig = (integration.config as Record<string, string>) || {};
-    const decryptedConfig: Record<string, string> = {};
-    for (const [key, value] of Object.entries(rawConfig)) {
-      try {
-        decryptedConfig[key] = decrypt(value);
-      } catch {
-        decryptedConfig[key] = value;
-      }
-    }
-
-    const apiKey = decryptedConfig.apiKey;
+    // Check for API key
+    const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return apiError(
-        `${integrationName} integration is missing an API key in its config.`,
-        400
-      );
+      return apiError("Add ANTHROPIC_API_KEY to your .env file", 500);
     }
 
-    // Parse request body
-    const body = await validateBody(request, executeSchema);
-
-    // Build message list: system prompt + user messages
-    const messages: ChatMessage[] = [];
-    if (agent.systemPrompt) {
-      messages.push({ role: "system", content: agent.systemPrompt });
-    }
-    if (body.messages && body.messages.length > 0) {
-      messages.push(...body.messages);
-    } else if (body.input) {
-      messages.push({ role: "user", content: body.input });
-    } else {
-      return apiError(
-        "Provide either `messages` array or `input` string",
-        400
-      );
-    }
+    // Parse body
+    const body = executeSchema.parse(await request.json());
 
     // ── Resolve model based on strategy ──
+    const providerKey = agent.model;
     const strategy = (agent as Record<string, unknown>).modelStrategy as string ?? "auto";
     const selectionStart = Date.now();
     let resolvedModelId: string;
     let selectedTier: number | null = null;
     let selectionReason: string | null = null;
 
-    if (strategy === "manual" || providerKey === "CUSTOM") {
+    if (strategy === "manual" || providerKey !== "CLAUDE") {
       resolvedModelId = PROVIDER_DEFAULT_MODEL[providerKey] || "claude-sonnet-4-6";
       selectionReason = "Manual strategy — using provider default";
     } else if (strategy === "cost_first") {
       const tierConfig = getTierConfig(providerKey as ProviderKey, 3);
-      resolvedModelId = tierConfig?.modelId ?? PROVIDER_DEFAULT_MODEL[providerKey] ?? "claude-sonnet-4-6";
+      resolvedModelId = tierConfig?.modelId ?? "claude-haiku-4-5";
       selectedTier = 3;
       selectionReason = "Cost-first strategy — always tier 3";
     } else if (strategy === "quality_first") {
       const tierConfig = getTierConfig(providerKey as ProviderKey, 1);
-      resolvedModelId = tierConfig?.modelId ?? PROVIDER_DEFAULT_MODEL[providerKey] ?? "claude-sonnet-4-6";
+      resolvedModelId = tierConfig?.modelId ?? "claude-opus-4-6";
       selectedTier = 1;
       selectionReason = "Quality-first strategy — always tier 1";
     } else {
-      // Auto strategy
       const profile = profileTask(
         {
           name: agent.name,
@@ -163,60 +90,18 @@ export const POST = withErrorHandler(
           maxTokens: agent.maxTokens,
           tasksCompleted: agent.tasksCompleted,
         },
-        body.input || body.messages?.map((m) => m.content).join(" ") || ""
+        body.input
       );
       const selection = selectModel(profile);
       resolvedModelId = selection.modelId;
       selectedTier = selection.tier;
       selectionReason = selection.reason;
     }
-
     const selectionDurationMs = Date.now() - selectionStart;
 
-    const chatConfig: ChatConfig = {
-      model: resolvedModelId,
-      temperature: agent.temperature,
-      maxTokens: agent.maxTokens,
-    };
-
-    // Execute the LLM call
-    const startTime = Date.now();
-    let result;
-
-    try {
-      if (providerKey === "CLAUDE") {
-        result = await anthropicChat(apiKey, messages, chatConfig);
-      } else {
-        result = await openaiChat(apiKey, messages, chatConfig);
-      }
-    } catch (err) {
-      // Record failed run
-      await prisma.agentRun.create({
-        data: {
-          agentId,
-          duration: Date.now() - startTime,
-          status: "RUN_FAILED" as never,
-          tokensUsed: 0,
-          cost: 0,
-          output: `Error: ${(err as Error).message}`,
-        },
-      });
-
-      // Update agent status
-      await prisma.agent.update({
-        where: { id: agentId },
-        data: { status: "ERROR" as never, lastRun: new Date() },
-      });
-
-      return apiError(`LLM call failed: ${(err as Error).message}`, 502);
-    }
-
-    const duration = Date.now() - startTime;
-    const totalTokens = result.tokensIn + result.tokensOut;
-
-    // Cost from tier registry or fallback
-    let inputRate = 0.003;
-    let outputRate = 0.015;
+    // Cost rates
+    let inputRate = 0.003 / 1000;
+    let outputRate = 0.015 / 1000;
     if (selectedTier) {
       const tierConfig = getTierConfig(providerKey as ProviderKey, selectedTier as Tier);
       if (tierConfig) {
@@ -224,65 +109,160 @@ export const POST = withErrorHandler(
         outputRate = tierConfig.outputCostPerMillion / 1_000_000;
       }
     }
-    const estimatedCost = result.tokensIn * inputRate + result.tokensOut * outputRate;
 
-    // Record the LLM call
-    await prisma.llmCall.create({
-      data: {
-        projectId,
-        model: chatConfig.model,
-        prompt: messages.map((m) => `[${m.role}] ${m.content}`).join("\n"),
-        response: result.content,
-        tokensIn: result.tokensIn,
-        tokensOut: result.tokensOut,
-        latency: duration,
-        cost: estimatedCost,
-        agentId,
-        agentName: agent.name,
-        selectedTier,
-        selectionReason,
-        selectionDurationMs,
-        wasUpgraded: false,
-        originalTier: null,
-      },
-    });
-
-    // Record the agent run
-    const agentRun = await prisma.agentRun.create({
-      data: {
-        agentId,
-        duration,
-        status: "RUN_SUCCESS" as never,
-        tokensUsed: totalTokens,
-        cost: estimatedCost,
-        output: result.content,
-      },
-    });
-
-    // Update agent stats
+    // Update agent to running
     await prisma.agent.update({
       where: { id: agentId },
-      data: {
-        status: "IDLE" as never,
-        lastRun: new Date(),
-        tokenUsage: { increment: totalTokens },
-        totalCost: { increment: estimatedCost },
-        tasksCompleted: { increment: 1 },
+      data: { status: "RUNNING" as never },
+    });
+
+    const startTime = Date.now();
+    const client = new Anthropic({ apiKey });
+
+    // Build messages
+    const userMessages: Anthropic.MessageParam[] = [
+      { role: "user", content: body.input },
+    ];
+
+    // ── Stream response via SSE ──
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (data: Record<string, unknown>) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        };
+
+        // Send model selection info first
+        send({
+          type: "info",
+          model: resolvedModelId,
+          tier: selectedTier,
+          reason: selectionReason,
+          selectionMs: selectionDurationMs,
+        });
+
+        let fullContent = "";
+        let tokensIn = 0;
+        let tokensOut = 0;
+
+        try {
+          const stream = client.messages.stream({
+            model: resolvedModelId,
+            max_tokens: agent.maxTokens,
+            temperature: agent.temperature,
+            system: agent.systemPrompt || undefined,
+            messages: userMessages,
+          });
+
+          stream.on("text", (text) => {
+            fullContent += text;
+            send({ type: "delta", content: text });
+          });
+
+          const finalMessage = await stream.finalMessage();
+          tokensIn = finalMessage.usage.input_tokens;
+          tokensOut = finalMessage.usage.output_tokens;
+
+          const duration = Date.now() - startTime;
+          const cost = tokensIn * inputRate + tokensOut * outputRate;
+
+          // Send completion event
+          send({
+            type: "done",
+            tokensIn,
+            tokensOut,
+            cost: Math.round(cost * 10000) / 10000,
+            duration,
+            model: resolvedModelId,
+          });
+
+          // ── Save to DB (async, don't block stream) ──
+          const dbOps = async () => {
+            await prisma.llmCall.create({
+              data: {
+                projectId,
+                model: resolvedModelId,
+                prompt: `[system] ${agent.systemPrompt}\n[user] ${body.input}`,
+                response: fullContent,
+                tokensIn,
+                tokensOut,
+                latency: duration,
+                cost,
+                agentId,
+                agentName: agent.name,
+                selectedTier,
+                selectionReason,
+                selectionDurationMs,
+                wasUpgraded: false,
+                originalTier: null,
+              },
+            });
+
+            await prisma.agentRun.create({
+              data: {
+                agentId,
+                duration,
+                status: "RUN_SUCCESS" as never,
+                tokensUsed: tokensIn + tokensOut,
+                cost,
+                output: fullContent,
+              },
+            });
+
+            await prisma.agent.update({
+              where: { id: agentId },
+              data: {
+                status: "IDLE" as never,
+                lastRun: new Date(),
+                tokenUsage: { increment: tokensIn + tokensOut },
+                totalCost: { increment: cost },
+                tasksCompleted: { increment: 1 },
+              },
+            });
+          };
+
+          dbOps().catch((err) => console.error("DB save error:", err));
+        } catch (err) {
+          const errorMsg = (err as Error).message;
+          send({ type: "error", message: errorMsg });
+
+          // Record failure
+          prisma.agentRun.create({
+            data: {
+              agentId,
+              duration: Date.now() - startTime,
+              status: "RUN_FAILED" as never,
+              tokensUsed: 0,
+              cost: 0,
+              output: `Error: ${errorMsg}`,
+            },
+          }).catch(() => {});
+
+          prisma.agent.update({
+            where: { id: agentId },
+            data: { status: "ERROR" as never, lastRun: new Date() },
+          }).catch(() => {});
+        }
+
+        controller.close();
       },
     });
 
-    return apiResponse({
-      runId: agentRun.id,
-      content: result.content,
-      tokensIn: result.tokensIn,
-      tokensOut: result.tokensOut,
-      cost: estimatedCost,
-      duration,
-      model: chatConfig.model,
-      provider: integrationName,
-      selectedTier,
-      selectionReason,
-      selectionDurationMs,
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return apiError(err.message, err.status);
+    }
+    if (err instanceof z.ZodError) {
+      return apiError(`Validation error: ${err.issues.map((e) => e.message).join(", ")}`, 422);
+    }
+    console.error("Execute error:", err);
+    return apiError("Internal server error", 500);
   }
-);
+}
