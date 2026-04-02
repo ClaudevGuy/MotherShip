@@ -40,7 +40,12 @@ export function profileTask(agent: AgentConfig, taskInput: string): TaskProfile 
     lowerTags.some((t) => t === "production" || t === "destructive") ||
     enabledTools.some((t) => DESTRUCTIVE_TOOLS.includes(t));
 
-  const isRepetitive = agent.tasksCompleted > 50;
+  const isRepetitive = agent.tasksCompleted > 200
+    && agent.tags.some((t) =>
+      t.toLowerCase().includes("repetitive") ||
+      t.toLowerCase().includes("etl") ||
+      t.toLowerCase().includes("scheduled")
+    );
 
   const requiresReasoning =
     agent.temperature < 0.3 ||
