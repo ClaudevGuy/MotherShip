@@ -465,3 +465,20 @@
 .light .react-flow__minimap {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
 }
+
+/* Force React Flow canvas to respect dark theme */
+:root .react-flow,
+:root .react-flow__renderer,
+:root .react-flow__pane,
+:root .react-flow__background,
+:root [class*="react-flow"] {
+  background-color: #0A0A0F !important;
+}
+
+.light .react-flow,
+.light .react-flow__renderer,
+.light .react-flow__pane,
+.light .react-flow__background,
+.light [class*="react-flow"] {
+  background-color: #F5F5F8 !important;
+}

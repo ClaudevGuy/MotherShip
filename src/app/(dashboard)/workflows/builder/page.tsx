@@ -15,6 +15,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { ArrowLeft, Sparkles, GripVertical, Bot, Clock, Hand, Webhook, Zap, Plus, CircleCheck, Search } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ function nextNodeId(prefix: string) {
 
 export default function WorkflowBuilderPage() {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
   const {
     workflowName, setWorkflowName,
     isDirty, setDirty,
@@ -340,7 +343,15 @@ export default function WorkflowBuilderPage() {
         </div>
 
         {/* ── Canvas ── */}
-        <div className="flex-1" ref={reactFlowWrapper}>
+        <div
+          className="flex-1"
+          ref={reactFlowWrapper}
+          style={{
+            backgroundColor: isDark ? "#0A0A0F" : "#F5F5F8",
+            backgroundImage: `radial-gradient(circle, ${isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)"} 1px, transparent 1px)`,
+            backgroundSize: "24px 24px",
+          }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
