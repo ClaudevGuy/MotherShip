@@ -318,91 +318,81 @@ export default function LogsPage() {
       {/* ═══ TRACES ═══ */}
       {tab === "traces" && (
         <div className="space-y-3">
-          {traceSpans.length === 0 ? (
+          {(!traceSpans || traceSpans.length === 0) ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center rounded-xl border border-border bg-card/50">
               <Activity className="size-8 text-muted-foreground/20" />
               <p className="text-sm font-medium text-muted-foreground">No traces yet</p>
               <p className="text-xs text-muted-foreground/50">Trace data will appear as agents process requests</p>
             </div>
           ) : (
-          Array.from(new Set(traceSpans.map((s) => s.traceId))).map((traceId) => {
-            const spans = traceSpans.filter((s) => s.traceId === traceId);
-            const root = spans[0];
-            if (!root) return null;
-            const totalDuration = spans.length > 0 ? Math.max(...spans.map((s) => s.start + s.duration)) : 0;
-            const isExp = expandedTrace === traceId;
-            const hasError = spans.some((s) => s.status === "error");
+            <>
+              {Array.from(new Set(traceSpans.map((s) => s.traceId))).map((traceId) => {
+                const spans = traceSpans.filter((s) => s.traceId === traceId);
+                if (!spans || spans.length === 0) return null;
+                const root = spans[0];
+                const totalDuration = Math.max(...spans.map((s) => (s.start || 0) + (s.duration || 0)), 1);
+                const isExp = expandedTrace === traceId;
+                const hasError = spans.some((s) => s.status === "error");
 
-            const SVC_COLORS: Record<string, string> = {
-              "api-gateway": "#00d992", "auth-service": "#10A37F", "cache-service": "#F59E0B",
-              "search-service": "#4285F4", "worker-service": "#A855F7", "database": "#EC4899",
-              "analytics-service": "#39FF14",
-            };
-
-            // Nesting depth: root=0, others=1, except some get depth 2
-            const getDepth = (i: number) => {
-              if (i === 0) return 0;
-              return 1;
-            };
-
-            return (
-              <GlassPanel key={traceId} padding="none" className={hasError ? "border-l-[3px] border-l-[#EF4444]" : ""}>
-                <div className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setExpandedTrace(isExp ? null : traceId)}>
-                  <span className="font-mono text-xs text-[#00d992] shrink-0">{traceId}</span>
-                  <span className="text-xs text-foreground flex-1 truncate">{root?.name}</span>
-                  <span className="text-[10px] text-muted-foreground">{spans.length} spans</span>
-                  <span className="font-mono text-xs text-foreground">{totalDuration}ms</span>
-                  <StatusBadge status={hasError ? "error" : "success"} size="sm" />
-                </div>
-                {isExp && (
-                  <div className="px-4 py-3 border-t border-border space-y-1.5">
-                    {/* Timeline header */}
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="w-[130px] shrink-0" />
-                      <div className="flex-1 flex justify-between text-[9px] font-mono text-muted-foreground">
-                        <span>0ms</span>
-                        <span>{Math.round(totalDuration / 4)}ms</span>
-                        <span>{Math.round(totalDuration / 2)}ms</span>
-                        <span>{Math.round(totalDuration * 3 / 4)}ms</span>
-                        <span>{totalDuration}ms</span>
-                      </div>
+                return (
+                  <GlassPanel key={traceId} padding="none" className={hasError ? "border-l-[3px] border-l-[#EF4444]" : ""}>
+                    <div className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setExpandedTrace(isExp ? null : traceId)}>
+                      <span className="font-mono text-xs text-[#00d992] shrink-0">{traceId}</span>
+                      <span className="text-xs text-foreground flex-1 truncate">{root.name}</span>
+                      <span className="text-[10px] text-muted-foreground">{spans.length} spans</span>
+                      <span className="font-mono text-xs text-foreground">{totalDuration}ms</span>
+                      <StatusBadge status={hasError ? "error" : "success"} size="sm" />
                     </div>
-                    {spans.map((span, i) => {
-                      const color = SVC_COLORS[span.service] || "#888";
-                      const leftPct = (span.start / totalDuration) * 100;
-                      const widthPct = Math.max((span.duration / totalDuration) * 100, 1);
-                      const depth = getDepth(i);
-
-                      return (
-                        <div key={span.id} className="flex items-center gap-3" style={{ paddingLeft: `${depth * 16}px` }}>
-                          {depth > 0 && <span className="text-muted-foreground/20 text-xs shrink-0">└─</span>}
-                          <span className="text-[10px] font-mono shrink-0 truncate" style={{ width: depth > 0 ? 110 : 130, color: `${color}cc` }}>
-                            {span.service}
-                          </span>
-                          <div className="flex-1 h-7 rounded bg-muted/30 relative">
-                            <div
-                              className="absolute inset-y-1 rounded flex items-center px-2 min-w-[40px]"
-                              style={{
-                                left: `${leftPct}%`,
-                                width: `${widthPct}%`,
-                                background: span.status === "error" ? "rgba(239,68,68,0.2)" : `${color}20`,
-                                borderLeft: `2px solid ${span.status === "error" ? "#EF4444" : color}`,
-                              }}
-                            >
-                              <span className="font-mono text-[10px] whitespace-nowrap" style={{ color: span.status === "error" ? "#EF4444" : color }}>
-                                {span.duration}ms
-                              </span>
-                            </div>
+                    {isExp && (
+                      <div className="px-4 py-3 border-t border-border space-y-1.5">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="w-[130px] shrink-0" />
+                          <div className="flex-1 flex justify-between text-[9px] font-mono text-muted-foreground">
+                            <span>0ms</span>
+                            <span>{Math.round(totalDuration / 4)}ms</span>
+                            <span>{Math.round(totalDuration / 2)}ms</span>
+                            <span>{Math.round(totalDuration * 3 / 4)}ms</span>
+                            <span>{totalDuration}ms</span>
                           </div>
-                          {span.status === "error" && <span className="text-[9px] text-red-400 font-mono shrink-0">ERROR</span>}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </GlassPanel>
-            );
-          })
+                        {spans.map((span, i) => {
+                          const svcColors: Record<string, string> = { "api-gateway": "#00d992", "auth-service": "#10A37F", "cache-service": "#F59E0B", "worker-service": "#A855F7" };
+                          const color = svcColors[span.service] || "#888";
+                          const leftPct = totalDuration > 0 ? ((span.start || 0) / totalDuration) * 100 : 0;
+                          const widthPct = totalDuration > 0 ? Math.max(((span.duration || 0) / totalDuration) * 100, 1) : 100;
+                          const depth = i === 0 ? 0 : 1;
+
+                          return (
+                            <div key={span.id} className="flex items-center gap-3" style={{ paddingLeft: `${depth * 16}px` }}>
+                              {depth > 0 && <span className="text-muted-foreground/20 text-xs shrink-0">└─</span>}
+                              <span className="text-[10px] font-mono shrink-0 truncate" style={{ width: depth > 0 ? 110 : 130, color: `${color}cc` }}>
+                                {span.service}
+                              </span>
+                              <div className="flex-1 h-7 rounded bg-muted/30 relative">
+                                <div
+                                  className="absolute inset-y-1 rounded flex items-center px-2 min-w-[40px]"
+                                  style={{
+                                    left: `${leftPct}%`,
+                                    width: `${widthPct}%`,
+                                    background: span.status === "error" ? "rgba(239,68,68,0.2)" : `${color}20`,
+                                    borderLeft: `2px solid ${span.status === "error" ? "#EF4444" : color}`,
+                                  }}
+                                >
+                                  <span className="font-mono text-[10px] whitespace-nowrap" style={{ color: span.status === "error" ? "#EF4444" : color }}>
+                                    {span.duration}ms
+                                  </span>
+                                </div>
+                              </div>
+                              {span.status === "error" && <span className="text-[9px] text-red-400 font-mono shrink-0">ERROR</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </GlassPanel>
+                );
+              })}
+            </>
           )}
         </div>
       )}
