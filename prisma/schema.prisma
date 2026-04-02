@@ -309,6 +309,7 @@ model Agent {
   name               String
   description        String        @db.Text
   model              ModelProvider
+  modelStrategy      String        @default("auto")
   status             AgentStatus   @default(IDLE)
   systemPrompt       String        @db.Text
   temperature        Float         @default(0.7)
@@ -637,6 +638,11 @@ model LlmCall {
   cost      Float
   agentId   String
   agentName String
+  selectedTier        Int?
+  selectionReason     String?
+  wasUpgraded         Boolean       @default(false)
+  originalTier        Int?
+  selectionDurationMs Int?
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
