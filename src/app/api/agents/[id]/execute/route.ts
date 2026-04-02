@@ -16,6 +16,8 @@ import { decrypt } from "@/lib/encryption";
 import { chat as anthropicChat } from "@/lib/integrations/adapters/anthropic";
 import { chat as openaiChat } from "@/lib/integrations/adapters/openai";
 import type { ChatMessage, ChatConfig } from "@/lib/integrations/types";
+import { selectModel, getTierConfig, type Tier, type ProviderKey } from "@/lib/model-selector";
+import { profileTask } from "@/lib/agent-profiler";
 
 const executeSchema = z.object({
   messages: z
@@ -37,8 +39,9 @@ const PROVIDER_INTEGRATION_MAP: Record<string, string> = {
 
 // Default model per provider
 const PROVIDER_DEFAULT_MODEL: Record<string, string> = {
-  CLAUDE: "claude-sonnet-4-20250514",
+  CLAUDE: "claude-sonnet-4-6",
   GPT4: "gpt-4o",
+  GEMINI: "gemini-2.0-flash",
 };
 
 // ── POST /api/agents/[id]/execute ──
@@ -127,8 +130,51 @@ export const POST = withErrorHandler(
       );
     }
 
+    // ── Resolve model based on strategy ──
+    const strategy = (agent as Record<string, unknown>).modelStrategy as string ?? "auto";
+    const selectionStart = Date.now();
+    let resolvedModelId: string;
+    let selectedTier: number | null = null;
+    let selectionReason: string | null = null;
+
+    if (strategy === "manual" || providerKey === "CUSTOM") {
+      resolvedModelId = PROVIDER_DEFAULT_MODEL[providerKey] || "claude-sonnet-4-6";
+      selectionReason = "Manual strategy — using provider default";
+    } else if (strategy === "cost_first") {
+      const tierConfig = getTierConfig(providerKey as ProviderKey, 3);
+      resolvedModelId = tierConfig?.modelId ?? PROVIDER_DEFAULT_MODEL[providerKey] ?? "claude-sonnet-4-6";
+      selectedTier = 3;
+      selectionReason = "Cost-first strategy — always tier 3";
+    } else if (strategy === "quality_first") {
+      const tierConfig = getTierConfig(providerKey as ProviderKey, 1);
+      resolvedModelId = tierConfig?.modelId ?? PROVIDER_DEFAULT_MODEL[providerKey] ?? "claude-sonnet-4-6";
+      selectedTier = 1;
+      selectionReason = "Quality-first strategy — always tier 1";
+    } else {
+      // Auto strategy
+      const profile = profileTask(
+        {
+          name: agent.name,
+          model: providerKey,
+          tags: agent.tags,
+          tools: [],
+          systemPrompt: agent.systemPrompt,
+          temperature: agent.temperature,
+          maxTokens: agent.maxTokens,
+          tasksCompleted: agent.tasksCompleted,
+        },
+        body.input || body.messages?.map((m) => m.content).join(" ") || ""
+      );
+      const selection = selectModel(profile);
+      resolvedModelId = selection.modelId;
+      selectedTier = selection.tier;
+      selectionReason = selection.reason;
+    }
+
+    const selectionDurationMs = Date.now() - selectionStart;
+
     const chatConfig: ChatConfig = {
-      model: PROVIDER_DEFAULT_MODEL[providerKey] || "claude-sonnet-4-20250514",
+      model: resolvedModelId,
       temperature: agent.temperature,
       maxTokens: agent.maxTokens,
     };
@@ -168,15 +214,17 @@ export const POST = withErrorHandler(
     const duration = Date.now() - startTime;
     const totalTokens = result.tokensIn + result.tokensOut;
 
-    // Estimate cost (rough rates per 1K tokens)
-    const costRates: Record<string, { input: number; output: number }> = {
-      CLAUDE: { input: 0.003, output: 0.015 },
-      GPT4: { input: 0.0025, output: 0.01 },
-    };
-    const rates = costRates[providerKey] || { input: 0.003, output: 0.015 };
-    const estimatedCost =
-      (result.tokensIn / 1000) * rates.input +
-      (result.tokensOut / 1000) * rates.output;
+    // Cost from tier registry or fallback
+    let inputRate = 0.003;
+    let outputRate = 0.015;
+    if (selectedTier) {
+      const tierConfig = getTierConfig(providerKey as ProviderKey, selectedTier as Tier);
+      if (tierConfig) {
+        inputRate = tierConfig.inputCostPerMillion / 1_000_000;
+        outputRate = tierConfig.outputCostPerMillion / 1_000_000;
+      }
+    }
+    const estimatedCost = result.tokensIn * inputRate + result.tokensOut * outputRate;
 
     // Record the LLM call
     await prisma.llmCall.create({
@@ -191,6 +239,11 @@ export const POST = withErrorHandler(
         cost: estimatedCost,
         agentId,
         agentName: agent.name,
+        selectedTier,
+        selectionReason,
+        selectionDurationMs,
+        wasUpgraded: false,
+        originalTier: null,
       },
     });
 
@@ -227,6 +280,9 @@ export const POST = withErrorHandler(
       duration,
       model: chatConfig.model,
       provider: integrationName,
+      selectedTier,
+      selectionReason,
+      selectionDurationMs,
     });
   }
 );
