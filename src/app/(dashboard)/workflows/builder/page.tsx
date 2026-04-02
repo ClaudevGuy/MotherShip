@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   ReactFlow,
-  Background,
   Controls,
   MiniMap,
   addEdge,
@@ -12,7 +11,6 @@ import {
   type Connection,
   type Node,
   type Edge,
-  BackgroundVariant,
   Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -358,14 +356,7 @@ export default function WorkflowBuilderPage() {
             proOptions={{ hideAttribution: true }}
             className="workflow-canvas"
           >
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={24}
-              size={1}
-              color="rgba(255,255,255,0.06)"
-            />
             <Controls
-              className="!bg-card !border-border !rounded-lg !shadow-lg [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-muted-foreground [&>button:hover]:!bg-muted/50"
               showInteractive={false}
             />
             <MiniMap
