@@ -371,15 +371,20 @@ export default function WorkflowBuilderPage() {
           >
             <Controls
               showInteractive={false}
+              style={{
+                backgroundColor: isDark ? "#0D0D14" : "#FFFFFF",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                borderRadius: "8px",
+              }}
             />
             <MiniMap
-              className="!bg-card/80 !border-border !rounded-lg"
-              nodeColor={(n) =>
-                n.type === "trigger" ? "#A855F7" :
-                n.type === "end" ? "#39FF14" :
-                "#00D4FF"
-              }
-              maskColor="rgba(0,0,0,0.7)"
+              style={{
+                backgroundColor: isDark ? "#0D0D14" : "#FFFFFF",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                borderRadius: "8px",
+              }}
+              nodeColor={isDark ? "#00D4FF" : "#0099CC"}
+              maskColor={isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.1)"}
             />
 
             {/* Empty canvas hint */}
