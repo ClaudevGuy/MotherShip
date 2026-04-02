@@ -391,33 +391,35 @@ export default function AgentBuilderPage() {
                 { value: "schedule", label: "Schedule", desc: "Run on a cron schedule" },
                 { value: "webhook", label: "Webhook", desc: "Trigger via HTTP webhook" },
                 { value: "event", label: "Event-based", desc: "React to system events" },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setTriggerType(option.value)}
-                  className={cn(
-                    "flex items-start gap-3 w-full p-4 rounded-lg border text-left transition-colors",
-                    triggerType === option.value
-                      ? "border-cyan-500/40 bg-cyan-500/[0.06]"
-                      : "border-border bg-muted/30 hover:border-border"
-                  )}
-                >
-                  <div
+              ].map((option) => {
+                const isSelected = triggerType === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setTriggerType(option.value)}
                     className={cn(
-                      "mt-0.5 size-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                      triggerType === option.value ? "border-cyan-400" : "border-muted-foreground/20"
+                      "flex items-start gap-3 w-full p-4 rounded-lg border text-left transition-all",
+                      isSelected
+                        ? "border-[#00d992]/40 bg-[#00d992]/[0.06]"
+                        : "border-border bg-muted/30 hover:border-border/80 hover:bg-muted/50"
                     )}
                   >
-                    {triggerType === option.value && (
-                      <div className="size-2 rounded-full bg-cyan-400" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{option.label}</p>
-                    <p className="text-xs text-muted-foreground">{option.desc}</p>
-                  </div>
-                </button>
-              ))}
+                    <div
+                      className={cn(
+                        "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+                        isSelected ? "border-[#00d992] bg-[#00d992]" : "border-[#3d3a39]"
+                      )}
+                    >
+                      {isSelected && <div className="size-2 rounded-full bg-black" />}
+                    </div>
+                    <div>
+                      <p className={cn("text-sm font-medium", isSelected ? "text-foreground" : "text-foreground")}>{option.label}</p>
+                      <p className="text-xs text-muted-foreground">{option.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
 
               {triggerType === "schedule" && (
                 <div className="ml-7 mt-2">
