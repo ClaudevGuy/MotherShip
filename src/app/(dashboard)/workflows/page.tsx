@@ -8,6 +8,7 @@ import { useWorkflowsStore, type Workflow } from "@/stores/workflows-store";
 import { PageHeader, StatusBadge, GlassPanel, ConfirmDialog } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { NewWorkflowModal } from "@/components/overview/NewWorkflowModal";
+import { WorkflowDetailPanel } from "@/components/workflows/WorkflowDetailPanel";
 import { formatRelativeTime } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -140,10 +141,12 @@ function WorkflowCard({
   workflow,
   onRun,
   onDelete,
+  onClick,
 }: {
   workflow: Workflow;
   onRun: () => void;
   onDelete: () => void;
+  onClick: () => void;
 }) {
   const router = useRouter();
   const trigger = (workflow as unknown as Record<string, unknown>).trigger as { type?: string } | null;
@@ -153,8 +156,8 @@ function WorkflowCard({
   return (
     <GlassPanel hover padding="none" className="group overflow-hidden">
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="px-4 pt-4 pb-3 space-y-2.5">
+        {/* Header — clickable area */}
+        <div className="px-4 pt-4 pb-3 space-y-2.5 cursor-pointer" onClick={onClick}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{workflow.name}</p>
@@ -186,8 +189,8 @@ function WorkflowCard({
           </div>
         </div>
 
-        {/* Metadata */}
-        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 space-y-1.5">
+        {/* Metadata — clickable area */}
+        <div className="px-4 py-2.5 border-t border-border/30 bg-muted/10 space-y-1.5 cursor-pointer" onClick={onClick}>
           <div className="flex items-center justify-between text-[10px] text-muted-foreground">
             <div className="flex items-center gap-1">
               <TriggerIcon className="size-3 text-muted-foreground/50" />
@@ -255,6 +258,7 @@ export default function WorkflowsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [runTarget, setRunTarget] = useState<Workflow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Workflow | null>(null);
+  const [detailTarget, setDetailTarget] = useState<Workflow | null>(null);
 
   useEffect(() => {
     fetchWorkflows();
@@ -364,6 +368,7 @@ export default function WorkflowsPage() {
               workflow={w}
               onRun={() => setRunTarget(w)}
               onDelete={() => setDeleteTarget(w)}
+              onClick={() => setDetailTarget(w)}
             />
           ))}
         </div>
@@ -372,6 +377,13 @@ export default function WorkflowsPage() {
       {/* Modals */}
       <NewWorkflowModal open={createOpen} onOpenChange={setCreateOpen} />
       {runTarget && <RunWorkflowPanel workflow={runTarget} onClose={() => setRunTarget(null)} />}
+      {detailTarget && (
+        <WorkflowDetailPanel
+          workflow={detailTarget}
+          onClose={() => setDetailTarget(null)}
+          onRun={() => { setDetailTarget(null); setRunTarget(detailTarget); }}
+        />
+      )}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
