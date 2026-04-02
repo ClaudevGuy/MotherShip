@@ -14,8 +14,9 @@ import { z } from "zod";
 import crypto from "crypto";
 
 const createApiKeySchema = z.object({
-  name: z.string().min(1).max(100),
-  scopes: z.array(z.string()).optional().default([]),
+  name: z.string().min(1, "Name is required").max(100),
+  scopes: z.array(z.string()).min(1, "At least one scope is required"),
+  expiresIn: z.enum(["30d", "90d", "1y", "never"]).optional().default("never"),
 });
 
 // ── GET /api/team/api-keys ──
@@ -39,6 +40,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         scopes: true,
         createdAt: true,
         lastUsed: true,
+        expiresAt: true,
         status: true,
         revokedAt: true,
         createdBy: {
@@ -67,6 +69,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const prefix = rawKey.slice(0, 8);
   const hashedKey = crypto.createHash("sha256").update(rawKey).digest("hex");
 
+  // Calculate expiry
+  let expiresAt: Date | null = null;
+  if (body.expiresIn === "30d") expiresAt = new Date(Date.now() + 30 * 86400000);
+  else if (body.expiresIn === "90d") expiresAt = new Date(Date.now() + 90 * 86400000);
+  else if (body.expiresIn === "1y") expiresAt = new Date(Date.now() + 365 * 86400000);
+
   const apiKey = await prisma.apiKey.create({
     data: {
       projectId,
@@ -74,6 +82,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       prefix,
       hashedKey,
       scopes: body.scopes,
+      expiresAt,
       createdById: user.id,
     },
   });
@@ -90,12 +99,15 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   // Return plaintext key only once
   return apiResponse(
     {
-      id: apiKey.id,
-      name: apiKey.name,
-      prefix: apiKey.prefix,
-      key: rawKey,
-      scopes: apiKey.scopes,
-      createdAt: apiKey.createdAt,
+      key: {
+        id: apiKey.id,
+        name: apiKey.name,
+        prefix: apiKey.prefix,
+        rawKey,
+        scopes: apiKey.scopes,
+        expiresAt: apiKey.expiresAt,
+        createdAt: apiKey.createdAt,
+      },
     },
     201
   );

@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, ShieldCheck, ShieldX, Check, X, Copy, Key } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { invalidate } from "@/lib/store-cache";
 import type { TeamRole } from "@/types/common";
 import { InviteMemberModal } from "@/components/team/InviteMemberModal";
+import { CreateApiKeyModal } from "@/components/team/CreateApiKeyModal";
 import { PendingInvites } from "@/components/team/PendingInvites";
 
 // Generate consistent avatar color from name
@@ -66,6 +68,7 @@ export default function TeamPage() {
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteRefreshKey, setInviteRefreshKey] = useState(0);
+  const [apiKeyOpen, setApiKeyOpen] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchTeam(); }, []);
@@ -264,11 +267,21 @@ export default function TeamPage() {
         return (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <Button size="default" onClick={() => toast.success("API key created: sk-mc-•••••••3f8a\nCopy now — you won't see this again!")}>
+              <Button size="default" onClick={() => setApiKeyOpen(true)}>
                 <Key className="size-4 mr-2" /> Create API Key
               </Button>
             </div>
 
+            {API_KEYS_DISPLAY.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-16 text-center rounded-xl border border-border bg-card/50">
+                <Key className="size-8 text-muted-foreground/20" />
+                <p className="text-sm font-medium text-muted-foreground">No API keys yet</p>
+                <p className="text-xs text-muted-foreground/50">Create a key to access the API programmatically</p>
+                <button className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-[#00D4FF] px-4 py-2 text-xs font-medium text-black hover:bg-[#00D4FF]/90" onClick={() => setApiKeyOpen(true)}>
+                  <Key className="size-3.5" /> Create your first key
+                </button>
+              </div>
+            ) : (
             <GlassPanel padding="none">
               <table className="w-full text-sm">
                 <thead>
@@ -324,6 +337,7 @@ export default function TeamPage() {
                 </tbody>
               </table>
             </GlassPanel>
+            )}
           </div>
         );
       })()}
@@ -342,6 +356,12 @@ export default function TeamPage() {
         open={inviteOpen}
         onOpenChange={setInviteOpen}
         onInviteSent={() => setInviteRefreshKey((k) => k + 1)}
+      />
+
+      <CreateApiKeyModal
+        open={apiKeyOpen}
+        onOpenChange={setApiKeyOpen}
+        onKeyCreated={() => { invalidate("team"); fetchTeam(); }}
       />
     </div>
   );
