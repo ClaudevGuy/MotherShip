@@ -40,8 +40,10 @@ const SECTIONS: Section[] = [
 // ── Small reusable components ──────────────────────────────────────────────────
 function Callout({ icon: Icon, color, title, children }: { icon: React.ElementType; color: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3 rounded-xl border border-border bg-muted/20 p-4">
-      <Icon className="mt-0.5 size-4 shrink-0" style={{ color }} />
+    <div className="flex gap-3.5 rounded-lg border p-4" style={{ borderColor: `${color}25`, background: `${color}08` }}>
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg mt-0.5" style={{ background: `${color}15` }}>
+        <Icon className="size-4" style={{ color }} />
+      </div>
       <div className="space-y-1 min-w-0">
         <p className="text-xs font-semibold text-foreground">{title}</p>
         <div className="text-xs text-muted-foreground leading-relaxed">{children}</div>
@@ -52,11 +54,14 @@ function Callout({ icon: Icon, color, title, children }: { icon: React.ElementTy
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3">
-      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[#00d992]/10 border border-[#00d992]/25 text-[10px] font-bold text-[#00d992]">{n}</div>
-      <div className="space-y-1 pb-4 border-b border-border/30 last:border-0 last:pb-0 flex-1">
-        <p className="text-sm font-medium text-foreground">{title}</p>
-        <div className="text-xs text-muted-foreground leading-relaxed">{children}</div>
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20 text-[11px] font-bold text-[#00d992] font-mono">{n}</div>
+        <div className="w-px flex-1 bg-[#00d992]/10 mt-1.5" />
+      </div>
+      <div className="space-y-1.5 pb-5 flex-1">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <div className="text-xs text-[#b8b3b0] leading-relaxed">{children}</div>
       </div>
     </div>
   );
@@ -64,11 +69,13 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 
 function FeatureRow({ icon: Icon, label, desc }: { icon: React.ElementType; label: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/30 last:border-0">
-      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/60" />
-      <div>
-        <span className="text-xs font-medium text-foreground">{label} — </span>
-        <span className="text-xs text-muted-foreground">{desc}</span>
+    <div className="flex items-start gap-3.5 p-3.5 rounded-lg border border-[#3d3a39]/60 bg-[#101010] hover:border-[#3d3a39] transition-colors">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/8 border border-[#00d992]/15 mt-0.5">
+        <Icon className="size-3.5 text-[#00d992]/70" />
+      </div>
+      <div className="space-y-0.5">
+        <p className="text-[13px] font-semibold text-[#f2f2f2]">{label}</p>
+        <p className="text-xs text-[#b8b3b0] leading-relaxed">{desc}</p>
       </div>
     </div>
   );
@@ -76,7 +83,7 @@ function FeatureRow({ icon: Icon, label, desc }: { icon: React.ElementType; labe
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex items-center rounded border border-border bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-foreground/70">{children}</kbd>
+    <kbd className="inline-flex items-center rounded-md border border-[#3d3a39] bg-[#101010] px-1.5 py-0.5 font-mono text-[10px] text-[#00d992] mx-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.3)]">{children}</kbd>
   );
 }
 
@@ -86,15 +93,19 @@ function SectionCard({ section, active, onClick }: { section: Section; active: b
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col gap-1.5 rounded-xl border p-3.5 text-left transition-all duration-150 hover:scale-[1.02]",
+        "flex items-start gap-3 rounded-lg border p-3.5 text-left transition-all duration-150",
         active
-          ? "border-[#00d992]/30 bg-[#00d992]/[0.06]"
-          : "border-border bg-card/60 hover:border-border/80 hover:bg-muted/30"
+          ? "border-[#00d992]/30 bg-[#00d992]/[0.04] shadow-[0_0_12px_rgba(0,217,146,0.06)]"
+          : "border-[#3d3a39]/60 bg-[#101010] hover:border-[#3d3a39] hover:bg-[#101010]/80"
       )}
     >
-      <Icon className="size-4" style={{ color: section.color }} />
-      <p className="text-xs font-semibold text-foreground leading-tight">{section.label}</p>
-      <p className="text-[10px] text-muted-foreground leading-tight">{section.tagline}</p>
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg mt-0.5" style={{ background: `${section.color}12`, border: `1px solid ${section.color}20` }}>
+        <Icon className="size-3.5" style={{ color: section.color }} />
+      </div>
+      <div>
+        <p className="text-xs font-semibold text-[#f2f2f2] leading-tight">{section.label}</p>
+        <p className="text-[10px] text-[#8b949e] leading-tight mt-0.5">{section.tagline}</p>
+      </div>
     </button>
   );
 }
@@ -138,7 +149,7 @@ function OverviewSection() {
       </p>
       <div className="space-y-2">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What you see</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+        <div className="space-y-2">
           <FeatureRow icon={Activity} label="System Health Bar" desc="Aggregated health across all services. Green = all good. Amber = degraded. Red = outage. Click any segment to jump to Incidents." />
           <FeatureRow icon={TrendingUp} label="Live Stats Row" desc="Four real-time counters: Running Agents, Active Deployments, Open Incidents, and Today's AI Spend. These update every 5 seconds." />
           <FeatureRow icon={Zap} label="Quick Actions" desc="Four one-click shortcuts: Deploy Agent, Run Eval, New Workflow, and the Emergency Kill Switch (red). Kill Switch stops all running agents immediately." />
