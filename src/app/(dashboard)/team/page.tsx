@@ -8,6 +8,8 @@ import { UserPlus, ShieldCheck, ShieldX, Check, X, Copy, Key } from "lucide-reac
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { TeamRole } from "@/types/common";
+import { InviteMemberModal } from "@/components/team/InviteMemberModal";
+import { PendingInvites } from "@/components/team/PendingInvites";
 
 // Generate consistent avatar color from name
 const PALETTE = ["#00D4FF", "#A855F7", "#F59E0B", "#39FF14", "#EF4444", "#EC4899", "#10A37F"];
@@ -62,6 +64,8 @@ export default function TeamPage() {
   const [tab, setTab] = useState<"members" | "roles" | "audit" | "keys">("members");
   const { members, auditLog, apiKeys, fetch: fetchTeam } = useTeamStore();
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteRefreshKey, setInviteRefreshKey] = useState(0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchTeam(); }, []);
@@ -93,7 +97,7 @@ export default function TeamPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{members.length} member{members.length !== 1 ? "s" : ""}</span>
-            <Button size="default" onClick={() => toast.success("Invite sent")}>
+            <Button size="default" onClick={() => setInviteOpen(true)}>
               <UserPlus className="size-4 mr-2" /> Invite Member
             </Button>
           </div>
@@ -107,7 +111,7 @@ export default function TeamPage() {
                 <p className="text-sm font-medium text-muted-foreground">No team members yet</p>
                 <p className="text-xs text-muted-foreground/50 mt-0.5">Invite your team to collaborate on Mission Control</p>
               </div>
-              <Button size="sm" onClick={() => toast.success("Invite sent")} className="mt-1">
+              <Button size="sm" onClick={() => setInviteOpen(true)} className="mt-1">
                 <UserPlus className="size-3.5 mr-1.5" /> Invite Member
               </Button>
             </div>
@@ -176,6 +180,7 @@ export default function TeamPage() {
           </GlassPanel>
           )}
 
+          <PendingInvites refreshKey={inviteRefreshKey} />
         </div>
       )}
 
@@ -331,6 +336,12 @@ export default function TeamPage() {
         confirmLabel="Remove"
         variant="danger"
         onConfirm={() => { toast.success(`${removeTarget} removed`); setRemoveTarget(null); }}
+      />
+
+      <InviteMemberModal
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        onInviteSent={() => setInviteRefreshKey((k) => k + 1)}
       />
     </div>
   );
