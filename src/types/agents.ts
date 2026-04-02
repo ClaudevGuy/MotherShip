@@ -1,4 +1,4 @@
-import type { AgentStatus, ModelProvider } from "./common";
+import type { AgentStatus, ModelProvider, ModelStrategy } from "./common";
 
 export interface AgentTool {
   name: string;
@@ -28,6 +28,7 @@ export interface Agent {
   name: string;
   description: string;
   model: ModelProvider;
+  modelStrategy: ModelStrategy;
   status: AgentStatus;
   tasksCompleted: number;
   errorRate: number;

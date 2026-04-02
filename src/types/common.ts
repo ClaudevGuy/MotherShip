@@ -6,6 +6,7 @@ export type IncidentStatus = "open" | "investigating" | "resolved";
 export type HealthStatus = "healthy" | "degraded" | "down";
 export type LogLevel = "debug" | "info" | "warn" | "error";
 export type ModelProvider = "Claude" | "GPT-4" | "Gemini" | "Custom";
+export type ModelStrategy = "auto" | "manual" | "cost_first" | "quality_first";
 export type Environment = "development" | "staging" | "production";
 export type IntegrationStatus = "connected" | "disconnected" | "error";
 export type TeamRole = "admin" | "developer" | "agent_manager" | "viewer";

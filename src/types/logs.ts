@@ -35,6 +35,11 @@ export interface LLMCall {
   cost: number;
   agentId: string;
   agentName: string;
+  selectedTier?: number | null;
+  selectionReason?: string | null;
+  wasUpgraded?: boolean;
+  originalTier?: number | null;
+  selectionDurationMs?: number | null;
 }
 
 export interface TraceSpan {
