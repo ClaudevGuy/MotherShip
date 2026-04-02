@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   ReactFlow,
   Controls,
@@ -8,6 +8,8 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
+  ReactFlowProvider,
   type Connection,
   type Node,
   type Edge,
@@ -16,7 +18,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ArrowLeft, Sparkles, GripVertical, Bot, Clock, Hand, Webhook, Zap, Plus, CircleCheck, Search } from "lucide-react";
+import { ArrowLeft, Sparkles, GripVertical, Bot, Clock, Hand, Webhook, Zap, Plus, CircleCheck, Search, AlertTriangle, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,10 +59,56 @@ function nextNodeId(prefix: string) {
   return `${prefix}_${Date.now()}_${nodeIdCounter++}`;
 }
 
-export default function WorkflowBuilderPage() {
+/* ── T11: Validation logic ── */
+interface ValidationError {
+  message: string;
+}
+
+function validateWorkflow(nodes: Node[], edges: Edge[], name: string): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (!name.trim()) {
+    errors.push({ message: "Workflow name is required" });
+  }
+
+  const triggerNodes = nodes.filter((n) => n.type === "trigger");
+  if (triggerNodes.length === 0) {
+    errors.push({ message: "Add a trigger node" });
+  } else if (triggerNodes.length > 1) {
+    errors.push({ message: "Only one trigger node allowed" });
+  }
+
+  const agentNodes = nodes.filter((n) => n.type === "agent");
+  if (agentNodes.length === 0) {
+    errors.push({ message: "Add at least one agent step" });
+  }
+
+  // Check for disconnected agent nodes (no incoming edge)
+  for (const agent of agentNodes) {
+    const hasIncoming = edges.some((e) => e.target === agent.id);
+    if (!hasIncoming) {
+      const agentName = (agent.data as Record<string, string>).agentName || "Agent";
+      errors.push({ message: `"${agentName}" is not connected` });
+    }
+  }
+
+  // Check all agent nodes have valid agentId
+  for (const agent of agentNodes) {
+    if (!(agent.data as Record<string, string>).agentId) {
+      errors.push({ message: "Agent node missing agentId" });
+    }
+  }
+
+  return errors;
+}
+
+/* ═══════════ INNER BUILDER (needs ReactFlow context) ═══════════ */
+
+function WorkflowBuilderInner() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
+  const { fitView } = useReactFlow();
   const {
     workflowName, setWorkflowName,
     isDirty, setDirty,
@@ -80,6 +128,25 @@ export default function WorkflowBuilderPage() {
   const filteredAgents = agents.filter((a) =>
     !agentSearch || a.name.toLowerCase().includes(agentSearch.toLowerCase())
   );
+
+  // T11: Compute validation errors
+  const validationErrors = useMemo(
+    () => validateWorkflow(nodes, edges, workflowName),
+    [nodes, edges, workflowName]
+  );
+  const canActivate = validationErrors.length === 0;
+
+  // T13: Unsaved changes warning
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   // Connection handler
   const onConnect = useCallback(
@@ -110,7 +177,6 @@ export default function WorkflowBuilderPage() {
 
   // Add trigger node
   const addTrigger = (type: string) => {
-    // Only allow one trigger
     if (nodes.some((n) => n.type === "trigger")) {
       toast.error("Only one trigger allowed per workflow");
       return;
@@ -185,14 +251,13 @@ export default function WorkflowBuilderPage() {
     return () => document.removeEventListener("keydown", handler);
   }, [selectedNode, deleteSelected]);
 
-  // Save handler
+  // T12: Save handler (serializes canvas state)
   const handleSave = async () => {
     if (!workflowName.trim()) {
       toast.error("Workflow name is required");
       return;
     }
 
-    // Serialize canvas
     const agentNodes = nodes.filter((n) => n.type === "agent");
     const steps = agentNodes.map((n, i) => ({
       agentId: (n.data as Record<string, string>).agentId,
@@ -224,6 +289,23 @@ export default function WorkflowBuilderPage() {
     }
   };
 
+  // T11: Activate handler
+  const handleActivate = async () => {
+    if (!canActivate) {
+      validationErrors.forEach((e) => toast.error(e.message));
+      return;
+    }
+    await handleSave();
+  };
+
+  // T14: Fit to screen
+  const handleFitView = useCallback(() => {
+    fitView({ padding: 0.2, duration: 300 });
+  }, [fitView]);
+
+  // T15: Check if no agents exist at all in DB
+  const noAgentsInDb = !agents.length;
+
   return (
     <div className="flex h-[calc(100vh-54px)] flex-col overflow-hidden -m-4 md:-m-6">
       {/* ── Top Bar ── */}
@@ -250,10 +332,30 @@ export default function WorkflowBuilderPage() {
           <Button variant="outline" size="sm" onClick={handleSave}>
             Save Draft
           </Button>
-          <Button size="sm" className="bg-[#00D4FF] text-black hover:bg-[#00D4FF]/90" disabled={nodes.filter((n) => n.type === "agent").length === 0}>
-            <Sparkles className="size-3.5 mr-1.5" />
-            Activate
-          </Button>
+
+          {/* T11: Activate button with validation tooltip */}
+          <div className="relative group">
+            <Button
+              size="sm"
+              className="bg-[#00D4FF] text-black hover:bg-[#00D4FF]/90 disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={!canActivate}
+              onClick={handleActivate}
+            >
+              <Sparkles className="size-3.5 mr-1.5" />
+              Activate
+            </Button>
+            {!canActivate && (
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-border bg-card p-3 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Cannot activate:</p>
+                {validationErrors.map((e, i) => (
+                  <div key={i} className="flex items-start gap-1.5 text-xs text-red-400 mt-1">
+                    <AlertTriangle className="size-3 shrink-0 mt-0.5" />
+                    <span>{e.message}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -264,45 +366,60 @@ export default function WorkflowBuilderPage() {
           {/* Agents section */}
           <div className="p-3 border-b border-border/50">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Agents</p>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
-              <Input
-                value={agentSearch}
-                onChange={(e) => setAgentSearch(e.target.value)}
-                placeholder="Search agents..."
-                className="pl-7 h-7 text-xs"
-              />
-            </div>
 
-            {filteredAgents.length === 0 ? (
-              <div className="py-6 text-center">
-                <Bot className="size-8 text-muted-foreground/20 mx-auto mb-2" />
-                <p className="text-[11px] text-muted-foreground/50">No agents available</p>
-                <Link href="/agents" className="text-[10px] text-[#00D4FF] hover:underline mt-1 inline-block">
-                  Create an agent first
+            {/* T15: Empty state when no agents in DB */}
+            {noAgentsInDb ? (
+              <div className="py-8 text-center space-y-2">
+                <Bot className="size-10 text-muted-foreground/15 mx-auto" />
+                <p className="text-xs font-medium text-muted-foreground/60">No agents available</p>
+                <p className="text-[10px] text-muted-foreground/40">Create an agent first to use in workflows</p>
+                <Link
+                  href="/agents"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#00D4FF] hover:underline mt-1"
+                >
+                  <ArrowLeft className="size-3 rotate-180" />
+                  Go to Agents
                 </Link>
               </div>
             ) : (
-              <div className="space-y-1">
-                {filteredAgents.map((agent) => (
-                  <button
-                    key={agent.id}
-                    onClick={() => addAgent(agent.id, agent.name, agent.model)}
-                    className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left hover:bg-muted/40 transition-colors group"
-                  >
-                    <GripVertical className="size-3 text-muted-foreground/20 group-hover:text-muted-foreground/50 shrink-0" />
-                    <Bot className="size-3.5 text-[#00D4FF]/50 shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-foreground truncate">{agent.name}</p>
-                      <div className="flex items-center gap-1">
-                        <span className="size-1.5 rounded-full" style={{ background: MODEL_DOT_COLORS[agent.model] || "#888" }} />
-                        <span className="text-[9px] text-muted-foreground">{agent.model}</span>
-                      </div>
-                    </div>
-                    <Plus className="size-3 text-muted-foreground/20 group-hover:text-[#00D4FF] shrink-0 transition-colors" />
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="relative mb-2">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" />
+                  <Input
+                    value={agentSearch}
+                    onChange={(e) => setAgentSearch(e.target.value)}
+                    placeholder="Search agents..."
+                    className="pl-7 h-7 text-xs"
+                  />
+                </div>
+
+                {filteredAgents.length === 0 ? (
+                  <div className="py-4 text-center">
+                    <p className="text-[11px] text-muted-foreground/50">No matching agents</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {filteredAgents.map((agent) => (
+                      <button
+                        key={agent.id}
+                        onClick={() => addAgent(agent.id, agent.name, agent.model)}
+                        className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left hover:bg-muted/40 transition-colors group"
+                      >
+                        <GripVertical className="size-3 text-muted-foreground/20 group-hover:text-muted-foreground/50 shrink-0" />
+                        <Bot className="size-3.5 text-[#00D4FF]/50 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-foreground truncate">{agent.name}</p>
+                          <div className="flex items-center gap-1">
+                            <span className="size-1.5 rounded-full" style={{ background: MODEL_DOT_COLORS[agent.model] || "#888" }} />
+                            <span className="text-[9px] text-muted-foreground">{agent.model}</span>
+                          </div>
+                        </div>
+                        <Plus className="size-3 text-muted-foreground/20 group-hover:text-[#00D4FF] shrink-0 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -369,38 +486,85 @@ export default function WorkflowBuilderPage() {
             proOptions={{ hideAttribution: true }}
             style={{ background: "transparent" }}
           >
+            {/* T14: Controls with fit-to-screen */}
             <Controls
               showInteractive={false}
+              showFitView={false}
               style={{
                 backgroundColor: isDark ? "#0D0D14" : "#FFFFFF",
                 border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
                 borderRadius: "8px",
+                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.08)",
               }}
             />
+
+            {/* T14: Minimap with proper dark background */}
             <MiniMap
               style={{
-                backgroundColor: isDark ? "#0D0D14" : "#FFFFFF",
-                border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                backgroundColor: isDark ? "#0A0A0F" : "#FFFFFF",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`,
                 borderRadius: "8px",
+                boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.08)",
               }}
-              nodeColor={isDark ? "#00D4FF" : "#0099CC"}
-              maskColor={isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.1)"}
+              nodeColor={(n) =>
+                n.type === "trigger" ? "#A855F7" :
+                n.type === "end" ? "#39FF14" :
+                "#00D4FF"
+              }
+              maskColor={isDark ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.08)"}
             />
+
+            {/* T14: Custom fit-to-screen button */}
+            <Panel position="bottom-right" className="!bottom-[120px] !right-[12px]">
+              <button
+                onClick={handleFitView}
+                className="flex items-center justify-center size-7 rounded-md transition-colors"
+                style={{
+                  backgroundColor: isDark ? "#0D0D14" : "#FFFFFF",
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                  color: isDark ? "#888" : "#555",
+                  boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+                title="Fit to screen"
+              >
+                <Maximize2 className="size-3.5" />
+              </button>
+            </Panel>
 
             {/* Empty canvas hint */}
             {nodes.length === 0 && (
               <Panel position="top-center" className="!top-1/2 !-translate-y-1/2">
                 <div className="text-center space-y-3 p-8 rounded-2xl border-2 border-dashed border-border/40">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground/30">
-                    <Bot className="size-8" />
-                    <ArrowLeft className="size-4 rotate-180" />
-                    <Bot className="size-8" />
-                    <ArrowLeft className="size-4 rotate-180" />
-                    <Bot className="size-8" />
-                  </div>
-                  <p className="text-sm text-muted-foreground/40 max-w-xs">
-                    Add a trigger and agents from the left panel to build your pipeline
-                  </p>
+                  {noAgentsInDb ? (
+                    /* T15: No agents in DB state */
+                    <>
+                      <Bot className="size-12 text-muted-foreground/15 mx-auto" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground/50">No agents in your project</p>
+                        <p className="text-xs text-muted-foreground/30 mt-1">Create agents first, then build pipelines with them</p>
+                      </div>
+                      <Link
+                        href="/agents"
+                        className="inline-flex items-center gap-1.5 text-xs text-[#00D4FF] hover:underline"
+                      >
+                        Go to Agents
+                        <ArrowLeft className="size-3 rotate-180" />
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground/30">
+                        <Bot className="size-8" />
+                        <ArrowLeft className="size-4 rotate-180" />
+                        <Bot className="size-8" />
+                        <ArrowLeft className="size-4 rotate-180" />
+                        <Bot className="size-8" />
+                      </div>
+                      <p className="text-sm text-muted-foreground/40 max-w-xs">
+                        Add a trigger and agents from the left panel to build your pipeline
+                      </p>
+                    </>
+                  )}
                 </div>
               </Panel>
             )}
@@ -485,5 +649,15 @@ export default function WorkflowBuilderPage() {
         )}
       </div>
     </div>
+  );
+}
+
+/* ═══════════ WRAPPER (provides ReactFlow context) ═══════════ */
+
+export default function WorkflowBuilderPage() {
+  return (
+    <ReactFlowProvider>
+      <WorkflowBuilderInner />
+    </ReactFlowProvider>
   );
 }
