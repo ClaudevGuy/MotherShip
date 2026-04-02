@@ -309,18 +309,37 @@ export default function AgentBuilderPage() {
             <h3 className="text-lg font-semibold text-foreground">Tools</h3>
             <p className="text-sm text-muted-foreground">Select the tools this agent can use.</p>
             <div className="space-y-3">
-              {AVAILABLE_TOOLS.map((tool) => (
-                <div
-                  key={tool.id}
-                  className="flex items-center justify-between py-3 px-4 rounded-lg border border-border bg-muted/30"
-                >
-                  <span className="text-sm text-foreground">{tool.label}</span>
-                  <Switch
-                    checked={enabledTools[tool.id] ?? false}
-                    onCheckedChange={() => toggleTool(tool.id)}
-                  />
-                </div>
-              ))}
+              {AVAILABLE_TOOLS.map((tool) => {
+                const isEnabled = enabledTools[tool.id] ?? false;
+                return (
+                  <button
+                    key={tool.id}
+                    type="button"
+                    onClick={() => toggleTool(tool.id)}
+                    className={cn(
+                      "flex items-center justify-between w-full py-3 px-4 rounded-lg border text-left transition-all",
+                      isEnabled
+                        ? "border-[#00d992]/40 bg-[#00d992]/[0.06]"
+                        : "border-border bg-muted/30 hover:border-border/80 hover:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "size-5 rounded-md border-2 flex items-center justify-center transition-colors",
+                        isEnabled ? "border-[#00d992] bg-[#00d992]" : "border-[#3d3a39]"
+                      )}>
+                        {isEnabled && <Check className="size-3 text-black" strokeWidth={3} />}
+                      </div>
+                      <span className={cn("text-sm", isEnabled ? "text-foreground font-medium" : "text-foreground")}>{tool.label}</span>
+                    </div>
+                    <Switch
+                      checked={isEnabled}
+                      onCheckedChange={() => toggleTool(tool.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
