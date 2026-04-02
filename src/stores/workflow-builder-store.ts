@@ -191,7 +191,7 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderStore>((set, get) =
   serializeToJson: () => {
     const { nodes, edges } = get();
     const triggerNode = nodes.find((n) => n.type === "trigger");
-    const trigger = triggerNode ? (triggerNode.data as TriggerConfig) : null;
+    const trigger = triggerNode ? (triggerNode.data as unknown as TriggerConfig) : null;
     return { nodes, edges, trigger };
   },
 

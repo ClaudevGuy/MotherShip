@@ -21,13 +21,11 @@ import { ArrowLeft, Sparkles, GripVertical, Bot, Clock, Hand, Webhook, Zap, Plus
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GlassPanel } from "@/components/shared";
 import { useWorkflowBuilderStore } from "@/stores/workflow-builder-store";
 import { useAgentsStore } from "@/stores/agents-store";
 import { TriggerNode, AgentNode, EndNode } from "@/components/workflows/nodes";
 import { AnimatedEdge } from "@/components/workflows/AnimatedEdge";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 // Register custom node and edge types
 const nodeTypes = {
@@ -67,8 +65,8 @@ export default function WorkflowBuilderPage() {
     isDirty, setDirty,
   } = useWorkflowBuilderStore();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [agentSearch, setAgentSearch] = useState("");
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -205,9 +203,6 @@ export default function WorkflowBuilderPage() {
       toast.error("Add at least one agent to the pipeline");
       return;
     }
-
-    const triggerNode = nodes.find((n) => n.type === "trigger");
-    const trigger = triggerNode ? triggerNode.data : null;
 
     try {
       const res = await fetch("/api/workflows", {
