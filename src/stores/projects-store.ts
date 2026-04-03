@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { invalidateAll } from "@/lib/store-cache";
 
 export interface Project {
   id: string;
@@ -85,6 +86,8 @@ export const useProjectsStore = create<ProjectsStore>((set, get) => ({
       persist(s.projects, id);
       return { activeProjectId: id };
     });
+    // Clear all cached data so stores refetch for the new project
+    invalidateAll();
   },
 
   updateProject: (id, updates) => {
