@@ -54,14 +54,31 @@ export default function ProfilePage() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
+
+    // Resize image to 200x200 before uploading
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const size = 200;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+
+      // Crop to square center
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      URL.revokeObjectURL(objectUrl);
       setAvatar(dataUrl);
+
       // Save immediately
       fetch("/api/profile", {
         method: "PATCH",
@@ -72,7 +89,7 @@ export default function ProfilePage() {
         else toast.error("Failed to update picture");
       }).catch(() => toast.error("Failed to update picture"));
     };
-    reader.readAsDataURL(file);
+    img.src = objectUrl;
   };
 
   const handleSave = async () => {
