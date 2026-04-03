@@ -6,14 +6,14 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Download, Trash2, Pause, RotateCcw, ShieldX, Bell, Shield, Plus, X, Loader2, Link2 } from "lucide-react";
+import { Download, Trash2, Pause, RotateCcw, ShieldX, Bell, Shield, Plus, X, Loader2, Link2, Key, Copy } from "lucide-react";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useIntegrationsStore } from "@/stores/integrations-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { invalidate } from "@/lib/store-cache";
 
-const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Integrations", "Danger Zone"];
+const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "API Keys", "Integrations", "Danger Zone"];
 
 const NOTIF_EVENTS: { name: string; app: boolean; email: boolean; slack: boolean }[] = [];
 
@@ -41,6 +41,16 @@ export default function SettingsPage() {
   const [addIntCategory, setAddIntCategory] = useState("ai");
   const [addingInt, setAddingInt] = useState(false);
   const [addIntError, setAddIntError] = useState<string | null>(null);
+  // API Keys state
+  const [apiKeys, setApiKeys] = useState<{ id: string; name: string; prefix: string; scopes: string[]; createdAt: string; lastUsed: string | null; expiresAt: string | null; status: string }[]>([]);
+  const [apiKeysLoading, setApiKeysLoading] = useState(false);
+  const [createKeyOpen, setCreateKeyOpen] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyScopes, setNewKeyScopes] = useState<string[]>(["read"]);
+  const [newKeyExpiry, setNewKeyExpiry] = useState("never");
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [createdKeyRaw, setCreatedKeyRaw] = useState<string | null>(null);
+  const [keyError, setKeyError] = useState<string | null>(null);
   const projectName = useSettingsStore((s) => s.projectName);
   const projectDescription = useSettingsStore((s) => s.projectDescription);
   const storeSetProjectName = useSettingsStore((s) => s.setProjectName);
@@ -252,6 +262,201 @@ export default function SettingsPage() {
               </GlassPanel>
             </div>
           )}
+
+          {/* ─── API KEYS ─── */}
+          {section === "API Keys" && (() => {
+            const fetchKeys = () => {
+              setApiKeysLoading(true);
+              fetch("/api/team/api-keys")
+                .then((r) => r.json())
+                .then((d) => setApiKeys(d.data?.keys || []))
+                .catch(() => setApiKeys([]))
+                .finally(() => setApiKeysLoading(false));
+            };
+
+            // Fetch on first render of this section
+            if (!apiKeysLoading && apiKeys.length === 0 && !keyError) {
+              fetchKeys();
+            }
+
+            const handleCreateKey = async () => {
+              if (!newKeyName.trim()) { setKeyError("Key name is required"); return; }
+              setCreatingKey(true);
+              setKeyError(null);
+              try {
+                const res = await fetch("/api/team/api-keys", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: newKeyName.trim(), scopes: newKeyScopes, expiresIn: newKeyExpiry }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Failed to create key");
+                setCreatedKeyRaw(data.data.key.rawKey);
+                fetchKeys();
+              } catch (err) {
+                setKeyError((err as Error).message);
+              } finally {
+                setCreatingKey(false);
+              }
+            };
+
+            const handleDoneKey = () => {
+              setCreatedKeyRaw(null);
+              setCreateKeyOpen(false);
+              setNewKeyName("");
+              setNewKeyScopes(["read"]);
+              setNewKeyExpiry("never");
+            };
+
+            return (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">API Keys</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Keys for external tools to send events to your dashboard</p>
+                  </div>
+                  <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={() => setCreateKeyOpen(true)}>
+                    <Key className="size-3.5 mr-1" /> Create Key
+                  </Button>
+                </div>
+
+                {apiKeys.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 py-16 text-center rounded-lg border border-border bg-card/50">
+                    <Key className="size-8 text-muted-foreground/20" />
+                    <p className="text-sm font-medium text-muted-foreground">No API keys yet</p>
+                    <p className="text-xs text-muted-foreground/50">Create a key to let external tools send data to Mission Control</p>
+                    <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black mt-1" onClick={() => setCreateKeyOpen(true)}>
+                      <Key className="size-3.5 mr-1" /> Create your first key
+                    </Button>
+                  </div>
+                ) : (
+                  <GlassPanel padding="none">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          {["Name", "Key", "Scopes", "Created", "Last Used", "Status"].map((h) => (
+                            <th key={h} className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {apiKeys.map((k) => (
+                          <tr key={k.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                            <td className="px-4 py-2.5 font-medium text-foreground">{k.name}</td>
+                            <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">mc_{k.prefix}-••••••••</td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex gap-1">
+                                {k.scopes.map((s) => (
+                                  <span key={s} className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-mono bg-muted/40 text-muted-foreground border border-border">{s}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-xs text-muted-foreground">{new Date(k.createdAt).toLocaleDateString()}</td>
+                            <td className="px-4 py-2.5 text-xs text-muted-foreground">{k.lastUsed ? new Date(k.lastUsed).toLocaleDateString() : "Never"}</td>
+                            <td className="px-4 py-2.5">
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-500/15 text-green-400">Active</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </GlassPanel>
+                )}
+
+                <div className="rounded-lg border border-border/50 bg-muted/5 px-4 py-3">
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <span className="font-medium text-foreground/70">Usage:</span> Pass your API key as a Bearer token when sending events: <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5 text-[10px]">Authorization: Bearer mc_your_key</code>
+                  </p>
+                </div>
+
+                {/* Create Key Modal */}
+                {createKeyOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => !createdKeyRaw && handleDoneKey()} />
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                      <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            <Key className="size-4 text-[#00d992]" />
+                            <h2 className="text-sm font-semibold text-foreground">{createdKeyRaw ? "Key Created" : "Create API Key"}</h2>
+                          </div>
+                          {!createdKeyRaw && <button onClick={handleDoneKey} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>}
+                        </div>
+
+                        {createdKeyRaw ? (
+                          <div className="px-5 py-5 space-y-4">
+                            <div className="rounded-lg border border-red-500/30 bg-red-500/[0.05] px-4 py-3 flex items-start gap-2">
+                              <Shield className="size-4 text-red-400 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-red-400">Copy this key now</p>
+                                <p className="text-xs text-foreground/70 mt-0.5">It will never be shown again.</p>
+                              </div>
+                            </div>
+                            <div className="rounded-lg bg-muted/30 p-3">
+                              <p className="font-mono text-xs text-foreground break-all select-all">{createdKeyRaw}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button className="flex-1 bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={() => { navigator.clipboard.writeText(createdKeyRaw); toast.success("Copied"); }}>
+                                <Copy className="size-3.5 mr-1.5" /> Copy Key
+                              </Button>
+                              <Button variant="outline" onClick={handleDoneKey}>Done</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="px-5 py-5 space-y-4">
+                              <div>
+                                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Key Name</label>
+                                <Input placeholder="e.g. Production SDK Key" value={newKeyName} onChange={(e) => { setNewKeyName(e.target.value); setKeyError(null); }} className="h-9" autoFocus />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Scopes</label>
+                                <div className="space-y-2">
+                                  {[
+                                    { value: "read", label: "Read", desc: "Read data and list resources" },
+                                    { value: "write", label: "Write", desc: "Create and update resources" },
+                                    { value: "ingest", label: "Ingest", desc: "Send events from external agents" },
+                                  ].map((s) => (
+                                    <label key={s.value} className="flex items-start gap-2.5 cursor-pointer">
+                                      <input type="checkbox" checked={newKeyScopes.includes(s.value)} onChange={() => setNewKeyScopes((prev) => prev.includes(s.value) ? prev.filter((x) => x !== s.value) : [...prev, s.value])} className="mt-0.5 rounded border-border" />
+                                      <div>
+                                        <span className="text-xs font-medium text-foreground">{s.label}</span>
+                                        <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                                      </div>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Expiry</label>
+                                <select value={newKeyExpiry} onChange={(e) => setNewKeyExpiry(e.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
+                                  <option value="30d">30 days</option>
+                                  <option value="90d">90 days</option>
+                                  <option value="1y">1 year</option>
+                                  <option value="never">Never</option>
+                                </select>
+                              </div>
+                              {keyError && (
+                                <div className="rounded-lg border border-red-500/30 bg-red-500/[0.05] px-3 py-2">
+                                  <p className="text-xs text-red-400">{keyError}</p>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+                              <Button variant="outline" size="sm" onClick={handleDoneKey} disabled={creatingKey}>Cancel</Button>
+                              <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={handleCreateKey} disabled={creatingKey || !newKeyName.trim()}>
+                                {creatingKey ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Generating...</> : "Generate Key"}
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ─── INTEGRATIONS ─── */}
           {section === "Integrations" && (() => {
