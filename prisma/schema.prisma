@@ -202,11 +202,11 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
-  image         String?
+  image         String?  @db.Text
 
   // Extended fields
   role          TeamRole  @default(VIEWER)
-  avatar        String?
+  avatar        String?  @db.Text
   twoFAEnabled  Boolean   @default(false)
   jobTitle      String?
   displayName   String?
