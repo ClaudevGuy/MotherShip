@@ -334,7 +334,7 @@ export default function SettingsPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
-                          {["Name", "Key", "Scopes", "Created", "Last Used", "Status"].map((h) => (
+                          {["Name", "Key", "Scopes", "Created", "Last Used", "Status", ""].map((h) => (
                             <th key={h} className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{h}</th>
                           ))}
                         </tr>
@@ -356,6 +356,21 @@ export default function SettingsPage() {
                             <td className="px-4 py-2.5">
                               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-500/15 text-green-400">Active</span>
                             </td>
+                            <td className="px-4 py-2.5">
+                              <button
+                                className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors"
+                                onClick={async () => {
+                                  if (!confirm(`Delete key "${k.name}"?`)) return;
+                                  try {
+                                    await fetch(`/api/team/api-keys/${k.id}`, { method: "DELETE" });
+                                    toast.success(`Key "${k.name}" deleted`);
+                                    fetchKeys();
+                                  } catch { toast.error("Failed to delete key"); }
+                                }}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -363,11 +378,52 @@ export default function SettingsPage() {
                   </GlassPanel>
                 )}
 
-                <div className="rounded-lg border border-border/50 bg-muted/5 px-4 py-3">
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground/70">Usage:</span> Pass your API key as a Bearer token when sending events: <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5 text-[10px]">Authorization: Bearer mc_your_key</code>
-                  </p>
-                </div>
+                {/* Quick-start guide */}
+                <GlassPanel padding="lg">
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Connect External Agents</h3>
+                  <p className="text-xs text-muted-foreground mb-4">Send events from any AI framework to see agents on your dashboard.</p>
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">1</span>
+                      <div>
+                        <p className="text-xs font-medium text-foreground">Create an API key above</p>
+                        <p className="text-[11px] text-muted-foreground">Select the &quot;Ingest&quot; scope so the key can receive events.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">2</span>
+                      <div>
+                        <p className="text-xs font-medium text-foreground">Send events from your app</p>
+                        <p className="text-[11px] text-muted-foreground mb-2">After each agent run, POST to the ingest endpoint:</p>
+                        <pre className="rounded-lg bg-[#050507] border border-[#3d3a39] p-3 text-[11px] font-mono text-[#f2f2f2] overflow-x-auto whitespace-pre">{`curl -X POST ${typeof window !== "undefined" ? window.location.origin : "https://your-dashboard.com"}/api/events/ingest \\
+  -H "Authorization: Bearer mc_your_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "type": "agent.run.completed",
+    "source": "my-app",
+    "agent": { "id": "agent-1", "name": "My Agent" },
+    "data": { "cost": 0.05, "duration": 3000 }
+  }'`}</pre>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">3</span>
+                      <div>
+                        <p className="text-xs font-medium text-foreground">See agents on your dashboard</p>
+                        <p className="text-[11px] text-muted-foreground">External agents appear automatically on the Overview page with their status, run count, and costs.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-border/30">
+                    <p className="text-[10px] text-muted-foreground">
+                      <span className="font-medium text-foreground/70">Or use the SDK:</span>{" "}
+                      <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">npm install @mission-control/sdk</code>{" "}
+                      — see <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">packages/sdk/README.md</code> for full docs.
+                    </p>
+                  </div>
+                </GlassPanel>
 
                 {/* Create Key Modal */}
                 {createKeyOpen && (
