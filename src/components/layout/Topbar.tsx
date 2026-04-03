@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ChevronRight, Search, User, Sun, Moon, Menu, CheckCheck, X } from "lucide-react";
+import { Bell, ChevronRight, Search, Sun, Moon, Menu, CheckCheck, X } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { useAgentsStore } from "@/stores/agents-store";
 import { useNotificationsStore } from "@/stores/notifications-store";
@@ -240,7 +240,6 @@ export function Topbar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => router.push("/profile")}>
-              <User className="mr-2 size-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/settings")}>
