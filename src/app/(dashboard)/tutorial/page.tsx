@@ -7,7 +7,7 @@ import {
   BarChart3, ScrollText, Users, AlertTriangle, Settings,
   BookOpen, Zap, ChevronRight, Keyboard, FolderOpen,
   Play, CheckCircle2, Info, Lightbulb, Terminal, Shield,
-  Bell, Palette, Link2, Flame, Activity, TrendingUp,
+  Bell, Palette, Link2, Flame, Activity, TrendingUp, Plug,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,7 @@ const SECTIONS: Section[] = [
   { id: "incidents",        label: "Incidents",        icon: AlertTriangle,  color: "#EF4444", tagline: "Alert rules and on-call" },
   { id: "settings",         label: "Settings",         icon: Settings,       color: "#6B7280", tagline: "Project configuration" },
   { id: "projects",         label: "Projects",         icon: FolderOpen,     color: "#8B5CF6", tagline: "Multi-project workspace" },
+  { id: "external-agents",  label: "External Agents",  icon: Plug,           color: "#F97316", tagline: "Connect agents from any framework" },
   { id: "shortcuts",        label: "Shortcuts",        icon: Keyboard,       color: "#00d992", tagline: "Navigate without a mouse" },
 ];
 
@@ -419,6 +420,79 @@ function ProjectsSection() {
   );
 }
 
+function ExternalAgentsSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Already running AI agents with CrewAI, LangGraph, AutoGen, or your own custom framework? You don&apos;t need to rebuild them inside Mission Control. Connect them in minutes and get full visibility — costs, performance, and status — all in one dashboard.
+      </p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How it works</p>
+        <Step n={1} title="Create an API key">
+          Go to <strong className="text-foreground">Settings → API Keys</strong> and click <strong className="text-foreground">Create API Key</strong>. Give it a name (e.g. &ldquo;My CrewAI App&rdquo;) and select the <strong className="text-foreground">Ingest</strong> scope. Copy the key — it starts with <code className="text-[#00d992] text-[11px]">mc_</code>.
+        </Step>
+        <Step n={2} title="Add a few lines to your existing code">
+          After each agent run in your app, send a POST request to Mission Control&apos;s ingest endpoint. This tells the dashboard what happened — which agent ran, how long it took, and what it cost.
+        </Step>
+        <Step n={3} title="See your agents on the dashboard">
+          External agents appear automatically on the <strong className="text-foreground">Overview</strong> page. You&apos;ll see their run history, costs, and performance alongside any agents you created natively in Mission Control.
+        </Step>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Option A — cURL / any language</p>
+        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`curl -X POST https://your-dashboard.com/api/events/ingest \\
+  -H "Authorization: Bearer mc_your_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "type": "agent.run.completed",
+    "source": "my-app",
+    "agent": { "id": "agent-1", "name": "My Agent" },
+    "data": { "cost": 0.05, "duration": 3000 }
+  }'`}</div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Option B — JavaScript / TypeScript SDK</p>
+        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`npm install @mission-control/sdk`}</div>
+        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`import { MissionControl } from '@mission-control/sdk'
+
+const mc = new MissionControl({
+  url: 'https://your-dashboard.com',
+  apiKey: 'mc_your_key',
+  source: 'my-crewai-app',
+})
+
+// After each agent run:
+await mc.trackRun({
+  agent: { id: 'agent-1', name: 'Research Agent' },
+  status: 'completed',
+  cost: 0.05,
+  duration: 3000,
+})`}</div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Supported event types</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={Play} label="agent.run.started" desc="Agent began executing. Marks it as Running on the dashboard." />
+          <FeatureRow icon={CheckCircle2} label="agent.run.completed" desc="Agent finished successfully. Includes cost, duration, and token usage." />
+          <FeatureRow icon={AlertTriangle} label="agent.run.failed" desc="Agent errored. Include an error message so it shows up in the Logs page." />
+          <FeatureRow icon={DollarSign} label="agent.cost.reported" desc="Report cost data separately from run events — useful for batch billing reconciliation." />
+        </div>
+      </div>
+
+      <Callout icon={Lightbulb} color="#F59E0B" title="Works with any framework">
+        CrewAI, LangGraph, AutoGen, Semantic Kernel, custom Python scripts — anything that can make an HTTP request can report to Mission Control. You only need to add 3-5 lines of code to your existing agent runner.
+      </Callout>
+
+      <Callout icon={Info} color="#60A5FA" title="API key scopes">
+        For external agents, you only need the <strong className="text-foreground">Ingest</strong> scope. This keeps the key limited to sending events — it can&apos;t read or modify anything else on your dashboard.
+      </Callout>
+    </div>
+  );
+}
+
 function ShortcutsSection() {
   const shortcuts = [
     { keys: ["Ctrl", "K"], desc: "Open command palette — search for any page or action" },
@@ -475,6 +549,7 @@ const SECTION_CONTENT: Record<string, React.ReactNode> = {
   "incidents":        <IncidentsSection />,
   "settings":         <SettingsSection />,
   "projects":         <ProjectsSection />,
+  "external-agents":  <ExternalAgentsSection />,
   "shortcuts":        <ShortcutsSection />,
 };
 
