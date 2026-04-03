@@ -11,7 +11,7 @@ export const createWorkflowSchema = z.object({
         position: z.number().int().min(0),
       })
     )
-    .min(2, "A workflow needs at least 2 agents"),
+    .min(1, "A workflow needs at least 1 agent"),
 });
 
 export const updateWorkflowSchema = z.object({
@@ -25,7 +25,7 @@ export const updateWorkflowSchema = z.object({
         position: z.number().int().min(0),
       })
     )
-    .min(2)
+    .min(1)
     .optional(),
 });
 
