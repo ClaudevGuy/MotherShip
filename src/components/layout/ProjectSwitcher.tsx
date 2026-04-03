@@ -49,7 +49,7 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { projects, activeProjectId, switchProject, addProject } =
+  const { projects, activeProjectId, switchProject, addProject, deleteProject } =
     useProjectsStore();
   const setProjectName = useSettingsStore((s) => s.setProjectName);
   const setProjectLogo = useSettingsStore((s) => s.setProjectLogo);
@@ -149,6 +149,23 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
                   </div>
                   {isActive && (
                     <Check className="size-3 shrink-0 text-[#00d992]" />
+                  )}
+                  {project.id !== "default" && (
+                    <span
+                      role="button"
+                      className="shrink-0 text-muted-foreground/30 hover:text-red-400 transition-colors ml-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteProject(project.id);
+                        if (isActive) {
+                          setProjectName("Mission Control");
+                          setProjectLogo("");
+                          reloadProjectData();
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </span>
                   )}
                 </button>
               );

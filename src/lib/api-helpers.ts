@@ -88,6 +88,13 @@ export async function requireRole(minimumRole: "viewer" | "developer" | "agent_m
 }
 
 export async function getProjectId() {
+  // Check for client-specified project ID via header
+  const headersList = await headers();
+  const headerProjectId = headersList.get("x-project-id");
+  if (headerProjectId && headerProjectId.length > 0) {
+    return headerProjectId;
+  }
+  // Fallback to auth user's active project
   const user = await requireAuth();
   return user.activeProjectId;
 }

@@ -45,6 +45,7 @@ interface ProjectsStore {
   activeProjectId: string;
   getActiveProject: () => Project | undefined;
   addProject: (name: string, description: string) => Project;
+  deleteProject: (id: string) => void;
   switchProject: (id: string) => void;
   updateProject: (
     id: string,
@@ -79,6 +80,17 @@ export const useProjectsStore = create<ProjectsStore>((set, get) => ({
       return { projects };
     });
     return newProject;
+  },
+
+  deleteProject: (id) => {
+    if (id === "default") return; // Can't delete default project
+    set((s) => {
+      const projects = s.projects.filter((p) => p.id !== id);
+      const newActiveId = s.activeProjectId === id ? "default" : s.activeProjectId;
+      persist(projects, newActiveId);
+      if (s.activeProjectId === id) invalidateAll();
+      return { projects, activeProjectId: newActiveId };
+    });
   },
 
   switchProject: (id) => {
