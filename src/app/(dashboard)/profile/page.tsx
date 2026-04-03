@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageHeader, GlassPanel } from "@/components/shared";
 import { Camera, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,6 +34,7 @@ export default function ProfilePage() {
           setEmail(user.email || "");
           setJobTitle(user.jobTitle || "");
           setTimezone(user.timezone || "UTC");
+          setAvatar(user.avatar || user.image || null);
         }
       })
       .catch(() => {})
@@ -49,6 +52,30 @@ export default function ProfilePage() {
       } catch {}
     }
   }, []);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setAvatar(dataUrl);
+      // Save immediately
+      fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: dataUrl }),
+      }).then((r) => {
+        if (r.ok) toast.success("Profile picture updated");
+        else toast.error("Failed to update picture");
+      }).catch(() => toast.error("Failed to update picture"));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -89,14 +116,20 @@ export default function ProfilePage() {
       {/* ─── Profile Header ─── */}
       <GlassPanel padding="lg">
         <div className="flex items-start gap-6">
-          <div className="relative group shrink-0">
-            <div className="size-20 rounded-full bg-[#00d992]/15 flex items-center justify-center text-2xl font-bold text-[#00d992]">
-              {initials}
-            </div>
+          <div className="relative group shrink-0" onClick={() => fileInputRef.current?.click()} style={{ cursor: "pointer" }}>
+            {avatar && avatar.length > 5 ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={avatar} alt="Profile" className="size-20 rounded-full object-cover" />
+            ) : (
+              <div className="size-20 rounded-full bg-[#00d992]/15 flex items-center justify-center text-2xl font-bold text-[#00d992]">
+                {initials}
+              </div>
+            )}
             <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-[#39FF14] border-[3px] border-card" style={{ boxShadow: "0 0 6px rgba(57,255,20,0.5)" }} />
-            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Camera className="size-5 text-white/80" />
             </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
 
           <div className="flex-1 min-w-0">

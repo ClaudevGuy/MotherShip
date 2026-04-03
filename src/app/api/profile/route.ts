@@ -38,6 +38,7 @@ const updateProfileSchema = z.object({
   displayName: z.string().max(100).optional(),
   jobTitle: z.string().max(100).optional(),
   timezone: z.string().max(50).optional(),
+  avatar: z.string().max(500000).optional(), // base64 data URL up to ~375KB image
 });
 
 export const PATCH = withErrorHandler(async (request: NextRequest) => {
@@ -51,6 +52,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
       ...(body.displayName !== undefined && { displayName: body.displayName }),
       ...(body.jobTitle !== undefined && { jobTitle: body.jobTitle }),
       ...(body.timezone !== undefined && { timezone: body.timezone }),
+      ...(body.avatar !== undefined && { avatar: body.avatar, image: body.avatar }),
     },
     select: {
       id: true,
