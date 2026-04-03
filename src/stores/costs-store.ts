@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { CostBreakdown, AgentCost, Budget, Invoice } from "@/types/costs";
 import type { TimeSeriesPoint } from "@/types/common";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
@@ -34,11 +35,11 @@ export const useCostsStore = create<CostsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [breakdownRes, agentCostsRes, budgetsRes, invoicesRes, dailyRes] = await Promise.all([
-        fetch("/api/costs/breakdown"),
-        fetch("/api/costs/agent-costs"),
-        fetch("/api/costs/budgets"),
-        fetch("/api/costs/invoices"),
-        fetch("/api/costs/daily"),
+        apiFetch("/api/costs/breakdown"),
+        apiFetch("/api/costs/agent-costs"),
+        apiFetch("/api/costs/budgets"),
+        apiFetch("/api/costs/invoices"),
+        apiFetch("/api/costs/daily"),
       ]);
       if (!breakdownRes.ok) throw new Error("Failed to fetch cost breakdown");
       if (!agentCostsRes.ok) throw new Error("Failed to fetch agent costs");
@@ -75,7 +76,7 @@ export const useCostsStore = create<CostsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch("/api/costs/budgets", {
+      const res = await apiFetch("/api/costs/budgets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, limit }),

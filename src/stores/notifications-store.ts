@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 
 export interface Notification {
@@ -33,7 +34,7 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
     markInflight("notifications");
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/notifications");
+      const res = await apiFetch("/api/notifications");
       if (!res.ok) throw new Error("Failed to fetch notifications");
       const { data } = await res.json();
       markFetched("notifications");
@@ -63,7 +64,7 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
       ),
     }));
     try {
-      await fetch(`/api/notifications`, {
+      await apiFetch(`/api/notifications`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, read: true }),
@@ -78,7 +79,7 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true })),
     }));
     try {
-      await fetch(`/api/notifications`, {
+      await apiFetch(`/api/notifications`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ markAllRead: true }),

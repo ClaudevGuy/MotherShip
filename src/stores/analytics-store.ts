@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { AnalyticsData } from "@/types/analytics";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 
@@ -35,12 +36,12 @@ export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const [overviewRes, retentionRes, geoRes, featuresRes, funnelRes, growthRes] = await Promise.all([
-        fetch("/api/analytics/overview"),
-        fetch("/api/analytics/retention"),
-        fetch("/api/analytics/geo"),
-        fetch("/api/analytics/features"),
-        fetch("/api/analytics/funnel"),
-        fetch("/api/analytics/growth"),
+        apiFetch("/api/analytics/overview"),
+        apiFetch("/api/analytics/retention"),
+        apiFetch("/api/analytics/geo"),
+        apiFetch("/api/analytics/features"),
+        apiFetch("/api/analytics/funnel"),
+        apiFetch("/api/analytics/growth"),
       ]);
       if (!overviewRes.ok) throw new Error("Failed to fetch analytics overview");
       if (!retentionRes.ok) throw new Error("Failed to fetch retention data");

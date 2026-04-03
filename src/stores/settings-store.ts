@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 
 interface SettingsStore {
   projectName: string;
@@ -41,7 +42,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   fetch: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/settings");
+      const res = await apiFetch("/api/settings");
       if (!res.ok) throw new Error("Failed to fetch settings");
       const { data } = await res.json();
       set({ ...data, isLoading: false });
@@ -56,7 +57,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       pollingEnabled, compactMode, animationsEnabled, timezone, projectLogo,
     } = get();
     try {
-      const res = await fetch("/api/settings", {
+      const res = await apiFetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

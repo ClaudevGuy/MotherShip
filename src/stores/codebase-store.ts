@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { Repository, Commit, PullRequest, CodeHealthScore } from "@/types/codebase";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 
@@ -46,10 +47,10 @@ export const useCodebaseStore = create<CodebaseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [reposRes, commitsRes, prsRes, healthRes] = await Promise.all([
-        fetch("/api/codebase/repositories"),
-        fetch("/api/codebase/commits"),
-        fetch("/api/codebase/pull-requests"),
-        fetch("/api/codebase/health"),
+        apiFetch("/api/codebase/repositories"),
+        apiFetch("/api/codebase/commits"),
+        apiFetch("/api/codebase/pull-requests"),
+        apiFetch("/api/codebase/health"),
       ]);
       if (!reposRes.ok) throw new Error("Failed to fetch repositories");
       if (!commitsRes.ok) throw new Error("Failed to fetch commits");

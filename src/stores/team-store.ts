@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { TeamMember, AuditLogEntry, APIKey } from "@/types/team";
 import type { TeamRole } from "@/types/common";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
@@ -29,9 +30,9 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [membersRes, auditRes, keysRes] = await Promise.all([
-        fetch("/api/team/members"),
-        fetch("/api/team/audit-log"),
-        fetch("/api/team/api-keys"),
+        apiFetch("/api/team/members"),
+        apiFetch("/api/team/audit-log"),
+        apiFetch("/api/team/api-keys"),
       ]);
       if (!membersRes.ok) throw new Error("Failed to fetch team members");
       if (!auditRes.ok) throw new Error("Failed to fetch audit log");
@@ -80,7 +81,7 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/team/members/${id}`, {
+      const res = await apiFetch(`/api/team/members/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
@@ -96,7 +97,7 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
       members: state.members.filter((m) => m.id !== id),
     }));
     try {
-      const res = await fetch(`/api/team/members/${id}`, {
+      const res = await apiFetch(`/api/team/members/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to remove member");
@@ -113,7 +114,7 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
       apiKeys: state.apiKeys.filter((k) => k.id !== id),
     }));
     try {
-      const res = await fetch(`/api/team/api-keys/${id}`, {
+      const res = await apiFetch(`/api/team/api-keys/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to revoke API key");

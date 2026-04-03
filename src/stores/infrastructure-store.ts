@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { ResourceMetric, ServiceNode, APIEndpoint, QueueMetric } from "@/types/infrastructure";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 
@@ -27,10 +28,10 @@ export const useInfrastructureStore = create<InfrastructureStore>((set, get) => 
     set({ isLoading: true, error: null });
     try {
       const [resourcesRes, servicesRes, endpointsRes, queuesRes] = await Promise.all([
-        fetch("/api/infrastructure/resources"),
-        fetch("/api/infrastructure/services"),
-        fetch("/api/infrastructure/endpoints"),
-        fetch("/api/infrastructure/queues"),
+        apiFetch("/api/infrastructure/resources"),
+        apiFetch("/api/infrastructure/services"),
+        apiFetch("/api/infrastructure/endpoints"),
+        apiFetch("/api/infrastructure/queues"),
       ]);
       if (!resourcesRes.ok) throw new Error("Failed to fetch resources");
       if (!servicesRes.ok) throw new Error("Failed to fetch services");
@@ -62,7 +63,7 @@ export const useInfrastructureStore = create<InfrastructureStore>((set, get) => 
       ),
     }));
     try {
-      const res = await fetch(`/api/infrastructure/services/${id}`, {
+      const res = await apiFetch(`/api/infrastructure/services/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),

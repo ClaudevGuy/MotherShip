@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { Incident, IncidentEvent, AlertRule, OnCallSchedule } from "@/types/incidents";
 import type { IncidentSeverity, IncidentStatus } from "@/types/common";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
@@ -36,9 +37,9 @@ export const useIncidentsStore = create<IncidentsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [incidentsRes, alertsRes, onCallRes] = await Promise.all([
-        fetch("/api/incidents"),
-        fetch("/api/alert-rules"),
-        fetch("/api/on-call"),
+        apiFetch("/api/incidents"),
+        apiFetch("/api/alert-rules"),
+        apiFetch("/api/on-call"),
       ]);
       if (!incidentsRes.ok) throw new Error("Failed to fetch incidents");
       if (!alertsRes.ok) throw new Error("Failed to fetch alert rules");
@@ -70,7 +71,7 @@ export const useIncidentsStore = create<IncidentsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/incidents/${id}`, {
+      const res = await apiFetch(`/api/incidents/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -99,7 +100,7 @@ export const useIncidentsStore = create<IncidentsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/alert-rules/${id}`, {
+      const res = await apiFetch(`/api/alert-rules/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: !rule.enabled }),

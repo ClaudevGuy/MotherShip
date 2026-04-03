@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 import type { Agent, AgentRun } from "@/types/agents";
 import type { AgentStatus, ModelProvider } from "@/types/common";
@@ -33,7 +34,7 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
     markInflight("agents");
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/agents");
+      const res = await apiFetch("/api/agents");
       if (!res.ok) throw new Error("Failed to fetch agents");
       const { data } = await res.json();
       markFetched("agents");
@@ -55,7 +56,7 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/agents/${id}`, {
+      const res = await apiFetch(`/api/agents/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -68,7 +69,7 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
   },
 
   killAllAgents: async () => {
-    const res = await fetch("/api/agents/kill-all", { method: "POST" });
+    const res = await apiFetch("/api/agents/kill-all", { method: "POST" });
     if (!res.ok) throw new Error("Failed to stop agents");
     const { data } = await res.json();
     // Reflect the status change locally

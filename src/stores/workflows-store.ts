@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 
 export interface WorkflowStep {
   id: string;
@@ -37,7 +38,7 @@ export const useWorkflowsStore = create<WorkflowsStore>((set, get) => ({
   fetch: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/workflows");
+      const res = await apiFetch("/api/workflows");
       if (!res.ok) throw new Error("Failed to fetch workflows");
       const { data } = await res.json();
       const workflows = (data.workflows as Array<Record<string, unknown>>).map((w) => ({
@@ -56,7 +57,7 @@ export const useWorkflowsStore = create<WorkflowsStore>((set, get) => ({
   removeWorkflow: async (id) => {
     set((state) => ({ workflows: state.workflows.filter((w) => w.id !== id) }));
     try {
-      await fetch(`/api/workflows/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/workflows/${id}`, { method: "DELETE" });
     } catch {
       get().fetch();
     }

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { Integration, Webhook } from "@/types/integrations";
 import type { IntegrationStatus } from "@/types/common";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
@@ -29,8 +30,8 @@ export const useIntegrationsStore = create<IntegrationsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [integrationsRes, webhooksRes] = await Promise.all([
-        fetch("/api/integrations"),
-        fetch("/api/webhooks"),
+        apiFetch("/api/integrations"),
+        apiFetch("/api/webhooks"),
       ]);
       if (!integrationsRes.ok) throw new Error("Failed to fetch integrations");
       if (!webhooksRes.ok) throw new Error("Failed to fetch webhooks");
@@ -56,7 +57,7 @@ export const useIntegrationsStore = create<IntegrationsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/integrations/${id}`, {
+      const res = await apiFetch(`/api/integrations/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -79,7 +80,7 @@ export const useIntegrationsStore = create<IntegrationsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/webhooks/${id}`, {
+      const res = await apiFetch(`/api/webhooks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

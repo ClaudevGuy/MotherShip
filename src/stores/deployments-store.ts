@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 import type { Deployment, EnvironmentStatus, FeatureFlag } from "@/types/deployments";
 import type { DeployStatus, Environment } from "@/types/common";
@@ -35,9 +36,9 @@ export const useDeploymentsStore = create<DeploymentsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [deploymentsRes, environmentsRes, flagsRes] = await Promise.all([
-        fetch("/api/deployments"),
-        fetch("/api/environments"),
-        fetch("/api/feature-flags"),
+        apiFetch("/api/deployments"),
+        apiFetch("/api/environments"),
+        apiFetch("/api/feature-flags"),
       ]);
       if (!deploymentsRes.ok) throw new Error("Failed to fetch deployments");
       if (!environmentsRes.ok) throw new Error("Failed to fetch environments");
@@ -72,7 +73,7 @@ export const useDeploymentsStore = create<DeploymentsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/deployments/${id}`, {
+      const res = await apiFetch(`/api/deployments/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -96,7 +97,7 @@ export const useDeploymentsStore = create<DeploymentsStore>((set, get) => ({
       ),
     }));
     try {
-      const res = await fetch(`/api/feature-flags/${id}`, {
+      const res = await apiFetch(`/api/feature-flags/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ environment, enabled: newValue }),

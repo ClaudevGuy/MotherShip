@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiFetch } from "@/lib/api-client";
 import type { LogEntry, ErrorGroup, LLMCall, TraceSpan } from "@/types/logs";
 import type { LogLevel } from "@/types/common";
 import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
@@ -41,10 +42,10 @@ export const useLogsStore = create<LogsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const [logsRes, errorsRes, llmRes, tracesRes] = await Promise.all([
-        fetch("/api/logs"),
-        fetch("/api/logs/errors"),
-        fetch("/api/logs/llm-calls"),
-        fetch("/api/logs/traces"),
+        apiFetch("/api/logs"),
+        apiFetch("/api/logs/errors"),
+        apiFetch("/api/logs/llm-calls"),
+        apiFetch("/api/logs/traces"),
       ]);
       if (!logsRes.ok) throw new Error("Failed to fetch logs");
       if (!errorsRes.ok) throw new Error("Failed to fetch errors");
