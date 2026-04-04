@@ -19,7 +19,6 @@ export default function ProfilePage() {
   const [landingPage, setLandingPage] = useState("/overview");
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
   const [numberFormat, setNumberFormat] = useState("1,000");
-  const [emailDigest, setEmailDigest] = useState("weekly");
 
   // Load profile from API
   useEffect(() => {
@@ -46,7 +45,6 @@ export default function ProfilePage() {
         if (p.landingPage) setLandingPage(p.landingPage);
         if (p.dateFormat) setDateFormat(p.dateFormat);
         if (p.numberFormat) setNumberFormat(p.numberFormat);
-        if (p.emailDigest) setEmailDigest(p.emailDigest);
       } catch {}
     }
   }, []);
@@ -103,7 +101,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error("Failed to save");
 
       // Save preferences to localStorage
-      localStorage.setItem("profile-prefs", JSON.stringify({ landingPage, dateFormat, numberFormat, emailDigest }));
+      localStorage.setItem("profile-prefs", JSON.stringify({ landingPage, dateFormat, numberFormat }));
 
       toast.success("Profile saved");
     } catch {
@@ -224,16 +222,6 @@ export default function ProfilePage() {
               {["1,000", "1.000"].map((f) => (
                 <button key={f} onClick={() => setNumberFormat(f)} className={cn("rounded-md px-3 py-1.5 text-xs font-mono transition-colors", numberFormat === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground bg-muted/30")}>
                   {f}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1">Email Digest</label>
-            <div className="flex gap-1.5">
-              {[{ k: "daily", l: "Daily" }, { k: "weekly", l: "Weekly" }, { k: "never", l: "Never" }].map((f) => (
-                <button key={f.k} onClick={() => setEmailDigest(f.k)} className={cn("rounded-md px-3 py-1.5 text-xs transition-colors", emailDigest === f.k ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground bg-muted/30")}>
-                  {f.l}
                 </button>
               ))}
             </div>
