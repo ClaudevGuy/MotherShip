@@ -13,6 +13,8 @@ import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { selectModel, getTierConfig, type Tier, type ProviderKey } from "@/lib/model-selector";
 import { profileTask } from "@/lib/agent-profiler";
+import { createNotification } from "@/lib/create-notification";
+import { checkCostAnomaly } from "@/lib/cost-guard";
 
 const executeSchema = z.object({
   input: z.string().min(1, "Input is required"),
@@ -39,6 +41,26 @@ export const POST = withErrorHandler(
       where: { id: agentId, projectId },
     });
     if (!agent) throw new ApiError("Agent not found", 404);
+
+    // Resolve linked Prompt Studio prompt
+    let resolvedSystemPrompt = agent.systemPrompt || "";
+    if (resolvedSystemPrompt.startsWith("__PROMPT_STUDIO__:")) {
+      const promptId = resolvedSystemPrompt.replace("__PROMPT_STUDIO__:", "");
+      const promptVersion = await prisma.promptVersion.findFirst({
+        where: { id: promptId, projectId, isActive: true },
+      });
+      if (!promptVersion) {
+        const byId = await prisma.promptVersion.findFirst({ where: { id: promptId, projectId } });
+        if (byId) {
+          const latest = await prisma.promptVersion.findFirst({
+            where: { projectId, name: byId.name, isActive: true },
+          });
+          resolvedSystemPrompt = latest?.content || byId.content;
+        }
+      } else {
+        resolvedSystemPrompt = promptVersion.content;
+      }
+    }
 
     // ── Resolve API key ──
     const providerNames: Record<string, string> = { CLAUDE: "Anthropic", GPT4: "OpenAI", GEMINI: "Google AI" };
@@ -147,7 +169,7 @@ export const POST = withErrorHandler(
         model: resolvedModelId,
         max_tokens: agent.maxTokens,
         temperature: agent.temperature,
-        system: agent.systemPrompt || undefined,
+        system: resolvedSystemPrompt || undefined,
         messages: [{ role: "user", content: body.input }],
       });
 
@@ -205,6 +227,19 @@ export const POST = withErrorHandler(
         }),
       ]);
 
+      // Notification: agent run completed
+      createNotification({
+        projectId,
+        title: "Agent run completed",
+        message: `${agent.name} completed in ${duration}ms · $${cost.toFixed(4)}`,
+        type: "success",
+        category: "agent",
+        link: `/agents/${agentId}`,
+      }).catch(() => {});
+
+      // Cost anomaly auto-pause check
+      checkCostAnomaly(agentId, projectId).catch(() => {});
+
       return apiResponse({
         output,
         tokensIn,
@@ -234,6 +269,16 @@ export const POST = withErrorHandler(
           data: { status: "ERROR" as never, lastRun: new Date() },
         }),
       ]);
+
+      // Notification: agent run failed
+      createNotification({
+        projectId,
+        title: "Agent run failed",
+        message: `${agent.name} failed: ${errorMsg}`,
+        type: "error",
+        category: "agent",
+        link: `/agents/${agentId}`,
+      }).catch(() => {});
 
       throw new ApiError(`Agent execution failed: ${errorMsg}`, 500);
     }

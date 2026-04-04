@@ -51,6 +51,13 @@ export default function SettingsPage() {
   const [creatingKey, setCreatingKey] = useState(false);
   const [createdKeyRaw, setCreatedKeyRaw] = useState<string | null>(null);
   const [keyError, setKeyError] = useState<string | null>(null);
+  // Auto-pause settings (persisted in localStorage)
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(false);
+  const [autoPauseThreshold, setAutoPauseThreshold] = useState(10);
+  useEffect(() => {
+    setAutoPauseEnabled(localStorage.getItem("mc_auto_pause_enabled") === "true");
+    setAutoPauseThreshold(parseFloat(localStorage.getItem("mc_auto_pause_threshold") || "10"));
+  }, []);
   const projectName = useSettingsStore((s) => s.projectName);
   const projectDescription = useSettingsStore((s) => s.projectDescription);
   const storeSetProjectName = useSettingsStore((s) => s.setProjectName);
@@ -157,35 +164,65 @@ export default function SettingsPage() {
 
           {/* ─── NOTIFICATIONS ─── */}
           {section === "Notifications" && (
-            notifs.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-16 text-center">
-                <Bell className="size-8 text-muted-foreground/20" />
-                <p className="text-sm font-medium text-muted-foreground">No notification events configured</p>
-                <p className="text-xs text-muted-foreground/50">Notification preferences will appear here when events are set up</p>
-              </div>
-            ) : (
-              <GlassPanel padding="none">
-                <div className="px-4 py-3 border-b border-border"><h3 className="text-sm font-semibold text-foreground">Notification Preferences</h3></div>
-                <table className="w-full text-sm">
-                  <thead><tr className="border-b border-border">
-                    {["Event", "In-App", "Email", "Slack"].map((h) => <th key={h} className="text-left text-xs font-medium text-muted-foreground px-4 py-2">{h}</th>)}
-                  </tr></thead>
-                  <tbody>
-                    {notifs.map((n, i) => (
-                      <tr key={n.name} className="border-b border-border/50">
-                        <td className="px-4 py-2 text-foreground">{n.name}</td>
-                        {(["app", "email", "slack"] as const).map((ch) => (
-                          <td key={ch} className="px-4 py-2">
-                            <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#00d992]" />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
+            <div className="space-y-6">
+              {/* Cost Anomaly Auto-Pause */}
+              <GlassPanel padding="lg">
+                <h3 className="text-sm font-semibold text-foreground mb-1">Cost Anomaly Auto-Pause</h3>
+                <p className="text-xs text-muted-foreground/60 mb-4">Automatically pause agents when their hourly spend exceeds a threshold. Paused agents can be resumed manually.</p>
+                <div className="flex items-center gap-4">
+                  <Switch
+                    checked={autoPauseEnabled}
+                    onCheckedChange={(v) => { setAutoPauseEnabled(v); localStorage.setItem("mc_auto_pause_enabled", String(v)); toast.success(v ? "Auto-pause enabled" : "Auto-pause disabled"); }}
+                    className="data-[state=checked]:bg-[#00d992]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Pause if hourly spend exceeds</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">$</span>
+                      <Input
+                        type="number"
+                        value={autoPauseThreshold}
+                        onChange={(e) => { const v = parseFloat(e.target.value) || 10; setAutoPauseThreshold(v); localStorage.setItem("mc_auto_pause_threshold", String(v)); }}
+                        className="h-7 w-20 text-xs"
+                        min={1}
+                        step={1}
+                      />
+                    </div>
+                  </div>
+                </div>
               </GlassPanel>
-            )
+
+              {/* Notification preferences */}
+              {notifs.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <Bell className="size-8 text-muted-foreground/20" />
+                  <p className="text-sm font-medium text-muted-foreground">No notification events configured</p>
+                  <p className="text-xs text-muted-foreground/50">Notification preferences will appear here when events are set up</p>
+                </div>
+              ) : (
+                <GlassPanel padding="none">
+                  <div className="px-4 py-3 border-b border-border"><h3 className="text-sm font-semibold text-foreground">Notification Preferences</h3></div>
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border">
+                      {["Event", "In-App", "Email", "Slack"].map((h) => <th key={h} className="text-left text-xs font-medium text-muted-foreground px-4 py-2">{h}</th>)}
+                    </tr></thead>
+                    <tbody>
+                      {notifs.map((n, i) => (
+                        <tr key={n.name} className="border-b border-border/50">
+                          <td className="px-4 py-2 text-foreground">{n.name}</td>
+                          {(["app", "email", "slack"] as const).map((ch) => (
+                            <td key={ch} className="px-4 py-2">
+                              <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#00d992]" />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
+                </GlassPanel>
+              )}
+            </div>
           )}
 
           {/* ─── DATA & PRIVACY ─── */}

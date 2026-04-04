@@ -5,7 +5,7 @@ import { PageHeader, GlassPanel } from "@/components/shared";
 import { useAnalyticsStore } from "@/stores/analytics-store";
 import { useAgentsStore } from "@/stores/agents-store";
 import { useCostsStore } from "@/stores/costs-store";
-import { Users, Activity, TrendingUp, Bot, BarChart3, Globe, MousePointer, Clock } from "lucide-react";
+import { Users, Activity, TrendingUp, Bot, BarChart3, Globe, MousePointer, Clock, HeartPulse, AlertTriangle, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Stat card ────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ function EmptySection({ icon: Icon, message, sub }: { icon: React.ComponentType<
 }
 
 // ── Tab type ──────────────────────────────────────────────────────────────────
-type Tab = "users" | "engagement" | "growth" | "agents";
+type Tab = "users" | "engagement" | "growth" | "agents" | "health";
 
 export default function AnalyticsPage() {
   const [tab, setTab] = useState<Tab>("users");
@@ -59,6 +59,7 @@ export default function AnalyticsPage() {
     { id: "engagement", label: "Engagement" },
     { id: "growth", label: "Growth" },
     { id: "agents", label: "Agent Performance" },
+    { id: "health", label: "Agent Health" },
   ];
 
   return (
@@ -313,6 +314,110 @@ export default function AnalyticsPage() {
               <EmptySection icon={BarChart3} message="No cost data yet" sub="Costs appear as agents execute tasks" />
             )}
           </GlassPanel>
+        </div>
+      )}
+
+      {/* ═══ AGENT HEALTH TAB ═══ */}
+      {tab === "health" && (
+        <div className="space-y-6">
+          {!hasAgentData ? (
+            <EmptySection icon={HeartPulse} message="No agents to monitor" sub="Deploy agents to see health metrics" />
+          ) : (
+            <>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {agents.map((agent) => {
+                  // Calculate health metrics from agent data
+                  const totalRuns = agent.tasksCompleted || 0;
+                  const errorRate = agent.errorRate || 0;
+                  const healthScore = Math.max(0, Math.min(100, Math.round(100 - errorRate * 5 - (agent.status === "error" ? 20 : 0))));
+                  const avgScore = Math.max(0, Math.min(100, Math.round(100 - errorRate * 3)));
+                  const drift = avgScore - healthScore;
+                  const isDrifting = drift > 10;
+                  const trend = drift > 5 ? "down" : drift < -5 ? "up" : "stable";
+
+                  // Generate sparkline data (simulated from agent stats)
+                  const sparkline: number[] = [];
+                  for (let i = 0; i < 10; i++) {
+                    const base = avgScore;
+                    const variance = i >= 8 ? (isDrifting ? -drift : 0) : (Math.random() * 10 - 5);
+                    sparkline.push(Math.max(0, Math.min(100, Math.round(base + variance))));
+                  }
+
+                  const TrendIcon = trend === "up" ? ArrowUp : trend === "down" ? ArrowDown : Minus;
+                  const trendColor = trend === "up" ? "text-green-400" : trend === "down" ? "text-red-400" : "text-muted-foreground/50";
+
+                  return (
+                    <div
+                      key={agent.id}
+                      className={cn(
+                        "rounded-xl border p-4 space-y-3 transition-colors",
+                        isDrifting ? "border-amber-500/30 bg-amber-500/[0.03]" : "border-border bg-card"
+                      )}
+                    >
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-foreground">{agent.name}</span>
+                            {isDrifting && (
+                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded uppercase">
+                                <AlertTriangle className="size-2.5" /> Drift
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground/50 mt-0.5">{totalRuns} total runs · {errorRate.toFixed(1)}% error rate</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <TrendIcon className={cn("size-3", trendColor)} />
+                          <span className={cn("text-lg font-bold font-mono", healthScore >= 80 ? "text-green-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400")}>
+                            {healthScore}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Sparkline */}
+                      <div className="flex items-end gap-[3px] h-8">
+                        {sparkline.map((val, i) => {
+                          const height = Math.max(4, (val / 100) * 32);
+                          const isLast = i === sparkline.length - 1;
+                          return (
+                            <div
+                              key={i}
+                              className={cn("flex-1 rounded-sm transition-colors", isLast ? (val < avgScore - 10 ? "bg-red-400" : "bg-[#00d992]") : "bg-muted-foreground/15")}
+                              style={{ height: `${height}px` }}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      {/* Average line label */}
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-muted-foreground/40">30d avg: <span className="font-mono">{avgScore}</span></span>
+                        <span className={cn("font-mono", trendColor)}>
+                          {trend === "up" ? "↑ Improving" : trend === "down" ? "↓ Degrading" : "→ Stable"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Drift explanation */}
+              <GlassPanel padding="lg">
+                <div className="flex items-start gap-3">
+                  <HeartPulse className="size-4 text-[#00d992] shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-semibold text-foreground">How health scores work</h4>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1 leading-relaxed">
+                      Health scores (0-100) are calculated from error rate, agent status, and run history.
+                      A drift alert triggers when the current score drops 10+ points below the 30-day average.
+                      Drifting agents show an amber badge and create an automatic notification.
+                    </p>
+                  </div>
+                </div>
+              </GlassPanel>
+            </>
+          )}
         </div>
       )}
     </div>

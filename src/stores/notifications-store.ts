@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { apiFetch } from "@/lib/api-client";
-import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
+import { isFresh, markFetched, markInflight, invalidate } from "@/lib/store-cache";
 
 export interface Notification {
   id: string;
   type: "info" | "success" | "warning" | "error";
+  category?: string;
   title: string;
   message: string;
   timestamp: string;
@@ -17,7 +18,6 @@ interface NotificationsStore {
   isLoading: boolean;
   error: string | null;
   fetch: () => Promise<void>;
-  addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
@@ -34,7 +34,7 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
     markInflight("notifications");
     set({ isLoading: true, error: null });
     try {
-      const res = await apiFetch("/api/notifications");
+      const res = await apiFetch("/api/notifications?limit=50");
       if (!res.ok) throw new Error("Failed to fetch notifications");
       const { data } = await res.json();
       markFetched("notifications");
@@ -44,19 +44,6 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
     }
   },
 
-  addNotification: (notification) =>
-    set((state) => ({
-      notifications: [
-        {
-          ...notification,
-          id: `ntf_${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          read: false,
-        },
-        ...state.notifications,
-      ],
-    })),
-
   markAsRead: async (id) => {
     set((state) => ({
       notifications: state.notifications.map((n) =>
@@ -64,13 +51,9 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
       ),
     }));
     try {
-      await apiFetch(`/api/notifications`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, read: true }),
-      });
+      await apiFetch(`/api/notifications/${id}/read`, { method: "PUT" });
     } catch {
-      // silent fail — local state already updated
+      // silent — local state already updated
     }
   },
 
@@ -79,20 +62,22 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true })),
     }));
     try {
-      await apiFetch(`/api/notifications`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAllRead: true }),
-      });
+      await apiFetch("/api/notifications/read-all", { method: "POST" });
     } catch {
-      // silent fail
+      // silent
     }
   },
 
-  dismissNotification: (id) =>
+  dismissNotification: async (id) => {
     set((state) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
-    })),
+    }));
+    try {
+      await apiFetch(`/api/notifications/${id}`, { method: "DELETE" });
+    } catch {
+      // silent
+    }
+  },
 
   getUnreadCount: () => {
     return get().notifications.filter((n) => !n.read).length;

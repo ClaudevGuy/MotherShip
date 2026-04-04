@@ -11,6 +11,7 @@ import {
 } from "@/lib/api-helpers";
 import { runWorkflowSchema } from "@/lib/validations/workflows";
 import { logAuditEvent } from "@/lib/audit";
+import { createNotification } from "@/lib/create-notification";
 
 // ── POST /api/workflows/[id]/run ──
 // Executes the workflow pipeline: each step's output feeds the next step's input.
@@ -139,6 +140,16 @@ export const POST = withErrorHandler(
         data: { status: "FAILED", lastRun: new Date(), totalRuns: { increment: 1 } },
       });
 
+      // Notification: workflow failed
+      createNotification({
+        projectId,
+        title: "Workflow failed",
+        message: `${workflow.name} failed at step ${stepResults.length + 1}: ${errorMsg}`,
+        type: "error",
+        category: "workflow",
+        link: `/workflows`,
+      }).catch(() => {});
+
       throw new ApiError(errorMsg, 500);
     }
 
@@ -159,6 +170,16 @@ export const POST = withErrorHandler(
       where: { id },
       data: { status: "COMPLETED", lastRun: new Date(), totalRuns: { increment: 1 } },
     });
+
+    // Notification: workflow completed
+    createNotification({
+      projectId,
+      title: "Workflow completed",
+      message: `${workflow.name} completed ${workflow.steps.length} steps in ${totalDuration}ms`,
+      type: "success",
+      category: "workflow",
+      link: `/workflows`,
+    }).catch(() => {});
 
     await logAuditEvent({
       projectId,

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Rocket, Check, Sparkles, Hand, DollarSign, Shield, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Rocket, Check, Sparkles, Hand, DollarSign, Shield, Loader2, FileCode } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { GlassPanel, PageHeader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,35 @@ export default function AgentBuilderPage() {
 
   // Step 2 - System Prompt
   const [systemPrompt, setSystemPrompt] = useState("");
+  const [promptMode, setPromptMode] = useState<"custom" | "studio">("custom");
+  const [linkedPromptId, setLinkedPromptId] = useState<string | null>(null);
+  const [linkedPromptName, setLinkedPromptName] = useState("");
+  const [studioPrompts, setStudioPrompts] = useState<{ id: string; name: string; version: number; activeVersion: number | null }[]>([]);
+
+  // Load studio prompts for the selector
+  useEffect(() => {
+    apiFetch("/api/prompts").then(r => r.json()).then(({ data }) => {
+      setStudioPrompts(data?.prompts || []);
+    }).catch(() => {});
+  }, []);
+
+  // Load template params from URL (from "Use Template" on agents page)
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tName = searchParams.get("name");
+    const tModel = searchParams.get("model");
+    const tStrategy = searchParams.get("strategy");
+    const tPrompt = searchParams.get("systemPrompt");
+    const tDesc = searchParams.get("description");
+    if (tName) setName(tName);
+    if (tDesc) setDescription(tDesc);
+    if (tModel) {
+      const reverseMap: Record<string, string> = { CLAUDE: "Claude", GPT4: "GPT-4", GEMINI: "Gemini" };
+      setModel(reverseMap[tModel] || "Claude");
+    }
+    if (tStrategy) setModelStrategy(tStrategy as typeof modelStrategy);
+    if (tPrompt) setSystemPrompt(tPrompt);
+  }, [searchParams]);
 
   // Step 3 - Tools
   const [enabledTools, setEnabledTools] = useState<Record<string, boolean>>({
@@ -100,17 +130,24 @@ export default function AgentBuilderPage() {
       .filter(([, enabled]) => enabled)
       .map(([toolName]) => ({ name: toolName, enabled: true }));
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: name.trim(),
       description: description.trim() || `${name} agent`,
       model: MODEL_MAP[model] || "CLAUDE",
       modelStrategy,
-      systemPrompt: systemPrompt.trim() || "You are a helpful AI assistant.",
+      systemPrompt: promptMode === "studio" && linkedPromptId
+        ? `__PROMPT_STUDIO__:${linkedPromptId}`
+        : (systemPrompt.trim() || "You are a helpful AI assistant."),
       temperature: 0.7,
       maxTokens: parseInt(contextSize.replace("K", "")) * 1024 || 4096,
       tags: [],
       tools,
     };
+
+    // Link prompt to agent in Prompt Studio
+    if (promptMode === "studio" && linkedPromptId) {
+      apiFetch(`/api/prompts/${linkedPromptId}/activate`, { method: "PUT" }).catch(() => {});
+    }
 
     try {
       const res = await fetch("/api/agents", {
@@ -290,16 +327,78 @@ export default function AgentBuilderPage() {
         {step === 2 && (
           <div className="space-y-5">
             <h3 className="text-lg font-semibold text-foreground">System Prompt</h3>
-            <Textarea
-              placeholder="You are a helpful AI agent that..."
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              className="min-h-[200px] font-mono text-sm"
-            />
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span>{systemPrompt.length} characters</span>
-              <span>~{tokenEstimate} tokens</span>
+
+            {/* Mode selector */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPromptMode("custom")}
+                className={cn("flex-1 rounded-lg border p-3 text-left transition-all", promptMode === "custom" ? "border-[#00d992]/40 bg-[#00d992]/[0.04]" : "border-border hover:border-border/80")}
+              >
+                <p className="text-xs font-semibold text-foreground">Write custom prompt</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">Write a system prompt directly</p>
+              </button>
+              <button
+                onClick={() => setPromptMode("studio")}
+                className={cn("flex-1 rounded-lg border p-3 text-left transition-all", promptMode === "studio" ? "border-[#00d992]/40 bg-[#00d992]/[0.04]" : "border-border hover:border-border/80")}
+              >
+                <div className="flex items-center gap-1.5">
+                  <FileCode className="size-3.5 text-[#00d992]" />
+                  <p className="text-xs font-semibold text-foreground">Use from Prompt Studio</p>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">Link a versioned prompt</p>
+              </button>
             </div>
+
+            {promptMode === "custom" ? (
+              <>
+                <Textarea
+                  placeholder="You are a helpful AI agent that..."
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  className="min-h-[200px] font-mono text-sm"
+                />
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span>{systemPrompt.length} characters</span>
+                  <span>~{tokenEstimate} tokens</span>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-3">
+                {studioPrompts.length === 0 ? (
+                  <div className="rounded-lg border border-border/50 p-6 text-center">
+                    <FileCode className="size-6 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground">No prompts in Prompt Studio yet</p>
+                    <Link href="/prompts" className="text-[10px] text-[#00d992] hover:underline mt-1 inline-block">Create one →</Link>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={linkedPromptId || ""} onValueChange={(val) => {
+                      setLinkedPromptId(val);
+                      const p = studioPrompts.find(x => x.id === val);
+                      if (p) setLinkedPromptName(p.name);
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Select a prompt..." /></SelectTrigger>
+                      <SelectContent>
+                        {studioPrompts.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name} {p.activeVersion ? `(v${p.activeVersion} active)` : `(v${p.version})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {linkedPromptId && (
+                      <div className="rounded-lg border border-[#00d992]/20 bg-[#00d992]/[0.03] p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FileCode className="size-3.5 text-[#00d992]" />
+                          <span className="text-xs font-medium text-foreground">Using: {linkedPromptName}</span>
+                        </div>
+                        <Link href="/prompts" className="text-[10px] text-[#00d992] hover:underline">Edit in Prompt Studio →</Link>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 

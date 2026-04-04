@@ -1044,7 +1044,8 @@ model Notification {
   id        String   @id @default(cuid())
   projectId String
   userId    String?
-  type      String
+  type      String   // "success" | "error" | "warning" | "info"
+  category  String   @default("system") // "agent" | "workflow" | "incident" | "cost" | "system"
   title     String
   message   String   @db.Text
   timestamp DateTime @default(now())
@@ -1058,6 +1059,28 @@ model Notification {
   @@index([userId])
   @@index([projectId, userId, read])
   @@index([projectId, timestamp])
+}
+
+// ============================================================================
+// PROMPT STUDIO — versioned prompts for agents
+// ============================================================================
+
+model PromptVersion {
+  id         String   @id @default(cuid())
+  projectId  String
+  agentId    String?
+  name       String
+  content    String   @db.Text
+  version    Int      @default(1)
+  isActive   Boolean  @default(false)
+  tokenCount Int?
+  createdAt  DateTime @default(now())
+  createdBy  String?
+  notes      String?
+
+  @@index([projectId])
+  @@index([projectId, name])
+  @@index([projectId, agentId])
 }
 
 // ============================================================================
