@@ -35,7 +35,7 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Mission Control" description="Real-time operational overview" />
+      <PageHeader title="MOTHERSHIP" description="Real-time operational overview" />
       <SystemHealthBar />
       <LiveStatsRow />
       <QuickActions />

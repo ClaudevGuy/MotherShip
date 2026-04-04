@@ -23,7 +23,7 @@ interface Section {
 
 // ── Section registry ──────────────────────────────────────────────────────────
 const SECTIONS: Section[] = [
-  { id: "getting-started",  label: "Getting Started",  icon: Zap,            color: "#00d992", tagline: "First steps with Mission Control" },
+  { id: "getting-started",  label: "Getting Started",  icon: Zap,            color: "#00d992", tagline: "First steps with MOTHERSHIP" },
   { id: "overview",         label: "Overview",         icon: LayoutDashboard, color: "#00d992", tagline: "Your real-time command centre" },
   { id: "ai-agents",        label: "AI Agents",        icon: Bot,            color: "#A78BFA", tagline: "Create, run, and monitor agents" },
   { id: "workflows",        label: "Workflows",        icon: GitBranch,      color: "#34D399", tagline: "Multi-agent automation pipelines" },
@@ -120,7 +120,7 @@ function GettingStarted() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Mission Control is an AI-powered operations dashboard. It gives your team a single pane of glass to deploy agents, ship code, monitor costs, and respond to incidents — all in one place.
+        MOTHERSHIP is an AI-powered operations dashboard. It gives your team a single pane of glass to deploy agents, ship code, monitor costs, and respond to incidents — all in one place.
       </p>
       <div className="space-y-3">
         <Step n={1} title="Create your first project">
@@ -401,11 +401,11 @@ function ProjectsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Mission Control is multi-project from day one. Each project gets its own completely isolated dashboard — separate agents, deployments, incidents, costs, and team members.
+        MOTHERSHIP is multi-project from day one. Each project gets its own completely isolated dashboard — separate agents, deployments, incidents, costs, and team members.
       </p>
       <div className="space-y-3">
         <Step n={1} title="Open the project switcher">
-          Click the project name at the very top of the sidebar (below the Mission Control logo). A panel drops down showing all your projects.
+          Click the project name at the very top of the sidebar (below the MOTHERSHIP logo). A panel drops down showing all your projects.
         </Step>
         <Step n={2} title="Create a new project">
           Click <strong className="text-foreground">Add project</strong> at the bottom of the panel. Enter a name and optional description. The dashboard immediately clears to a clean, empty state for the new project.
@@ -490,7 +490,7 @@ function NotificationsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Mission Control has a built-in notification system that alerts you to important events — agent runs, workflow completions, eval results, and cost threshold breaches. Notifications appear in the bell icon in the topbar.
+        MOTHERSHIP has a built-in notification system that alerts you to important events — agent runs, workflow completions, eval results, and cost threshold breaches. Notifications appear in the bell icon in the topbar.
       </p>
       <div className="space-y-2">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What triggers notifications</p>
@@ -521,7 +521,7 @@ function ExternalAgentsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Already running AI agents with CrewAI, LangGraph, AutoGen, or your own custom framework? You don&apos;t need to rebuild them inside Mission Control. Connect them in minutes and get full visibility — costs, performance, and status — all in one dashboard.
+        Already running AI agents with CrewAI, LangGraph, AutoGen, or your own custom framework? You don&apos;t need to rebuild them inside MOTHERSHIP. Connect them in minutes and get full visibility — costs, performance, and status — all in one dashboard.
       </p>
       <div className="space-y-3">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How it works</p>
@@ -529,10 +529,10 @@ function ExternalAgentsSection() {
           Go to <strong className="text-foreground">Settings → API Keys</strong> and click <strong className="text-foreground">Create API Key</strong>. Give it a name (e.g. &ldquo;My CrewAI App&rdquo;) and select the <strong className="text-foreground">Ingest</strong> scope. Copy the key — it starts with <code className="text-[#00d992] text-[11px]">mc_</code>.
         </Step>
         <Step n={2} title="Add a few lines to your existing code">
-          After each agent run in your app, send a POST request to Mission Control&apos;s ingest endpoint. This tells the dashboard what happened — which agent ran, how long it took, and what it cost.
+          After each agent run in your app, send a POST request to MOTHERSHIP&apos;s ingest endpoint. This tells the dashboard what happened — which agent ran, how long it took, and what it cost.
         </Step>
         <Step n={3} title="See your agents on the dashboard">
-          External agents appear automatically on the <strong className="text-foreground">Overview</strong> page. You&apos;ll see their run history, costs, and performance alongside any agents you created natively in Mission Control.
+          External agents appear automatically on the <strong className="text-foreground">Overview</strong> page. You&apos;ll see their run history, costs, and performance alongside any agents you created natively in MOTHERSHIP.
         </Step>
       </div>
 
@@ -551,10 +551,10 @@ function ExternalAgentsSection() {
 
       <div className="space-y-2">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Option B — JavaScript / TypeScript SDK</p>
-        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`npm install @mission-control/sdk`}</div>
-        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`import { MissionControl } from '@mission-control/sdk'
+        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`npm install @mothership/sdk`}</div>
+        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`import { Mothership } from '@mothership/sdk'
 
-const mc = new MissionControl({
+const mc = new Mothership({
   url: 'https://your-dashboard.com',
   apiKey: 'mc_your_key',
   source: 'my-crewai-app',
@@ -580,7 +580,7 @@ await mc.trackRun({
       </div>
 
       <Callout icon={Lightbulb} color="#F59E0B" title="Works with any framework">
-        CrewAI, LangGraph, AutoGen, Semantic Kernel, custom Python scripts — anything that can make an HTTP request can report to Mission Control. You only need to add 3-5 lines of code to your existing agent runner.
+        CrewAI, LangGraph, AutoGen, Semantic Kernel, custom Python scripts — anything that can make an HTTP request can report to MOTHERSHIP. You only need to add 3-5 lines of code to your existing agent runner.
       </Callout>
 
       <Callout icon={Info} color="#60A5FA" title="API key scopes">
@@ -609,7 +609,7 @@ function ShortcutsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Mission Control is built for keyboard-first navigation. Most actions have a shortcut so you never have to leave the keyboard during an incident.
+        MOTHERSHIP is built for keyboard-first navigation. Most actions have a shortcut so you never have to leave the keyboard during an incident.
       </p>
       <div className="rounded-xl border border-border bg-card/50 overflow-hidden">
         {shortcuts.map((s, i) => (
@@ -669,7 +669,7 @@ export default function TutorialPage() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Tutorial</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Everything you need to know about Mission Control — from first login to advanced agent pipelines.
+            Everything you need to know about MOTHERSHIP — from first login to advanced agent pipelines.
           </p>
         </div>
       </div>

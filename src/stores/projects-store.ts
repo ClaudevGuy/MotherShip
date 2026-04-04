@@ -11,7 +11,7 @@ export interface Project {
 
 const DEFAULT_PROJECT: Project = {
   id: "default",
-  name: "Mission Control",
+  name: "MOTHERSHIP",
   logo: "",
   description: "AI-powered project command center",
   createdAt: new Date(0).toISOString(),

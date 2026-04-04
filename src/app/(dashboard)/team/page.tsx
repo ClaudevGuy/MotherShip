@@ -112,7 +112,7 @@ export default function TeamPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">No team members yet</p>
-                <p className="text-xs text-muted-foreground/50 mt-0.5">Invite your team to collaborate on Mission Control</p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5">Invite your team to collaborate on MOTHERSHIP</p>
               </div>
               <Button size="sm" onClick={() => setInviteOpen(true)} className="mt-1">
                 <UserPlus className="size-3.5 mr-1.5" /> Invite Member

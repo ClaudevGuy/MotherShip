@@ -1,4 +1,4 @@
-# Mission Control
+# MOTHERSHIP
 
 AI-powered operations dashboard for managing AI agents, deployments, costs, and team — all in one place.
 
@@ -7,9 +7,9 @@ AI-powered operations dashboard for managing AI agents, deployments, costs, and 
 ![Prisma](https://img.shields.io/badge/Prisma-5-2D3748)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38BDF8)
 
-## What is Mission Control?
+## What is MOTHERSHIP?
 
-Mission Control is a full-stack admin dashboard for AI-powered projects. It gives you visibility into:
+MOTHERSHIP is a full-stack admin dashboard for AI-powered projects. It gives you visibility into:
 
 - **AI Agents** — Create, configure, and execute AI agents with real-time streaming output
 - **Prompt Studio** — Write, test, version, and manage agent prompts with a built-in playground
@@ -34,8 +34,8 @@ Mission Control is a full-stack admin dashboard for AI-powered projects. It give
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/ClaudevGuy/mission-control.git
-cd mission-control
+git clone https://github.com/ClaudevGuy/mothership.git
+cd mothership
 npm install
 ```
 
@@ -219,13 +219,13 @@ curl -X POST https://your-dashboard.com/api/events/ingest \
 Or use the SDK:
 
 ```bash
-npm install @mission-control/sdk
+npm install @mothership/sdk
 ```
 
 ```typescript
-import { MissionControl } from '@mission-control/sdk'
+import { Mothership } from '@mothership/sdk'
 
-const mc = new MissionControl({
+const mc = new Mothership({
   url: 'https://your-dashboard.com',
   apiKey: 'mc_your_key',
   source: 'my-app',
@@ -288,7 +288,7 @@ src/
 │   ├── api-client.ts         # Project-aware fetch wrapper
 │   └── ...
 ├── types/                    # TypeScript interfaces
-└── packages/sdk/             # @mission-control/sdk npm package
+└── packages/sdk/             # @mothership/sdk npm package
 ```
 
 ## Tech Stack

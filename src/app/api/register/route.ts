@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Create a default project for the user
     const project = await prisma.project.create({
       data: {
-        name: "Mission Control",
+        name: "MOTHERSHIP",
         description: "Default project",
       },
     });

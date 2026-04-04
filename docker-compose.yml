@@ -7,13 +7,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: mission_control
-      POSTGRES_PASSWORD: mission_control
-      POSTGRES_DB: mission_control
+      POSTGRES_USER: mothership
+      POSTGRES_PASSWORD: mothership
+      POSTGRES_DB: mothership
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mission_control"]
+      test: ["CMD-SHELL", "pg_isready -U mothership"]
       interval: 5s
       timeout: 5s
       retries: 5

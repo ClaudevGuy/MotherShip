@@ -1,12 +1,12 @@
 /**
- * @mission-control/sdk
+ * @mothership/sdk
  *
- * Lightweight SDK to send AI agent events to a Mission Control dashboard.
+ * Lightweight SDK to send AI agent events to a MOTHERSHIP dashboard.
  *
  * Usage:
- *   import { MissionControl } from '@mission-control/sdk'
+ *   import { Mothership } from '@mothership/sdk'
  *
- *   const mc = new MissionControl({
+ *   const mc = new Mothership({
  *     url: 'https://your-dashboard.vercel.app',
  *     apiKey: 'mc_your_api_key',
  *     source: 'my-app',
@@ -26,8 +26,8 @@
 
 // ── Types ──
 
-export interface MissionControlConfig {
-  /** URL of your Mission Control instance (e.g. https://mc.example.com) */
+export interface MothershipConfig {
+  /** URL of your MOTHERSHIP instance (e.g. https://mc.example.com) */
   url: string;
   /** API key from Settings → API Keys */
   apiKey: string;
@@ -89,12 +89,12 @@ interface IngestEvent {
 
 // ── Client ──
 
-export class MissionControl {
+export class Mothership {
   private url: string;
   private apiKey: string;
   private source: string;
 
-  constructor(config: MissionControlConfig) {
+  constructor(config: MothershipConfig) {
     this.url = config.url.replace(/\/$/, ""); // strip trailing slash
     this.apiKey = config.apiKey;
     this.source = config.source;
@@ -237,4 +237,4 @@ export class MissionControl {
   }
 }
 
-export default MissionControl;
+export default Mothership;

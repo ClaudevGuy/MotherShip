@@ -43,7 +43,7 @@ export const slackAdapter: IntegrationAdapter = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: "Mission Control connected successfully.",
+          text: "MOTHERSHIP connected successfully.",
         }),
       });
 

@@ -1,19 +1,19 @@
-# @mission-control/sdk
+# @mothership/sdk
 
-Lightweight SDK to send AI agent events to a [Mission Control](https://github.com/ClaudevGuy/mission-control) dashboard.
+Lightweight SDK to send AI agent events to a [MOTHERSHIP](https://github.com/ClaudevGuy/mothership) dashboard.
 
 ## Install
 
 ```bash
-npm install @mission-control/sdk
+npm install @mothership/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { MissionControl } from '@mission-control/sdk'
+import { Mothership } from '@mothership/sdk'
 
-const mc = new MissionControl({
+const mc = new Mothership({
   url: 'https://your-dashboard.vercel.app',
   apiKey: 'mc_your_api_key',  // from Settings → API Keys
   source: 'my-app',
@@ -32,11 +32,11 @@ await mc.trackRun({
 
 ## API
 
-### `new MissionControl(config)`
+### `new Mothership(config)`
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `url` | string | Yes | Your Mission Control dashboard URL |
+| `url` | string | Yes | Your MOTHERSHIP dashboard URL |
 | `apiKey` | string | Yes | API key from Settings → API Keys |
 | `source` | string | Yes | Identifier for your app (e.g. 'my-saas', 'paperclip') |
 
@@ -98,11 +98,11 @@ Send raw events for full control. Batch supports up to 100 events.
 ### With Paperclip
 
 ```typescript
-import { MissionControl } from '@mission-control/sdk'
+import { Mothership } from '@mothership/sdk'
 
-const mc = new MissionControl({
-  url: process.env.MISSION_CONTROL_URL!,
-  apiKey: process.env.MISSION_CONTROL_KEY!,
+const mc = new Mothership({
+  url: process.env.MOTHERSHIP_URL!,
+  apiKey: process.env.MOTHERSHIP_KEY!,
   source: 'paperclip',
 })
 
@@ -124,7 +124,7 @@ paperclip.on('agent:complete', async (result) => {
 import requests
 
 requests.post(
-    f"{MISSION_CONTROL_URL}/api/events/ingest",
+    f"{MOTHERSHIP_URL}/api/events/ingest",
     headers={"Authorization": f"Bearer {API_KEY}"},
     json={
         "type": "agent.run.completed",

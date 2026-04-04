@@ -136,7 +136,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     alertRules,
   };
 
-  const filename = `mission-control-export-${new Date().toISOString().slice(0, 10)}.json`;
+  const filename = `mothership-export-${new Date().toISOString().slice(0, 10)}.json`;
 
   return new NextResponse(JSON.stringify(exportData, null, 2), {
     status: 200,

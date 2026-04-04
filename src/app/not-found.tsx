@@ -11,7 +11,7 @@ export default function NotFound() {
           <Zap className="relative z-10 size-4 text-[#00d992]" strokeWidth={2.5} aria-hidden="true" />
         </div>
         <span className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-foreground">
-          Mission Control
+          MOTHERSHIP
         </span>
       </div>
 

@@ -542,7 +542,7 @@ export default function AgentBuilderPage() {
                   <div className="flex items-center gap-2 max-w-lg">
                     <Input
                       readOnly
-                      value={`https://api.missioncontrol.dev/webhooks/${name.toLowerCase().replace(/\s+/g, "-") || "agent"}`}
+                      value={`https://api.mothership.dev/webhooks/${name.toLowerCase().replace(/\s+/g, "-") || "agent"}`}
                       className="font-mono text-xs"
                     />
                   </div>

@@ -1,5 +1,5 @@
 // ============================================================================
-// Mission Control Dashboard - Prisma Schema
+// MOTHERSHIP Dashboard - Prisma Schema
 // ============================================================================
 
 generator client {

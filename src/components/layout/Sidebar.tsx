@@ -80,10 +80,10 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
         {!collapsed && (
           <div className="flex flex-col gap-0 leading-none">
             <span className="font-heading text-[11.5px] font-bold uppercase tracking-[0.16em] text-foreground/90 whitespace-nowrap">
-              Mission Control
+              MOTHERSHIP
             </span>
             <span className="text-[9px] tracking-[0.08em] text-[#00d992]/40 font-medium uppercase mt-[2px]">
-              Command Center
+              AI Operations
             </span>
           </div>
         )}

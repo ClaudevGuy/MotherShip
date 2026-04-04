@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mission Control",
+  title: "MOTHERSHIP",
   description: "AI Project Command Center",
 };
 

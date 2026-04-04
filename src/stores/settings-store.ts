@@ -27,7 +27,7 @@ interface SettingsStore {
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
-  projectName: "Mission Control",
+  projectName: "MOTHERSHIP",
   projectDescription: "AI-powered project command center for monitoring agents, deployments, and infrastructure.",
   theme: "dark",
   pollingInterval: 5000,

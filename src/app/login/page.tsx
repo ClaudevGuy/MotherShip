@@ -44,7 +44,7 @@ export default function LoginPage() {
             <Zap className="relative z-10 size-6 text-[#00d992]" strokeWidth={2.5} fill="rgba(0,217,146,0.15)" />
           </div>
           <h1 className="font-heading text-xl font-bold uppercase tracking-[0.12em] text-foreground">
-            Mission Control
+            MOTHERSHIP
           </h1>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>

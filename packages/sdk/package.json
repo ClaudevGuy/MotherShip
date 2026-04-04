@@ -1,7 +1,7 @@
 {
-  "name": "@mission-control/sdk",
+  "name": "@mothership/sdk",
   "version": "0.1.0",
-  "description": "Lightweight SDK to send AI agent events to Mission Control",
+  "description": "Lightweight SDK to send AI agent events to MOTHERSHIP",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -10,7 +10,7 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
-  "keywords": ["ai", "agents", "monitoring", "observability", "mission-control"],
+  "keywords": ["ai", "agents", "monitoring", "observability", "mothership"],
   "license": "MIT",
   "devDependencies": {
     "tsup": "^8.0.0",

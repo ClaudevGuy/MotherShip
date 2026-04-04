@@ -48,7 +48,7 @@ export const useTeamStore = create<TeamStore>((set, get) => ({
         .filter((m: Record<string, unknown>) => {
           const user = (m.user || {}) as Record<string, unknown>;
           const email = (user.email || "") as string;
-          return !email.endsWith("@missioncontrol.local");
+          return !email.endsWith("@mothership.local");
         })
         .map((m: Record<string, unknown>) => {
           const user = (m.user || {}) as Record<string, unknown>;

@@ -211,7 +211,7 @@ function mapTeamRole(r: string) {
 // ── Main seed ──
 
 async function main() {
-  console.log("Seeding Mission Control database...\n");
+  console.log("Seeding MOTHERSHIP database...\n");
 
   // ── 1. Clear all existing data (reverse-dependency order) ──
   console.log("Clearing existing data...");
@@ -265,8 +265,8 @@ async function main() {
   console.log("Creating project...");
   const project = await prisma.project.create({
     data: {
-      id: "proj_mission_control",
-      name: "Mission Control",
+      id: "proj_mothership",
+      name: "MOTHERSHIP",
       description: "AI-powered operations dashboard for RecoupFi",
       timezone: "America/New_York",
     },
@@ -279,7 +279,7 @@ async function main() {
 
   // Single admin user for auth fallback — no mock team members
   const userDefs = [
-    { id: "usr_admin", name: "Admin", email: "admin@missioncontrol.local", role: "ADMIN" as const, avatar: "", twoFAEnabled: false, jobTitle: "Administrator" },
+    { id: "usr_admin", name: "Admin", email: "admin@mothership.local", role: "ADMIN" as const, avatar: "", twoFAEnabled: false, jobTitle: "Administrator" },
   ];
 
   const users: Record<string, { id: string; name: string }> = {};

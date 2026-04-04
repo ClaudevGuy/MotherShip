@@ -361,7 +361,7 @@ export default function SettingsPage() {
                   <div className="flex flex-col items-center gap-3 py-16 text-center rounded-lg border border-border bg-card/50">
                     <Key className="size-8 text-muted-foreground/20" />
                     <p className="text-sm font-medium text-muted-foreground">No API keys yet</p>
-                    <p className="text-xs text-muted-foreground/50">Create a key to let external tools send data to Mission Control</p>
+                    <p className="text-xs text-muted-foreground/50">Create a key to let external tools send data to MOTHERSHIP</p>
                     <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black mt-1" onClick={() => setCreateKeyOpen(true)}>
                       <Key className="size-3.5 mr-1" /> Create your first key
                     </Button>
@@ -462,7 +462,7 @@ export default function SettingsPage() {
                   <div className="mt-4 pt-3 border-t border-border/30">
                     <p className="text-[10px] text-muted-foreground">
                       <span className="font-medium text-foreground/70">Or use the SDK:</span>{" "}
-                      <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">npm install @mission-control/sdk</code>{" "}
+                      <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">npm install @mothership/sdk</code>{" "}
                       — see <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">packages/sdk/README.md</code> for full docs.
                     </p>
                   </div>
@@ -754,11 +754,11 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center" onClick={() => setDeleteConfirm(false)}>
           <div className="bg-card border border-red-500/30 rounded-xl p-6 max-w-sm w-full space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-foreground">Delete Project</h3>
-            <p className="text-sm text-muted-foreground">Type <span className="font-mono text-red-400">Mission Control</span> to confirm deletion.</p>
-            <input value={deleteInput} onChange={(e) => setDeleteInput(e.target.value)} placeholder="Mission Control" className="h-9 w-full rounded-lg border border-red-500/30 bg-muted/30 px-3 text-sm text-foreground outline-none" />
+            <p className="text-sm text-muted-foreground">Type <span className="font-mono text-red-400">MOTHERSHIP</span> to confirm deletion.</p>
+            <input value={deleteInput} onChange={(e) => setDeleteInput(e.target.value)} placeholder="MOTHERSHIP" className="h-9 w-full rounded-lg border border-red-500/30 bg-muted/30 px-3 text-sm text-foreground outline-none" />
             <div className="flex gap-3 justify-end">
               <button className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5" onClick={() => setDeleteConfirm(false)}>Cancel</button>
-              <button disabled={deleteInput !== "Mission Control"} className="text-xs font-medium text-white bg-red-500 rounded-lg px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-600" onClick={() => { toast.error("Project deleted"); setDeleteConfirm(false); }}>
+              <button disabled={deleteInput !== "MOTHERSHIP"} className="text-xs font-medium text-white bg-red-500 rounded-lg px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-600" onClick={() => { toast.error("Project deleted"); setDeleteConfirm(false); }}>
                 Delete Forever
               </button>
             </div>

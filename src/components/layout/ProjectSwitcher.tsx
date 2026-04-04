@@ -107,7 +107,7 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
           logo={activeProject?.logo ?? ""}
         />
         <span className="flex-1 truncate text-left leading-none">
-          {activeProject?.name ?? "Mission Control"}
+          {activeProject?.name ?? "MOTHERSHIP"}
         </span>
         <ChevronsUpDown
           className={cn(
@@ -158,7 +158,7 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
                         e.stopPropagation();
                         deleteProject(project.id);
                         if (isActive) {
-                          setProjectName("Mission Control");
+                          setProjectName("MOTHERSHIP");
                           setProjectLogo("");
                           reloadProjectData();
                         }

@@ -63,7 +63,7 @@ export const genericWebhookAdapter: IntegrationAdapter = {
       const body = JSON.stringify({
         event: "ping",
         timestamp: new Date().toISOString(),
-        source: "mission-control",
+        source: "mothership",
       });
 
       const headers: Record<string, string> = {
