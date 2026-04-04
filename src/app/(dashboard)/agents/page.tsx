@@ -203,13 +203,40 @@ const TEMPLATES = [
 function TemplatesRow() {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const hasDragged = useRef(false);
 
   const scroll = (dir: "left" | "right") => {
     scrollRef.current?.scrollBy({ left: dir === "left" ? -300 : 300, behavior: "smooth" });
   };
 
+  const onPointerDown = (e: React.PointerEvent) => {
+    isDragging.current = true;
+    hasDragged.current = false;
+    startX.current = e.pageX - (scrollRef.current?.offsetLeft || 0);
+    scrollLeft.current = scrollRef.current?.scrollLeft || 0;
+    scrollRef.current!.style.cursor = "grabbing";
+    scrollRef.current!.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    const x = e.pageX - (scrollRef.current?.offsetLeft || 0);
+    const walk = x - startX.current;
+    if (Math.abs(walk) > 5) hasDragged.current = true;
+    scrollRef.current!.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    isDragging.current = false;
+    scrollRef.current!.style.cursor = "grab";
+    scrollRef.current!.releasePointerCapture(e.pointerId);
+  };
+
   const handleUseTemplate = (t: typeof TEMPLATES[0]) => {
-    // Encode template data as query params for the builder
+    if (hasDragged.current) return; // Ignore clicks at the end of a drag
     const params = new URLSearchParams({
       name: t.name,
       model: t.model,
@@ -237,7 +264,14 @@ function TemplatesRow() {
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 cursor-grab select-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+      >
         {TEMPLATES.map((t) => {
           const Icon = t.icon;
           return (
