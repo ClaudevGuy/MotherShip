@@ -12,14 +12,17 @@ AI-powered operations dashboard for managing AI agents, deployments, costs, and 
 Mission Control is a full-stack admin dashboard for AI-powered projects. It gives you visibility into:
 
 - **AI Agents** — Create, configure, and execute AI agents with real-time streaming output
+- **Prompt Studio** — Write, test, version, and manage agent prompts with a built-in playground
+- **Evals** — Automated test suites for measuring agent quality with string matching + AI judge scoring
 - **Workflows** — Visual pipeline builder (React Flow) for chaining agents together
-- **Costs & Billing** — Track spend per agent, per model, with auto-selection savings
+- **Costs & Billing** — Track spend per agent, per model, with auto-selection savings and cost anomaly auto-pause
 - **Deployments** — Service deployment tracking across dev/staging/production
 - **Logs & Observability** — Unified log stream, LLM call inspection, traces
 - **Incidents** — Alert rules, on-call scheduling, incident management
-- **Analytics** — User engagement, growth metrics, agent performance
+- **Analytics** — User engagement, growth metrics, agent performance, health drift detection
+- **Notifications** — Real-time notification system with auto-alerts on agent runs, workflow completions, and cost thresholds
 - **Team** — Member management, role-based access, API keys
-- **Settings** — Project config, integrations, appearance
+- **Settings** — Project config, integrations, appearance, auto-pause thresholds
 
 ## Quick Start
 
@@ -107,6 +110,21 @@ Agents execute with real-time streaming via Anthropic's API:
 3. **Watch live output** — Tokens stream in real-time in a terminal-style panel
 4. **See results** — Token count, cost, duration, model used — all tracked
 
+### Agent Templates
+
+8 pre-built agent templates on the Agents page for 1-click deployment:
+
+- **Code Reviewer** — Reviews code for bugs, security, and best practices (Sonnet, Auto)
+- **Security Scanner** — Analyzes code for security vulnerabilities (Opus, Quality-First)
+- **Documentation Writer** — Generates technical docs from code (Haiku, Cost-First)
+- **Data Pipeline Agent** — Processes and validates data pipelines (Haiku, Cost-First)
+- **Test Writer** — Generates comprehensive test suites (Sonnet, Auto)
+- **Performance Optimizer** — Identifies performance bottlenecks (Sonnet, Auto)
+- **API Designer** — Designs RESTful/GraphQL APIs (Sonnet, Auto)
+- **Incident Responder** — Analyzes incidents and suggests fixes (Opus, Quality-First)
+
+Click "Use Template" to pre-fill the agent builder with the template's config and system prompt.
+
 ### Intelligent Model Selection
 
 The system automatically picks the optimal model tier per task:
@@ -119,6 +137,28 @@ The system automatically picks the optimal model tier per task:
 
 Safety guardrails ensure critical tasks always use Tier 1.
 
+### Prompt Studio
+
+A dedicated section for writing, testing, versioning, and managing agent prompts:
+
+- **Editor** — Monospace editor with line numbers and live token counter
+- **Playground** — Test prompts against any Claude model with streaming output (Haiku/Sonnet/Opus), adjustable temperature and max tokens
+- **Version History** — Every save creates a new version. Side-by-side diff viewer to compare versions
+- **Agent Linking** — Link a prompt to an agent. When the active version changes, the agent automatically uses the new version on its next run — no agent config change needed
+
+### Evals (Automated Testing)
+
+Create test suites to measure and track agent quality over time:
+
+1. **Create a suite** — Name it, pick an agent, and add test cases
+2. **Define test cases** — Input text + pass criteria (e.g. "mentions pricing", "under 100 words", "is professional tone")
+3. **Run the suite** — Each case sends input to the agent, scores the output, and reports pass/fail
+4. **Track quality** — Score history with sparklines, pass/fail breakdowns, case-by-case results
+
+**Scoring engine** supports two methods:
+- **String matching** — Fast, deterministic checks: `mentions [X]`, `under N words`, `includes code block`, `starts with`, `does not mention [X]`
+- **AI Judge** — For complex criteria like tone, quality, or correctness: uses claude-haiku-4-5 to evaluate PASS/FAIL
+
 ### Visual Workflow Builder
 
 Chain multiple agents into pipelines using a drag-and-drop canvas (React Flow):
@@ -127,6 +167,35 @@ Chain multiple agents into pipelines using a drag-and-drop canvas (React Flow):
 - Animated connection edges
 - Save/load canvas state
 - Validation before activation
+- **Real execution** — Workflows call agents via the sync endpoint, pipe output between steps, and save complete WorkflowRun records with step-level results
+
+### Notification System
+
+Real-time notifications with automatic alerts:
+
+- **Bell icon** in topbar with unread count badge and pulse animation
+- **Slide-over panel** — 380px wide, grouped by Today/Yesterday/Earlier
+- **Auto-notifications** on: agent run success/failure, workflow completion/failure, eval completion, cost threshold exceeded, agent auto-paused
+- **30-second polling** for new notifications
+- API: mark read, mark all read, dismiss, delete
+
+### Cost Anomaly Auto-Pause
+
+Automatic protection against runaway agent costs:
+
+- Configure in **Settings > Notifications**: toggle + hourly spend threshold (default $10)
+- After every agent run, the system checks hourly spend for that agent
+- If threshold exceeded: agent is automatically paused + warning notification created
+- Paused agents can be resumed manually
+
+### Performance Drift Detection
+
+Agent health monitoring in the **Analytics > Agent Health** tab:
+
+- Health score (0-100) per agent based on error rate and status
+- Sparkline of recent scores
+- Drift detection: amber badge when score drops 10+ points below average
+- Trend indicators: ↑ Improving / ↓ Degrading / → Stable
 
 ### External Agent Integration
 
@@ -179,20 +248,26 @@ src/
 ├── app/
 │   ├── (dashboard)/          # All dashboard pages
 │   │   ├── overview/         # Home dashboard
-│   │   ├── agents/           # AI agents + builder
+│   │   ├── agents/           # AI agents + builder + templates
 │   │   ├── workflows/        # Pipeline builder (React Flow)
+│   │   ├── prompts/          # Prompt Studio
+│   │   ├── evals/            # Eval suites + results
 │   │   ├── deployments/      # Deployment tracking
 │   │   ├── costs/            # Cost & billing
-│   │   ├── analytics/        # User + agent analytics
+│   │   ├── analytics/        # User + agent analytics + health
 │   │   ├── logs/             # Log stream + LLM calls
 │   │   ├── team/             # Team management
 │   │   ├── incidents/        # Alerts & incidents
 │   │   ├── settings/         # Project settings
-│   │   └── ...
+│   │   ├── tutorial/         # Interactive tutorial
+│   │   └── profile/          # User profile
 │   └── api/                  # API routes
-│       ├── agents/           # CRUD + execute (streaming)
+│       ├── agents/           # CRUD + execute (streaming) + execute-sync
+│       ├── evals/            # Eval suites, cases, runs, execution engine
+│       ├── prompts/          # Prompt CRUD, versioning, playground test
 │       ├── events/ingest/    # External agent webhook
-│       ├── workflows/        # Workflow CRUD + run
+│       ├── workflows/        # Workflow CRUD + run pipeline
+│       ├── notifications/    # List, read, read-all, delete
 │       ├── costs/            # Cost aggregation
 │       ├── team/             # Members, invites, API keys
 │       └── ...
@@ -207,6 +282,8 @@ src/
 ├── lib/                      # Utilities
 │   ├── model-selector.ts     # AI model auto-selection engine
 │   ├── agent-profiler.ts     # Task complexity profiler
+│   ├── cost-guard.ts         # Cost anomaly auto-pause checker
+│   ├── create-notification.ts # Notification helper
 │   ├── store-cache.ts        # Session-based fetch cache
 │   ├── api-client.ts         # Project-aware fetch wrapper
 │   └── ...
@@ -223,7 +300,7 @@ src/
 - **UI**: Tailwind CSS + shadcn/ui
 - **Charts**: Recharts
 - **Canvas**: React Flow (@xyflow/react)
-- **AI**: Anthropic SDK (streaming)
+- **AI**: Anthropic SDK (streaming + sync)
 - **Auth**: NextAuth.js (optional)
 
 ## Customization
@@ -245,11 +322,14 @@ Everything is customizable:
 | `g o` | Go to Overview |
 | `g a` | Go to Agents |
 | `g w` | Go to Workflows |
+| `g p` | Go to Prompt Studio |
+| `g e` | Go to Evals |
 | `g d` | Go to Deployments |
+| `g $` | Go to Costs |
+| `g n` | Go to Analytics |
 | `g l` | Go to Logs |
 | `g t` | Go to Team |
 | `g s` | Go to Settings |
-| `g $` | Go to Costs |
 
 ## Deploy to Vercel
 
