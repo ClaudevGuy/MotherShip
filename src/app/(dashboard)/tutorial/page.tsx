@@ -8,6 +8,7 @@ import {
   BookOpen, Zap, ChevronRight, Keyboard, FolderOpen,
   Play, CheckCircle2, Info, Lightbulb, Terminal, Shield,
   Bell, Palette, Link2, Flame, Activity, TrendingUp, Plug,
+  FileCode, FlaskConical, DollarSign as DollarIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,9 @@ const SECTIONS: Section[] = [
   { id: "incidents",        label: "Incidents",        icon: AlertTriangle,  color: "#EF4444", tagline: "Alert rules and on-call" },
   { id: "settings",         label: "Settings",         icon: Settings,       color: "#6B7280", tagline: "Project configuration" },
   { id: "projects",         label: "Projects",         icon: FolderOpen,     color: "#8B5CF6", tagline: "Multi-project workspace" },
+  { id: "prompt-studio",    label: "Prompt Studio",    icon: FileCode,       color: "#00d992", tagline: "Write, test, and version prompts" },
+  { id: "evals",            label: "Evals",            icon: FlaskConical,   color: "#8B5CF6", tagline: "Automated agent quality testing" },
+  { id: "notifications",    label: "Notifications",    icon: Bell,           color: "#F59E0B", tagline: "Real-time alerts and updates" },
   { id: "external-agents",  label: "External Agents",  icon: Plug,           color: "#F97316", tagline: "Connect agents from any framework" },
   { id: "shortcuts",        label: "Shortcuts",        icon: Keyboard,       color: "#00d992", tagline: "Navigate without a mouse" },
 ];
@@ -420,6 +424,99 @@ function ProjectsSection() {
   );
 }
 
+function PromptStudioSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Prompt Studio is a dedicated environment for writing, testing, versioning, and managing the system prompts that power your AI agents. Instead of editing prompts inline in the agent config, you manage them centrally — change a prompt once and it propagates to every agent using it.
+      </p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Three tabs</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={Terminal} label="Editor" desc="Monospace editor with line numbers, live token counter, and inline name editing. Each save creates a new version — nothing is ever overwritten." />
+          <FeatureRow icon={Play} label="Playground" desc="Test your prompt against any Claude model (Haiku, Sonnet, Opus) with adjustable temperature and max tokens. Output streams in real-time in a terminal panel with cost and token stats." />
+          <FeatureRow icon={Activity} label="Versions" desc="Full version history with side-by-side diff viewer (green for added, red for removed, amber for changed). Activate any version, or restore an old version to the editor." />
+        </div>
+      </div>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Agent linking</p>
+        <Step n={1} title="Create a prompt in Prompt Studio">Write and test your system prompt. Save it — it becomes v1 and is automatically active.</Step>
+        <Step n={2} title="Link it to an agent">In the Agent Builder (Step 3 — System Prompt), choose &ldquo;Use from Prompt Studio&rdquo; and select your prompt from the dropdown.</Step>
+        <Step n={3} title="Update without touching the agent">When you save a new version in Prompt Studio and activate it, the agent automatically uses the new version on its next run. No agent config change needed.</Step>
+      </div>
+      <Callout icon={Lightbulb} color="#F59E0B" title="Version notes">
+        Always add a note when saving a new version (e.g. &ldquo;Added error handling instructions&rdquo;). This makes it easy to find and compare versions later.
+      </Callout>
+    </div>
+  );
+}
+
+function EvalsSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Evals let you create automated test suites that measure and track agent quality over time. Define test cases with pass criteria, run them against an agent, and see a scored report showing exactly which cases passed or failed and why.
+      </p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How it works</p>
+        <Step n={1} title="Create an eval suite">Give it a name and select which agent to test. Use the 3-step wizard to set everything up.</Step>
+        <Step n={2} title="Add test cases">Each case has an input (what to send the agent) and one or more pass criteria (what the output must satisfy).</Step>
+        <Step n={3} title="Run the suite">Click &ldquo;Run&rdquo; — each case is sent to the agent, the output is scored against all criteria, and you get an overall score (0-100%).</Step>
+        <Step n={4} title="Track quality over time">Run the suite regularly. The score history shows trends — catch regressions before they reach users.</Step>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Scoring methods</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={CheckCircle2} label="String matching" desc="Fast checks like 'mentions pricing', 'under 100 words', 'includes code block', 'starts with', 'does not mention [X]'. Instant, deterministic." />
+          <FeatureRow icon={Shield} label="AI Judge" desc="For complex criteria like 'is professional tone' or 'answers the question correctly'. Uses claude-haiku-4-5 as an impartial judge — responds PASS or FAIL." />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Results breakdown</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={Activity} label="Score history" desc="Bar chart of scores across runs. See trends and catch regressions at a glance." />
+          <FeatureRow icon={AlertTriangle} label="Failed cases" desc="Auto-expanded in results view. Shows exactly which criteria failed, the full agent output, and whether it was string match or AI judge." />
+          <FeatureRow icon={TrendingUp} label="Notifications" desc="Auto-notification on completion: green if ≥80%, amber if 60-79%, red if under 60%." />
+        </div>
+      </div>
+      <Callout icon={Info} color="#60A5FA" title="Run Eval from Overview">
+        The &ldquo;Run Eval&rdquo; button on the Overview quick actions lets you pick a suite and run it without leaving the home screen.
+      </Callout>
+    </div>
+  );
+}
+
+function NotificationsSection() {
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Mission Control has a built-in notification system that alerts you to important events — agent runs, workflow completions, eval results, and cost threshold breaches. Notifications appear in the bell icon in the topbar.
+      </p>
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What triggers notifications</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={CheckCircle2} label="Agent run completed" desc="Agent name, duration, and cost. Links to the agent detail page." />
+          <FeatureRow icon={AlertTriangle} label="Agent run failed" desc="Agent name and error message. Click to investigate." />
+          <FeatureRow icon={Activity} label="Workflow completed/failed" desc="Workflow name, step count, and duration or failure point." />
+          <FeatureRow icon={FlaskConical} label="Eval completed" desc="Suite name and score. Color-coded: green ≥80%, amber 60-79%, red <60%." />
+          <FeatureRow icon={DollarIcon} label="Agent auto-paused" desc="Triggered when hourly spend exceeds your threshold. Shows the spend amount." />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Features</p>
+        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
+          <FeatureRow icon={Bell} label="Unread badge" desc="Red badge on the bell icon shows unread count (1-9, or 9+). Pulses when new notifications arrive." />
+          <FeatureRow icon={Activity} label="30-second polling" desc="Notifications refresh every 30 seconds. No manual refresh needed." />
+          <FeatureRow icon={CheckCircle2} label="Mark all read" desc="One-click button in the notification panel header." />
+        </div>
+      </div>
+      <Callout icon={Lightbulb} color="#F59E0B" title="Cost anomaly auto-pause">
+        Go to <strong className="text-foreground">Settings → Notifications</strong> to configure the auto-pause threshold. When an agent&apos;s hourly spend exceeds the limit, it&apos;s automatically paused and you get a warning notification.
+      </Callout>
+    </div>
+  );
+}
+
 function ExternalAgentsSection() {
   return (
     <div className="space-y-6">
@@ -549,6 +646,9 @@ const SECTION_CONTENT: Record<string, React.ReactNode> = {
   "incidents":        <IncidentsSection />,
   "settings":         <SettingsSection />,
   "projects":         <ProjectsSection />,
+  "prompt-studio":    <PromptStudioSection />,
+  "evals":            <EvalsSection />,
+  "notifications":    <NotificationsSection />,
   "external-agents":  <ExternalAgentsSection />,
   "shortcuts":        <ShortcutsSection />,
 };
