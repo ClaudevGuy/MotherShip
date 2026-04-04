@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 /* ── Nav groups with section labels ────────────────────────────── */
 const NAV_SECTIONS = [
   { label: "Command",       items: NAV_ITEMS.slice(0, 5) },
-  { label: "Intelligence",  items: NAV_ITEMS.slice(5, 8) },
-  { label: "Operations",    items: NAV_ITEMS.slice(8) },
+  { label: "Intelligence",  items: NAV_ITEMS.slice(5, 9) },
+  { label: "Operations",    items: NAV_ITEMS.slice(9) },
 ];
 
 function useNavBadges() {

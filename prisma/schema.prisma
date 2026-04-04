@@ -1084,6 +1084,56 @@ model PromptVersion {
 }
 
 // ============================================================================
+// EVALS — automated test suites for agents
+// ============================================================================
+
+model EvalSuite {
+  id          String     @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  agentId     String
+  cases       EvalCase[]
+  runs        EvalRun[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, agentId])
+}
+
+model EvalCase {
+  id             String    @id @default(cuid())
+  suiteId        String
+  suite          EvalSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  input          String    @db.Text
+  expectedOutput String?   @db.Text
+  criteria       String[]
+  weight         Int       @default(1)
+  createdAt      DateTime  @default(now())
+
+  @@index([suiteId])
+}
+
+model EvalRun {
+  id           String    @id @default(cuid())
+  suiteId      String
+  suite        EvalSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  status       String    @default("running")
+  score        Float?
+  results      Json?
+  model        String?
+  selectedTier Int?
+  totalCost    Float?
+  duration     Int?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  @@index([suiteId])
+  @@index([suiteId, startedAt])
+}
+
+// ============================================================================
 // EXTERNAL AGENTS — agents registered from external frameworks
 // ============================================================================
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -9,16 +10,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { FlaskConical, Loader2 } from "lucide-react";
+import { FlaskConical, Loader2, Bot, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
-interface Agent {
+interface EvalSuite {
   id: string;
   name: string;
-  model: string;
-  status: string;
+  agentId: string;
+  _count: { cases: number; runs: number };
+  runs: { score: number | null; status: string }[];
 }
 
 interface RunEvalDialogProps {
@@ -27,140 +29,117 @@ interface RunEvalDialogProps {
 }
 
 export function RunEvalDialog({ open, onOpenChange }: RunEvalDialogProps) {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const router = useRouter();
+  const [suites, setSuites] = useState<EvalSuite[]>([]);
+  const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [input, setInput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!open) return;
-    fetch("/api/agents")
-      .then((r) => r.json())
-      .then(({ data }) => {
-        setAgents(data.agents ?? []);
-        if (data.agents?.length) setSelectedId(data.agents[0].id);
-      })
-      .catch(() => toast.error("Failed to load agents"));
+    setLoading(true);
+    Promise.all([
+      apiFetch("/api/evals").then(r => r.json()),
+      apiFetch("/api/agents").then(r => r.json()),
+    ]).then(([evalData, agentData]) => {
+      setSuites(evalData.data?.suites || []);
+      setAgents(agentData.data?.agents || []);
+      const s = evalData.data?.suites;
+      if (s?.length) setSelectedId(s[0].id);
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [open]);
 
   const handleClose = () => {
     onOpenChange(false);
-    setResult(null);
-    setInput("");
+    setSelectedId(null);
   };
 
   const handleRun = async () => {
-    if (!selectedId || !input.trim()) return;
+    if (!selectedId) return;
     setIsRunning(true);
-    setResult(null);
     try {
-      const res = await fetch(`/api/agents/${selectedId}/execute`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: input.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Eval failed");
-      const content = json.data?.response ?? json.data?.content ?? JSON.stringify(json.data);
-      setResult(content);
-      toast.success("Eval completed");
+      const res = await apiFetch(`/api/evals/${selectedId}/run`, { method: "POST" });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      const { data } = await res.json();
+      toast.success(`Eval completed: ${data.score}% (${data.passed}/${data.total})`);
+      handleClose();
+      router.push(`/evals/${selectedId}`);
     } catch (err) {
       toast.error((err as Error).message);
-    } finally {
-      setIsRunning(false);
     }
+    setIsRunning(false);
   };
-
-  const selectedAgent = agents.find((a) => a.id === selectedId);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FlaskConical className="size-4 text-purple-400" />
+            <FlaskConical className="size-4 text-[#00d992]" />
             Run Eval
           </DialogTitle>
         </DialogHeader>
 
-        {agents.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            No agents found. Deploy an agent first.
-          </p>
+        {loading ? (
+          <div className="flex items-center justify-center py-8"><Loader2 className="size-5 animate-spin text-muted-foreground/30" /></div>
+        ) : suites.length === 0 ? (
+          <div className="text-center py-6 space-y-3">
+            <FlaskConical className="size-8 text-muted-foreground/20 mx-auto" />
+            <p className="text-sm text-muted-foreground">No eval suites yet. Create one first.</p>
+            <Button size="sm" variant="outline" onClick={() => { handleClose(); router.push("/evals"); }} className="gap-1.5">
+              <ArrowRight className="size-3" /> Go to Evals
+            </Button>
+          </div>
         ) : (
-          <div className="space-y-4">
-            {/* Agent selector */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Select agent</p>
-              <div className="flex flex-wrap gap-2">
-                {agents.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => setSelectedId(a.id)}
-                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
-                      selectedId === a.id
-                        ? "border-purple-500/60 bg-purple-500/10 text-purple-300"
-                        : "border-border bg-card/60 text-muted-foreground hover:border-border hover:text-foreground"
-                    }`}
-                  >
-                    {a.name}
-                    <Badge variant="outline" className="text-[9px] px-1 py-0">
-                      {a.model}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Input */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Test input</p>
-              <Textarea
-                placeholder="Enter a test prompt for the agent..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                rows={3}
-                className="resize-none text-sm"
-              />
-            </div>
-
-            {/* Result */}
-            {result && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Response</p>
-                <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">
-                  {result}
-                </div>
-              </div>
-            )}
+          <div className="space-y-3 max-h-[300px] overflow-y-auto">
+            {suites.map((suite) => {
+              const agent = agents.find(a => a.id === suite.agentId);
+              const lastScore = suite.runs[0]?.score;
+              return (
+                <button
+                  key={suite.id}
+                  onClick={() => setSelectedId(suite.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors",
+                    selectedId === suite.id
+                      ? "border-[#00d992]/40 bg-[#00d992]/[0.04]"
+                      : "border-border hover:border-border/80"
+                  )}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground">{suite.name}</p>
+                    {agent && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Bot className="size-2.5 text-muted-foreground/40" />
+                        <span className="text-[10px] text-muted-foreground/50">{agent.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={cn("text-sm font-bold font-mono", lastScore != null ? (lastScore >= 80 ? "text-green-400" : lastScore >= 60 ? "text-amber-400" : "text-red-400") : "text-muted-foreground/30")}>
+                      {lastScore != null ? `${lastScore}%` : "—"}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground/30">{suite._count.cases} cases</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isRunning}>
-            {result ? "Close" : "Cancel"}
-          </Button>
-          {agents.length > 0 && (
+        {suites.length > 0 && (
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClose} disabled={isRunning}>Cancel</Button>
             <Button
               onClick={handleRun}
-              disabled={!selectedId || !input.trim() || isRunning}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              disabled={!selectedId || isRunning}
+              className="bg-[#00d992] hover:bg-[#00d992]/90 text-black"
             >
-              {isRunning ? (
-                <>
-                  <Loader2 className="size-3.5 mr-1.5 animate-spin" />
-                  Running…
-                </>
-              ) : (
-                <>
-                  <FlaskConical className="size-3.5 mr-1.5" />
-                  {result ? "Run Again" : `Run on ${selectedAgent?.name ?? "agent"}`}
-                </>
-              )}
+              {isRunning ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" /> Running...</> : "Run Now"}
             </Button>
-          )}
-        </DialogFooter>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
