@@ -188,14 +188,20 @@ function AIAgentsSection() {
       </div>
       <div className="space-y-3">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How to create an agent</p>
-        <Step n={1} title="Click Deploy Agent">From the Overview quick actions or navigate to AI Agents and click the + button in the top right.</Step>
-        <Step n={2} title="Choose a model">Select from Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro, or any other configured provider. Cheaper models like Claude Haiku are good for high-volume, simple tasks.</Step>
-        <Step n={3} title="Write the system prompt">Describe what the agent should do. Be specific: &ldquo;Review every new pull request for security vulnerabilities and post a comment with findings.&rdquo;</Step>
+        <Step n={1} title="Click Deploy Agent or use a Template">From the Overview quick actions, or go to AI Agents and click <strong className="text-foreground">Create Agent</strong>. You can also use one of the 8 pre-built templates (Code Reviewer, Security Scanner, Test Writer, etc.) — click <strong className="text-foreground">Use Template</strong> to pre-fill the builder instantly.</Step>
+        <Step n={2} title="Choose a model and strategy">Select Claude, GPT-4, or Gemini. Set the model strategy: <strong className="text-foreground">Auto</strong> (picks the best tier per task), <strong className="text-foreground">Cost-First</strong> (always cheapest), or <strong className="text-foreground">Quality-First</strong> (always best model).</Step>
+        <Step n={3} title="Write or link a system prompt">Write the prompt directly, or choose <strong className="text-foreground">Use from Prompt Studio</strong> to link a versioned prompt. Linked prompts auto-update when you activate a new version in Prompt Studio.</Step>
         <Step n={4} title="Set triggers and schedule">Agents can run on a schedule (cron), on webhook events (GitHub PR opened), or manually on demand.</Step>
         <Step n={5} title="Set a cost cap">Optional but recommended. Set a per-run token limit or daily spend cap so a runaway agent can&apos;t drain your budget.</Step>
       </div>
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Agent templates</p>
+        <p className="text-xs text-muted-foreground/60 leading-relaxed">
+          The Agents page shows a horizontally scrollable row of 8 pre-built templates: Code Reviewer, Security Scanner, Documentation Writer, Data Pipeline Agent, Test Writer, Performance Optimizer, API Designer, and Incident Responder. Each comes with a full system prompt, recommended model, and strategy — click <strong className="text-foreground">Use Template</strong> to pre-fill the Agent Builder and deploy in seconds.
+        </p>
+      </div>
       <Callout icon={Lightbulb} color="#F59E0B" title="Run Eval">
-        Before running an agent in production, use <strong className="text-foreground">Run Eval</strong> (Overview quick actions) to test it against a sample input and see the output, token count, and cost before it matters.
+        Use <strong className="text-foreground">Evals</strong> to create automated test suites for your agents. Define test cases with pass criteria and run them to measure quality over time. Access via the sidebar or the Overview &ldquo;Run Eval&rdquo; button.
       </Callout>
     </div>
   );
@@ -210,10 +216,10 @@ function WorkflowsSection() {
       <div className="space-y-3">
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Workflow anatomy</p>
         <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={GitBranch} label="Steps" desc="Each step is one agent. Steps run sequentially by default. You can mark steps as parallel if they don't depend on each other." />
+          <FeatureRow icon={GitBranch} label="Steps" desc="Each step is one agent. Steps run sequentially — the output of step N becomes the input of step N+1. This creates a real pipeline." />
           <FeatureRow icon={Play} label="Trigger" desc="Workflows can be triggered manually, on a schedule, or via an incoming webhook (e.g. a GitHub push event)." />
-          <FeatureRow icon={CheckCircle2} label="Outputs" desc="Every step emits a structured output that downstream steps can reference using {{step.output}} template syntax." />
-          <FeatureRow icon={AlertTriangle} label="Error handling" desc="Set each step to 'halt on error' or 'continue'. You can also wire a fallback step to run on failure." />
+          <FeatureRow icon={CheckCircle2} label="Real execution" desc="Clicking Run calls each agent via the Anthropic API in sequence. Every run creates a WorkflowRun record with step-level results, cost, and duration." />
+          <FeatureRow icon={AlertTriangle} label="Error handling" desc="Set each step to 'halt on error' or 'continue'. If a step fails, the run is marked as failed with the error message." />
         </div>
       </div>
       <div className="space-y-3">
@@ -282,18 +288,19 @@ function AnalyticsSection() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Agent Analytics gives you three lenses on how your agents are performing: execution outcomes (Performance), spend efficiency (Costs), and model usage (Usage).
+        Agent Analytics gives you four lenses on how your agents are performing: execution outcomes (Performance), spend efficiency (Costs), model usage (Usage), and reliability (Agent Health).
       </p>
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Three tabs</p>
+        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Four tabs</p>
         <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
           <FeatureRow icon={Activity} label="Performance" desc="Total runs, success rate %, average run duration, and a daily chart of successful vs failed runs. Use this to catch reliability regressions early." />
           <FeatureRow icon={DollarSign} label="Costs" desc="Cost per run, most expensive agent, cost efficiency score, and a per-agent spend bar chart. Use this to optimise where your budget goes." />
           <FeatureRow icon={BarChart3} label="Usage" desc="Token consumption over time (input vs output), average tokens per run, and a model breakdown showing how many calls hit each provider." />
+          <FeatureRow icon={AlertTriangle} label="Agent Health" desc="Health score (0-100) per agent based on error rate, with sparkline trends. Drift detection flags agents whose score drops 10+ points below their average with an amber badge." />
         </div>
       </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Context limit warnings">
-        The Usage tab shows how many runs hit the context window limit. If that number is growing, your agents may be getting truncated — reduce prompt size or split the task into smaller steps.
+      <Callout icon={Lightbulb} color="#F59E0B" title="Drift detection">
+        The Agent Health tab automatically detects performance drift. If an agent&apos;s health score drops significantly, it shows a &ldquo;Drift&rdquo; badge — investigate before it impacts users.
       </Callout>
     </div>
   );
@@ -382,11 +389,11 @@ function SettingsSection() {
         <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Sections</p>
         <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
           <FeatureRow icon={Settings} label="General" desc="Project name, description, logo URL, and timezone. The name and logo appear in the sidebar project switcher." />
-          <FeatureRow icon={Palette} label="Appearance" desc="Switch between dark, light, and system themes. Choose an accent colour. Enable or disable live polling and set the interval." />
-          <FeatureRow icon={Bell} label="Notifications" desc="Fine-grained control over which events trigger in-app, email, and Slack notifications. Tune this to avoid alert fatigue." />
+          <FeatureRow icon={Palette} label="Appearance" desc="Switch between dark, light, and system themes. Enable or disable live polling and set the interval." />
+          <FeatureRow icon={Bell} label="Notifications" desc="Configure the cost anomaly auto-pause: set a threshold for hourly agent spend. When exceeded, the agent is paused automatically and you get a notification." />
           <FeatureRow icon={Shield} label="Security" desc="Session timeout length, require 2FA for the whole project, SSO configuration, and recent login activity." />
-          <FeatureRow icon={DollarSign} label="Billing" desc="Current plan, seat usage, and agent limit. Upgrade or downgrade here." />
-          <FeatureRow icon={Link2} label="Integrations" desc="Connect GitHub, Slack, PagerDuty, Linear, and Datadog. Each integration unlocks richer automation — e.g. GitHub enables auto-deployment tracking." />
+          <FeatureRow icon={Activity} label="API Keys" desc="Create API keys with scopes (read, write, ingest) to let external tools and agents send data to MOTHERSHIP. Keys start with mc_ and can be revoked." />
+          <FeatureRow icon={Link2} label="Integrations" desc="Connect AI providers (Anthropic, OpenAI, Google AI) by adding API keys. Keys are encrypted at rest. Also connect GitHub, Slack, and other services." />
           <FeatureRow icon={AlertTriangle} label="Danger Zone" desc="Destructive actions: pause all agents, reset settings, export all data, or delete the project. All require confirmation." />
         </div>
       </div>
