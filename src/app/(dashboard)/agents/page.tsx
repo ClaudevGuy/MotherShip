@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Plus, Eye, Code2, Shield, FileText, Database, TestTube, Gauge, Globe, Flame, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { Search, Plus, Eye, Trash2, Code2, Shield, FileText, Database, TestTube, Gauge, Globe, Flame, ChevronLeft, ChevronRight as ChevronRightIcon, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAgentsStore } from "@/stores/agents-store";
 import { formatRelativeTime, formatNumber, formatCurrency } from "@/lib/format";
+import { invalidate } from "@/lib/store-cache";
 import {
   PageHeader,
   LiveIndicator,
   DataTable,
   StatusBadge,
   ModelBadge,
+  ConfirmDialog,
 } from "@/components/shared";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -113,15 +116,63 @@ const columns = [
   {
     key: "actions",
     label: "",
-    render: (item: Agent) => (
-      <Link href={`/agents/${item.id}`} onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon-xs">
-          <Eye className="size-3.5" />
-        </Button>
-      </Link>
-    ),
+    render: (item: Agent) => <AgentRowActions agent={item} />,
   },
 ];
+
+function AgentRowActions({ agent }: { agent: Agent }) {
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleConfirm = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/agents/${agent.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed to delete" }));
+        throw new Error(data.error || "Failed to delete");
+      }
+      toast.success(`Agent "${agent.name}" deleted`);
+      invalidate("agents");
+      useAgentsStore.getState().fetch();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-0.5">
+        <Link href={`/agents/${agent.id}`} onClick={(e) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon-xs" title="View agent">
+            <Eye className="size-3.5" />
+          </Button>
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={(e) => { e.stopPropagation(); setConfirmOpen(true); }}
+          disabled={deleting}
+          title="Delete agent"
+          className="text-muted-foreground hover:text-red-400"
+        >
+          {deleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+        </Button>
+      </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete agent?"
+        description={`This will permanently delete "${agent.name}" and all its runs, evals, and execution history. This cannot be undone.`}
+        confirmLabel="Yes, delete"
+        variant="danger"
+        onConfirm={handleConfirm}
+      />
+    </>
+  );
+}
 
 // ── Agent Templates ──
 
@@ -236,16 +287,38 @@ function TemplatesRow() {
     if (scrollRef.current) scrollRef.current.style.cursor = "grab";
   };
 
-  const handleUseTemplate = (t: typeof TEMPLATES[0]) => {
+  const handleUseTemplate = async (t: typeof TEMPLATES[0]) => {
     if (hasDragged.current) return; // Ignore clicks at the end of a drag
-    const params = new URLSearchParams({
-      name: t.name,
-      model: t.model,
-      strategy: t.strategy,
-      systemPrompt: t.systemPrompt,
-      description: t.description,
-    });
-    router.push(`/agents/builder?${params.toString()}`);
+    try {
+      const res = await fetch("/api/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: t.name,
+          description: t.description,
+          model: t.model,
+          modelStrategy: t.strategy,
+          systemPrompt: t.systemPrompt,
+          temperature: 0.7,
+          maxTokens: 4096,
+          tools: [],
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const agent = await res.json();
+      invalidate("agents");
+      router.push(`/agents/${agent.id}`);
+    } catch {
+      // Fallback to wizard if quick-create fails
+      const params = new URLSearchParams({
+        name: t.name,
+        model: t.model,
+        strategy: t.strategy,
+        systemPrompt: t.systemPrompt,
+        description: t.description,
+      });
+      router.push(`/agents/builder?${params.toString()}`);
+    }
   };
 
   return (
@@ -304,8 +377,116 @@ function TemplatesRow() {
   );
 }
 
+function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!open) return null;
+
+  const handleCreate = async () => {
+    if (!name.trim() || !prompt.trim()) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: "",
+          model: "CLAUDE",
+          modelStrategy: "auto",
+          systemPrompt: prompt.trim(),
+          temperature: 0.7,
+          maxTokens: 4096,
+          tools: [],
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed" }));
+        throw new Error(data.error || "Failed to create agent");
+      }
+      const agent = await res.json();
+      invalidate("agents");
+      router.push(`/agents/${agent.id}`);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Quick Create Agent</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Name it, prompt it, run it. Configure more later.</p>
+          </div>
+          <Link href="/agents/builder" className="text-[10px] text-[#00d992] hover:underline">
+            Advanced Setup
+          </Link>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Agent Name</label>
+            <Input
+              placeholder="e.g. Code Reviewer, Data Analyst..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">System Prompt</label>
+            <textarea
+              placeholder="You are an expert..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-[#00d992]/50"
+              rows={4}
+            />
+            <p className="text-[10px] text-muted-foreground/50 mt-1">
+              Model: Auto (selects best tier per task) &middot; Trigger: Manual &middot; Memory: Session
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-[10px] text-red-400">{error}</p>
+        )}
+
+        <div className="flex justify-end gap-2 pt-1">
+          <Button size="sm" variant="outline" onClick={onClose} disabled={creating}>
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            className="bg-[#00d992] text-black hover:bg-[#00d992]/90"
+            onClick={handleCreate}
+            disabled={!name.trim() || !prompt.trim() || creating}
+          >
+            {creating ? (
+              <><Loader2 className="size-3 mr-1.5 animate-spin" /> Creating...</>
+            ) : (
+              <><Plus className="size-3 mr-1.5" /> Create & Open</>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AgentsPage() {
   const router = useRouter();
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const {
     searchQuery,
     setSearchQuery,
@@ -326,13 +507,13 @@ export default function AgentsPage() {
     <div className="space-y-6">
       <PageHeader title="AI Agents" description="Monitor, manage, and deploy autonomous AI agents">
         <LiveIndicator />
-        <Link href="/agents/builder">
-          <Button size="sm">
-            <Plus className="size-3.5 mr-1" />
-            Create Agent
-          </Button>
-        </Link>
+        <Button size="sm" onClick={() => setQuickCreateOpen(true)}>
+          <Plus className="size-3.5 mr-1" />
+          Create Agent
+        </Button>
       </PageHeader>
+
+      <QuickCreateModal open={quickCreateOpen} onClose={() => setQuickCreateOpen(false)} />
 
       {/* Templates */}
       <TemplatesRow />

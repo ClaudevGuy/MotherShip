@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { useProjectsStore } from "@/stores/projects-store";
 import { useSettingsStore } from "@/stores/settings-store";
@@ -48,6 +48,10 @@ function ProjectAvatar({ name, logo }: { name: string; logo: string }) {
 export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
   const [open, setOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  // Zustand reads from localStorage on client which differs from SSR output.
+  // Render the SSR-safe default until mounted to avoid hydration mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const { projects, activeProjectId, switchProject, addProject, deleteProject } =
     useProjectsStore();
@@ -55,6 +59,10 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
   const setProjectLogo = useSettingsStore((s) => s.setProjectLogo);
 
   const activeProject = projects.find((p) => p.id === activeProjectId);
+
+  // Pre-hydration display: always show the canonical default to match server HTML
+  const displayName = mounted ? (activeProject?.name ?? "MOTHERSHIP") : "MOTHERSHIP";
+  const displayLogo = mounted ? (activeProject?.logo ?? "") : "";
 
   function handleSwitch(id: string) {
     setOpen(false);
@@ -81,10 +89,7 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
   if (collapsed) {
     return (
       <div className="flex h-9 w-full items-center justify-center">
-        <ProjectAvatar
-          name={activeProject?.name ?? "M"}
-          logo={activeProject?.logo ?? ""}
-        />
+        <ProjectAvatar name={displayName} logo={displayLogo} />
       </div>
     );
   }
@@ -102,12 +107,9 @@ export function ProjectSwitcher({ collapsed }: { collapsed: boolean }) {
             : "text-muted-foreground/70 hover:text-foreground/90 hover:bg-white/[0.035]"
         )}
       >
-        <ProjectAvatar
-          name={activeProject?.name ?? "M"}
-          logo={activeProject?.logo ?? ""}
-        />
+        <ProjectAvatar name={displayName} logo={displayLogo} />
         <span className="flex-1 truncate text-left leading-none">
-          {activeProject?.name ?? "MOTHERSHIP"}
+          {displayName}
         </span>
         <ChevronsUpDown
           className={cn(

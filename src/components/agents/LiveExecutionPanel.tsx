@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Square, RotateCcw, Zap, DollarSign, Clock, Bot, AlertTriangle } from "lucide-react";
+import { Play, Square, RotateCcw, Zap, DollarSign, Clock, Bot, AlertTriangle, TrendingDown, User, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { invalidate } from "@/lib/store-cache";
@@ -15,12 +15,26 @@ interface StreamInfo {
   selectionMs?: number;
 }
 
-interface StreamDone {
+interface TurnStats {
   tokensIn: number;
   tokensOut: number;
   cost: number;
+  tier1Cost?: number;
   duration: number;
   model: string;
+  tier?: number | null;
+  reason?: string;
+}
+
+type Role = "user" | "assistant";
+
+interface Message {
+  id: string;
+  role: Role;
+  content: string;
+  stats?: TurnStats;
+  error?: string;
+  streaming?: boolean;
 }
 
 interface Props {
@@ -30,29 +44,54 @@ interface Props {
 
 export function LiveExecutionPanel({ agentId }: Props) {
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [output, setOutput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<StreamInfo | null>(null);
-  const [stats, setStats] = useState<StreamDone | null>(null);
-  const outputRef = useRef<HTMLDivElement>(null);
+  const [liveTokens, setLiveTokens] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [currentInfo, setCurrentInfo] = useState<StreamInfo | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef(0);
 
-  // Auto-scroll
+  // Auto-scroll to bottom when messages update
   useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [output]);
+  }, [messages]);
+
+  // Elapsed time timer during streaming
+  useEffect(() => {
+    if (isStreaming) {
+      startTimeRef.current = Date.now();
+      timerRef.current = setInterval(() => {
+        setElapsedMs(Date.now() - startTimeRef.current);
+      }, 100);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isStreaming]);
 
   const handleRun = useCallback(async () => {
     if (!input.trim() || isStreaming) return;
 
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: input.trim() };
+    const assistantMsgId = crypto.randomUUID();
+    const assistantMsg: Message = { id: assistantMsgId, role: "assistant", content: "", streaming: true };
+
+    // Snapshot history up to this point — only completed, non-errored turns.
+    const history = messages
+      .filter((m) => !m.error && !m.streaming)
+      .map((m) => ({ role: m.role, content: m.content }));
+
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setInput("");
     setIsStreaming(true);
-    setOutput("");
-    setError(null);
-    setInfo(null);
-    setStats(null);
+    setLiveTokens(0);
+    setElapsedMs(0);
+    setCurrentInfo(null);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -61,7 +100,7 @@ export function LiveExecutionPanel({ agentId }: Props) {
       const res = await fetch(`/api/agents/${agentId}/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: input.trim() }),
+        body: JSON.stringify({ input: userMsg.content, history }),
         signal: controller.signal,
       });
 
@@ -75,6 +114,7 @@ export function LiveExecutionPanel({ agentId }: Props) {
 
       const decoder = new TextDecoder();
       let buffer = "";
+      let infoForTurn: StreamInfo | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -91,20 +131,36 @@ export function LiveExecutionPanel({ agentId }: Props) {
           try {
             const event = JSON.parse(json);
             if (event.type === "info") {
-              setInfo(event);
+              infoForTurn = event;
+              setCurrentInfo(event);
             } else if (event.type === "delta") {
-              setOutput((prev) => prev + event.content);
+              setMessages((prev) => prev.map((m) =>
+                m.id === assistantMsgId ? { ...m, content: m.content + event.content } : m
+              ));
+              setLiveTokens((prev) => prev + Math.ceil(event.content.length * 0.75));
             } else if (event.type === "done") {
-              setStats(event);
-              // Invalidate all dependent stores so next visit refetches
+              const stats: TurnStats = {
+                tokensIn: event.tokensIn,
+                tokensOut: event.tokensOut,
+                cost: event.cost,
+                tier1Cost: event.tier1Cost,
+                duration: event.duration,
+                model: event.model,
+                tier: infoForTurn?.tier,
+                reason: infoForTurn?.reason,
+              };
+              setMessages((prev) => prev.map((m) =>
+                m.id === assistantMsgId ? { ...m, stats, streaming: false } : m
+              ));
               invalidate("agents");
               invalidate("logs");
               invalidate("costs");
               invalidate("notifications");
-              // Refetch agents store immediately to update this page's data
               useAgentsStore.getState().fetch();
             } else if (event.type === "error") {
-              setError(event.message);
+              setMessages((prev) => prev.map((m) =>
+                m.id === assistantMsgId ? { ...m, error: event.message, streaming: false } : m
+              ));
             }
           } catch {
             // Skip malformed JSON
@@ -112,41 +168,90 @@ export function LiveExecutionPanel({ agentId }: Props) {
         }
       }
     } catch (err) {
-      if ((err as Error).name === "AbortError") {
-        setError("Stream interrupted by user");
-      } else {
-        setError((err as Error).message);
-      }
-      // Invalidate agents store on error too (status changed in DB)
+      const message = (err as Error).name === "AbortError"
+        ? "Stream interrupted by user"
+        : (err as Error).message;
+      setMessages((prev) => prev.map((m) =>
+        m.id === assistantMsgId ? { ...m, error: message, streaming: false } : m
+      ));
       invalidate("agents");
     } finally {
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [agentId, input, isStreaming]);
+  }, [agentId, input, isStreaming, messages]);
 
-  const handleStop = () => {
-    abortRef.current?.abort();
+  const handleStop = () => abortRef.current?.abort();
+
+  const handleNewConversation = () => {
+    if (isStreaming) abortRef.current?.abort();
+    setMessages([]);
+    setInput("");
+    setCurrentInfo(null);
   };
 
-  const handleRetry = () => {
-    setError(null);
-    handleRun();
+  const handleRetryLast = () => {
+    // Find last user message and re-send it. Drop the failed assistant message.
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    if (!lastUser) return;
+    setMessages((prev) => prev.filter((m, i, arr) => {
+      // Drop the failed assistant message that came after the last user
+      const nextIdx = arr.findIndex((x) => x === lastUser) + 1;
+      return i !== nextIdx;
+    }));
+    setInput(lastUser.content);
+    // Let user click Run again
   };
 
-  const tierLabel = info?.tier ? `T${info.tier}` : null;
-  const tierColor = info?.tier === 1 ? "bg-purple-500/15 text-purple-400" :
-                    info?.tier === 2 ? "bg-[#00d992]/15 text-[#00d992]" :
-                    info?.tier === 3 ? "bg-green-500/15 text-green-400" : "";
+  const hasMessages = messages.length > 0;
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+  const hasError = Boolean(lastAssistant?.error);
 
   return (
     <div className="space-y-3">
+      {/* Conversation header */}
+      {hasMessages && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <span className="font-mono">
+              {messages.filter((m) => m.role === "user").length} turns in conversation
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleNewConversation}
+            className="text-[11px] text-muted-foreground hover:text-foreground"
+          >
+            <MessageSquarePlus className="size-3 mr-1.5" />
+            New conversation
+          </Button>
+        </div>
+      )}
+
+      {/* Messages — chat transcript */}
+      {hasMessages && (
+        <div
+          ref={scrollRef}
+          className={cn(
+            "rounded-lg border bg-[#050507] p-4 max-h-[500px] overflow-y-auto space-y-4 transition-all duration-300",
+            isStreaming
+              ? "border-[#00d992]/40 shadow-[0_0_15px_rgba(0,217,146,0.08)]"
+              : "border-[#3d3a39]"
+          )}
+        >
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+        </div>
+      )}
+
       {/* Input panel */}
       <div className="space-y-2">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Enter a task for this agent..."
+          placeholder={hasMessages ? "Continue the conversation..." : "Enter a task for this agent..."}
           className="w-full rounded-lg border border-[#3d3a39] bg-[#050507] px-4 py-3 text-sm text-[#f2f2f2] font-mono placeholder:text-[#8b949e] resize-none focus:outline-none focus:border-[#00d992]/50"
           rows={3}
           disabled={isStreaming}
@@ -156,91 +261,150 @@ export function LiveExecutionPanel({ agentId }: Props) {
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {info && (
+            {isStreaming && (
+              <span className="flex items-center gap-1.5 text-[10px] text-[#00d992]">
+                <span className="relative flex size-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d992] opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2 bg-[#00d992]" />
+                </span>
+                Running...
+              </span>
+            )}
+            {currentInfo && isStreaming && (
               <>
                 <Badge variant="outline" className="text-[10px] font-mono">
-                  {info.model}
+                  {currentInfo.model}
                 </Badge>
-                {tierLabel && (
-                  <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold", tierColor)}>
-                    {tierLabel}
-                  </span>
-                )}
-                {info.reason && (
-                  <span className="text-[10px] text-[#8b949e] truncate max-w-[300px]">{info.reason}</span>
+                {currentInfo.tier && (
+                  <TierBadge tier={currentInfo.tier} />
                 )}
               </>
             )}
           </div>
           <div className="flex items-center gap-2">
+            {isStreaming && (
+              <div className="flex items-center gap-3 text-[10px] text-[#8b949e] font-mono mr-2">
+                <span className="flex items-center gap-1">
+                  <Clock className="size-2.5" />
+                  {(elapsedMs / 1000).toFixed(1)}s
+                </span>
+                <span className="flex items-center gap-1">
+                  <Zap className="size-2.5" />
+                  ~{liveTokens} tokens
+                </span>
+              </div>
+            )}
             {isStreaming ? (
               <Button size="sm" variant="outline" onClick={handleStop} className="text-red-400 border-red-500/30 hover:bg-red-500/10">
                 <Square className="size-3 mr-1.5" /> Stop
               </Button>
             ) : (
-              <Button
-                size="sm"
-                className="bg-[#00d992] text-black hover:bg-[#00d992]/90"
-                onClick={handleRun}
-                disabled={!input.trim()}
-              >
-                <Play className="size-3 mr-1.5" /> Run Agent
-              </Button>
+              <>
+                {hasError && (
+                  <Button size="sm" variant="outline" onClick={handleRetryLast}>
+                    <RotateCcw className="size-3 mr-1.5" /> Retry
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  className="bg-[#00d992] text-black hover:bg-[#00d992]/90"
+                  onClick={handleRun}
+                  disabled={!input.trim()}
+                >
+                  <Play className="size-3 mr-1.5" /> {hasMessages ? "Send" : "Run Agent"}
+                </Button>
+              </>
             )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Terminal output */}
-      {(output || error || isStreaming) && (
+function MessageBubble({ message }: { message: Message }) {
+  const isUser = message.role === "user";
+  return (
+    <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
+      {!isUser && (
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20">
+          <Bot className="size-3.5 text-[#00d992]" />
+        </div>
+      )}
+      <div className={cn("min-w-0 max-w-[85%] space-y-1.5", isUser && "items-end flex flex-col")}>
         <div
-          ref={outputRef}
-          className="rounded-lg border border-[#3d3a39] bg-[#050507] p-4 font-mono text-[13px] text-[#f2f2f2] min-h-[200px] max-h-[400px] overflow-y-auto whitespace-pre-wrap leading-relaxed"
+          className={cn(
+            "rounded-lg px-3 py-2 text-[13px] font-mono whitespace-pre-wrap leading-relaxed",
+            isUser
+              ? "bg-[#00d992]/[0.06] border border-[#00d992]/20 text-foreground"
+              : "bg-transparent text-[#f2f2f2]"
+          )}
         >
-          {output}
-          {isStreaming && !output && !error && (
+          {message.content}
+          {message.streaming && !message.content && (
             <span className="text-[#8b949e]">Waiting for response...</span>
           )}
-          {isStreaming && (
-            <span className="inline-block w-[2px] h-[14px] bg-[#00d992] ml-0.5 animate-pulse" />
+          {message.streaming && (
+            <span className="inline-block w-[2px] h-[14px] bg-[#00d992] ml-0.5 animate-pulse align-middle" />
           )}
-          {error && (
-            <div className="flex items-start gap-2 mt-2 text-red-400">
-              <AlertTriangle className="size-4 shrink-0 mt-0.5" />
-              <span>Error: {error}</span>
+          {message.error && (
+            <div className="flex items-start gap-2 mt-2 text-red-400 text-[12px]">
+              <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
+              <span>Error: {message.error}</span>
             </div>
           )}
         </div>
-      )}
-
-      {/* Stats bar */}
-      {stats && (
-        <div className="flex items-center gap-4 rounded-lg border border-[#3d3a39] bg-[#050507] px-4 py-2.5 text-[11px] text-[#8b949e]">
-          <span className="flex items-center gap-1">
-            <Clock className="size-3" />
-            Completed in {(stats.duration / 1000).toFixed(1)}s
-          </span>
-          <span className="flex items-center gap-1 font-mono">
-            <Zap className="size-3" />
-            {stats.tokensIn.toLocaleString()} in / {stats.tokensOut.toLocaleString()} out
-          </span>
-          <span className="flex items-center gap-1 font-mono">
-            <DollarSign className="size-3" />
-            ${stats.cost.toFixed(4)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Bot className="size-3" />
-            {stats.model}
-          </span>
+        {!isUser && message.stats && <StatsRow stats={message.stats} />}
+      </div>
+      {isUser && (
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted/40 border border-border">
+          <User className="size-3.5 text-muted-foreground" />
         </div>
       )}
-
-      {/* Retry on error */}
-      {error && !isStreaming && (
-        <Button size="sm" variant="outline" onClick={handleRetry}>
-          <RotateCcw className="size-3 mr-1.5" /> Retry
-        </Button>
-      )}
     </div>
+  );
+}
+
+function StatsRow({ stats }: { stats: TurnStats }) {
+  const savings = stats.tier1Cost && stats.tier1Cost > stats.cost
+    ? Math.round((stats.tier1Cost - stats.cost) * 10000) / 10000
+    : null;
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-[10px] text-[#8b949e] font-mono px-1">
+      <span className="flex items-center gap-1">
+        <Clock className="size-2.5" />
+        {(stats.duration / 1000).toFixed(1)}s
+      </span>
+      <span className="flex items-center gap-1">
+        <Zap className="size-2.5" />
+        {stats.tokensIn.toLocaleString()} in / {stats.tokensOut.toLocaleString()} out
+      </span>
+      <span className="flex items-center gap-1">
+        <DollarSign className="size-2.5" />
+        ${stats.cost.toFixed(4)}
+      </span>
+      {savings !== null && savings > 0 && (
+        <span className="flex items-center gap-1 text-[#00d992]">
+          <TrendingDown className="size-2.5" />
+          Saved ${savings.toFixed(4)}
+        </span>
+      )}
+      {stats.tier && <TierBadge tier={stats.tier} small />}
+    </div>
+  );
+}
+
+function TierBadge({ tier, small }: { tier: number; small?: boolean }) {
+  const color = tier === 1 ? "bg-purple-500/15 text-purple-400" :
+                tier === 2 ? "bg-[#00d992]/15 text-[#00d992]" :
+                "bg-green-500/15 text-green-400";
+  return (
+    <span className={cn(
+      "inline-flex items-center rounded-full px-2 py-0.5 font-bold",
+      small ? "text-[8px]" : "text-[9px]",
+      color
+    )}>
+      T{tier}
+    </span>
   );
 }

@@ -360,7 +360,13 @@ model AgentRun {
   status     RunStatus
   tokensUsed Int
   cost       Float
+  input      String?   @db.Text
   output     String    @db.Text
+  model      String?
+  tier       Int?
+  tokensIn   Int?
+  tokensOut  Int?
+  toolCalls  Json?     // Array of {name, input, output} — populated when tool use is implemented
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 

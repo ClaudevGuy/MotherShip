@@ -13,7 +13,7 @@ import {
   ModelBadge,
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, Target, Download, CheckCircle2 } from "lucide-react";
+import { DollarSign, TrendingUp, Target, Download, CheckCircle2, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ export default function CostsPage() {
   const [tab, setTab] = useState<"overview" | "agents" | "budget" | "invoices">("overview");
   const [agentRange, setAgentRange] = useState<"7d" | "30d" | "90d">("30d");
   const [budgetAlert, setBudgetAlert] = useState(80);
-  const { agentCosts, budgets, fetch: fetchCosts } = useCostsStore();
+  const { agentCosts, budgets, dailyCosts, fetch: fetchCosts } = useCostsStore();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchCosts(); }, []);
@@ -54,9 +54,34 @@ export default function CostsPage() {
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysElapsed = Math.max(now.getDate(), 1);
-  const projected = daysElapsed > 0 ? Math.round((thisMonth / daysElapsed) * daysInMonth) : 0;
+  const daysRemaining = Math.max(0, daysInMonth - daysElapsed);
+
+  // ─── Cost forecast (trailing 7-day average) ──────────────────────────────
+  // Rationale: a flat "total-so-far / days-elapsed" projection misses trend
+  // changes. The trailing 7-day window tracks current burn rate better.
+  const last7 = dailyCosts.slice(-7);
+  const last7Total = last7.reduce((s, d) => s + (d.value ?? 0), 0);
+  const avgDaily7 = last7.length > 0 ? last7Total / last7.length : 0;
+  // Compare to the 7 days before that to detect acceleration/deceleration
+  const prev7 = dailyCosts.slice(-14, -7);
+  const prev7Total = prev7.reduce((s, d) => s + (d.value ?? 0), 0);
+  const avgDailyPrev7 = prev7.length > 0 ? prev7Total / prev7.length : 0;
+  const trendPct = avgDailyPrev7 > 0
+    ? Math.round(((avgDaily7 - avgDailyPrev7) / avgDailyPrev7) * 100)
+    : 0;
+
+  // Forecast = spend-to-date + (remaining days * trailing 7-day avg)
+  // Falls back to the old total/daysElapsed method if we don't have 7 days of data.
+  const hasTrailingWindow = last7.length >= 3;
+  const projected = hasTrailingWindow
+    ? Math.round((thisMonth + avgDaily7 * daysRemaining) * 100) / 100
+    : daysElapsed > 0
+      ? Math.round((thisMonth / daysElapsed) * daysInMonth * 100) / 100
+      : 0;
   const underBudget = monthlyBudget > 0 ? monthlyBudget - projected : 0;
   const budgetPct = monthlyBudget > 0 ? Math.round((thisMonth / monthlyBudget) * 100) : 0;
+  const projectedBudgetPct = monthlyBudget > 0 ? Math.round((projected / monthlyBudget) * 100) : 0;
+  const willExceedBudget = monthlyBudget > 0 && projected > monthlyBudget;
 
   const totalAgentSpend = totalAgentSpendRaw;
   const sortedAgents = [...agentCosts].sort((a, b) => b.totalCost - a.totalCost);
@@ -115,11 +140,79 @@ export default function CostsPage() {
             </GlassPanel>
           </div>
 
-          {/* Projection */}
-          <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/[0.06] px-4 py-2.5 text-sm font-medium text-green-400">
-            <CheckCircle2 className="size-4 shrink-0" />
-            On track — projected {formatCurrency(projected)} ({formatCurrency(underBudget)} under budget)
-          </div>
+          {/* Forecast — trailing 7-day projection */}
+          <GlassPanel padding="md" className={cn(
+            willExceedBudget ? "border-red-500/30 bg-red-500/[0.04]" : "border-[#00d992]/20 bg-[#00d992]/[0.03]"
+          )}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className={cn(
+                  "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                  willExceedBudget ? "bg-red-500/10" : "bg-[#00d992]/10"
+                )}>
+                  {willExceedBudget ? (
+                    <AlertTriangle className="size-5 text-red-400" />
+                  ) : (
+                    <CheckCircle2 className="size-5 text-[#00d992]" />
+                  )}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <p className={cn(
+                    "text-sm font-semibold",
+                    willExceedBudget ? "text-red-400" : "text-[#00d992]"
+                  )}>
+                    {hasTrailingWindow
+                      ? <>At this pace: <span className="font-mono">{formatCurrency(projected)}</span> this month</>
+                      : "Not enough data for a forecast yet"
+                    }
+                  </p>
+                  {hasTrailingWindow && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Based on last 7 days &middot; avg {formatCurrency(avgDaily7)}/day &middot; {daysRemaining} days remaining
+                      {trendPct !== 0 && prev7.length > 0 && (
+                        <span className={cn(
+                          "ml-2 font-mono",
+                          trendPct > 10 ? "text-amber-400" : trendPct < -10 ? "text-[#00d992]" : "text-muted-foreground"
+                        )}>
+                          {trendPct > 0 ? "↑" : "↓"} {Math.abs(trendPct)}% vs prior week
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  {monthlyBudget > 0 && hasTrailingWindow && (
+                    <p className="text-[11px]">
+                      {willExceedBudget ? (
+                        <span className="text-red-400">
+                          <span className="font-mono">{formatCurrency(projected - monthlyBudget)}</span> over budget ({projectedBudgetPct}% of {formatCurrency(monthlyBudget)})
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          <span className="font-mono text-[#00d992]">{formatCurrency(underBudget)}</span> under budget ({projectedBudgetPct}% of {formatCurrency(monthlyBudget)})
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {hasTrailingWindow && monthlyBudget > 0 && (
+                <div className="w-[180px] shrink-0">
+                  <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                    <span>Projected</span>
+                    <span className="font-mono">{projectedBudgetPct}%</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-muted/50 overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        willExceedBudget ? "bg-red-500" : projectedBudgetPct > 85 ? "bg-amber-500" : "bg-[#00d992]"
+                      )}
+                      style={{ width: `${Math.min(projectedBudgetPct, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </GlassPanel>
 
           {/* Charts row: 2/3 + 1/3 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

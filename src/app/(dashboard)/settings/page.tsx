@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { invalidate } from "@/lib/store-cache";
 
-const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "API Keys", "Integrations", "Danger Zone"];
+const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Audit Log"];
 
 const NOTIF_EVENTS: { name: string; app: boolean; email: boolean; slack: boolean }[] = [];
 
@@ -297,10 +297,66 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground mb-3">Not configured. Supports Google, GitHub, and SAML.</p>
                 <button className="text-xs text-foreground bg-muted/50 rounded-lg px-4 py-2 hover:bg-muted" onClick={() => toast.success("SSO configuration opened")}>Configure SSO</button>
               </GlassPanel>
+
+              {/* Quick links to dedicated pages */}
+              <GlassPanel padding="lg">
+                <h3 className="text-sm font-semibold text-foreground mb-3">Related Settings</h3>
+                <div className="space-y-2">
+                  <a href="/team" className="flex items-center justify-between text-xs text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/30 transition-colors">
+                    <span className="flex items-center gap-2"><Key className="size-3.5" /> API Keys</span>
+                    <span className="text-[10px] text-[#00d992]">Manage in Team &rarr;</span>
+                  </a>
+                  <a href="/integrations" className="flex items-center justify-between text-xs text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/30 transition-colors">
+                    <span className="flex items-center gap-2"><Link2 className="size-3.5" /> Integrations</span>
+                    <span className="text-[10px] text-[#00d992]">Manage Integrations &rarr;</span>
+                  </a>
+                </div>
+              </GlassPanel>
+
+              {/* Danger Zone — folded into Security */}
+              <div className="pt-4 mt-4 border-t border-red-400/10">
+                <h3 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">Danger Zone</h3>
+                <div className="space-y-3">
+                  {[
+                    { title: "Pause All Agents", desc: "Stop all running agents immediately.", btn: "Pause All", color: "amber", icon: Pause },
+                    { title: "Reset All Settings", desc: "Restore all settings to their default values.", btn: "Reset", color: "red", icon: RotateCcw },
+                    { title: "Export & Delete All Data", desc: "Download your data then permanently delete everything.", btn: "Export & Delete", color: "red", icon: Download },
+                  ].map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <div key={action.title} className="flex items-center justify-between p-3 rounded-lg border border-red-400/10 bg-red-400/[0.02]">
+                        <div className="flex items-center gap-2">
+                          <Icon className="size-3.5 text-red-400" />
+                          <div>
+                            <p className="text-xs font-medium text-foreground">{action.title}</p>
+                            <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+                          </div>
+                        </div>
+                        <button className={cn("text-[10px] font-medium rounded-md px-3 py-1.5 border transition-colors", action.color === "amber" ? "text-amber-400 border-amber-400/30 hover:bg-amber-400/10" : "text-red-400 border-red-400/30 hover:bg-red-400/10")} onClick={() => toast.success(`${action.title} initiated`)}>
+                          {action.btn}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-red-500/20 bg-red-500/[0.03]">
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="size-3.5 text-red-500" />
+                      <div>
+                        <p className="text-xs font-medium text-foreground">Delete Project</p>
+                        <p className="text-[10px] text-red-500">Permanently delete this project and ALL data.</p>
+                      </div>
+                    </div>
+                    <button className="text-[10px] font-medium text-white bg-red-500 rounded-md px-3 py-1.5 hover:bg-red-600" onClick={() => setDeleteConfirm(true)}>Delete</button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* ─── API KEYS ─── */}
+          {/* ─── AUDIT LOG ─── */}
+          {section === "Audit Log" && <AuditLogSection />}
+
+          {/* Legacy sections kept for backwards compat but hidden from nav */}
           {section === "API Keys" && (() => {
             const fetchKeys = () => {
               setApiKeysLoading(true);
@@ -765,6 +821,181 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── AuditLogSection ─────────────────────────────────────────────────────────
+// Reads from /api/team/audit-log and displays a filterable, paginated log.
+interface AuditEntry {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  target: string;
+  timestamp: string;
+  details: string;
+}
+
+function formatAuditTimestamp(ts: string) {
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function actionColor(action: string): string {
+  if (action.endsWith(".delete") || action.includes("remove")) return "text-red-400";
+  if (action.endsWith(".create") || action.endsWith(".add")) return "text-[#00d992]";
+  if (action.endsWith(".update") || action.endsWith(".change")) return "text-amber-400";
+  return "text-muted-foreground";
+}
+
+function AuditLogSection() {
+  const [entries, setEntries] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [actionFilter, setActionFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const limit = 50;
+
+  useEffect(() => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (actionFilter) params.set("action", actionFilter);
+    fetch(`/api/team/audit-log?${params.toString()}`)
+      .then((r) => r.json())
+      .then((json) => {
+        setEntries(json.data?.entries ?? []);
+        setTotal(json.data?.pagination?.total ?? 0);
+      })
+      .catch(() => setEntries([]))
+      .finally(() => setLoading(false));
+  }, [page, actionFilter]);
+
+  // Client-side filter on search text (user, target, details)
+  const filtered = entries.filter((e) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return e.userName.toLowerCase().includes(q)
+      || e.action.toLowerCase().includes(q)
+      || e.target.toLowerCase().includes(q)
+      || e.details.toLowerCase().includes(q);
+  });
+
+  // Get unique actions seen across loaded entries for the filter dropdown
+  const uniqueActions = Array.from(new Set(entries.map((e) => e.action))).sort();
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  return (
+    <div className="space-y-4">
+      <GlassPanel padding="lg">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Audit Log</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Every admin action, agent change, and deletion across this project.</p>
+          </div>
+          <span className="text-[10px] font-mono text-muted-foreground">{total} events</span>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <Input
+            placeholder="Search user, action, or details..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-xs text-xs"
+          />
+          <select
+            value={actionFilter}
+            onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
+            className="h-9 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none focus:border-[#00d992]/40"
+          >
+            <option value="">All actions</option>
+            {uniqueActions.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+          {(search || actionFilter) && (
+            <button
+              onClick={() => { setSearch(""); setActionFilter(""); }}
+              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Table */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="size-5 animate-spin text-muted-foreground/40" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <Shield className="size-8 text-muted-foreground/20" />
+            <p className="text-xs text-muted-foreground/60">No audit entries found</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {filtered.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-start gap-3 rounded-lg px-3 py-2 hover:bg-muted/30 transition-colors"
+              >
+                <span className="text-[10px] font-mono text-muted-foreground/50 w-40 shrink-0 pt-0.5" suppressHydrationWarning>
+                  {formatAuditTimestamp(entry.timestamp)}
+                </span>
+                <span className="text-[11px] text-foreground/80 w-28 shrink-0 truncate pt-0.5">
+                  {entry.userName}
+                </span>
+                <span className={cn("text-[10px] font-mono font-semibold w-36 shrink-0 pt-0.5", actionColor(entry.action))}>
+                  {entry.action}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-foreground truncate">{entry.target}</p>
+                  {entry.details && (
+                    <p className="text-[10px] text-muted-foreground/50 mt-0.5 line-clamp-2">{entry.details}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {total > limit && (
+          <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/40">
+            <span className="text-[10px] text-muted-foreground">
+              Page {page} of {totalPages} &middot; Showing {filtered.length} of {total}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page >= totalPages || loading}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </GlassPanel>
     </div>
   );
 }

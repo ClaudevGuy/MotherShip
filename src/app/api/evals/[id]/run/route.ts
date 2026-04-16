@@ -70,7 +70,7 @@ async function judgeWithAI(criterion: string, output: string, apiKey: string): P
 
 export const POST = withErrorHandler(
   async (_request: NextRequest, context?: { params: Record<string, string> }) => {
-    const user = await requireAuth();
+    await requireAuth();
     const projectId = await getProjectId();
     const id = context?.params?.id;
     if (!id) return apiError("Suite ID required", 400);

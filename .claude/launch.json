@@ -26,6 +26,13 @@
       "runtimeExecutable": "docker",
       "runtimeArgs": ["compose", "up", "redis"],
       "port": 6379
+    },
+    {
+      "name": "Landing",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "landing", "-p", "3456", "-L"],
+      "port": 3456,
+      "autoPort": false
     }
   ]
 }

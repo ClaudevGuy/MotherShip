@@ -17,6 +17,12 @@ import { checkCostAnomaly } from "@/lib/cost-guard";
 
 const executeSchema = z.object({
   input: z.string().min(1, "Input is required"),
+  // Optional prior conversation. If provided, the agent treats this as a multi-turn
+  // conversation and appends `input` as the next user turn.
+  history: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })).optional(),
 });
 
 // Default model per provider (used for "manual" strategy)
@@ -174,8 +180,14 @@ export async function POST(
     const startTime = Date.now();
     const client = new Anthropic({ apiKey });
 
-    // Build messages
+    // Build messages — prepend any prior conversation turns, then the new user input.
+    // Multi-turn: `body.history` is optional; when absent this is a single-turn request.
+    const priorTurns: Anthropic.MessageParam[] = (body.history ?? []).map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
     const userMessages: Anthropic.MessageParam[] = [
+      ...priorTurns,
       { role: "user", content: body.input },
     ];
 
@@ -221,12 +233,19 @@ export async function POST(
           const duration = Date.now() - startTime;
           const cost = tokensIn * inputRate + tokensOut * outputRate;
 
+          // Calculate what Tier 1 would have cost for savings display
+          const tier1Config = getTierConfig(providerKey as ProviderKey, 1);
+          const tier1Cost = tier1Config
+            ? tokensIn * (tier1Config.inputCostPerMillion / 1_000_000) + tokensOut * (tier1Config.outputCostPerMillion / 1_000_000)
+            : cost;
+
           // Send completion event
           send({
             type: "done",
             tokensIn,
             tokensOut,
             cost: Math.round(cost * 10000) / 10000,
+            tier1Cost: Math.round(tier1Cost * 10000) / 10000,
             duration,
             model: resolvedModelId,
           });
@@ -260,7 +279,12 @@ export async function POST(
                 status: "RUN_SUCCESS" as never,
                 tokensUsed: tokensIn + tokensOut,
                 cost,
+                input: body.input,
                 output: fullContent,
+                model: resolvedModelId,
+                tier: selectedTier,
+                tokensIn,
+                tokensOut,
               },
             });
 

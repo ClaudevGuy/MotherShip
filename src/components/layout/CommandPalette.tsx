@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command as CommandPrimitive } from "cmdk";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,18 +14,26 @@ import {
 import { toast } from "sonner";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useUIStore } from "@/stores/ui-store";
+import { useAgentsStore } from "@/stores/agents-store";
+import { RunEvalDialog } from "@/components/overview/RunEvalDialog";
+import { NewWorkflowModal } from "@/components/overview/NewWorkflowModal";
+import { ConfirmDialog } from "@/components/shared";
 
 const QUICK_ACTIONS = [
-  { label: "Deploy Agent", icon: Bot },
-  { label: "Run Eval", icon: FlaskConical },
-  { label: "New Workflow", icon: GitBranch },
-  { label: "Kill Switch", icon: OctagonX },
+  { label: "Deploy Agent", icon: Bot, action: "deploy" as const },
+  { label: "Run Eval", icon: FlaskConical, action: "eval" as const },
+  { label: "New Workflow", icon: GitBranch, action: "workflow" as const },
+  { label: "Kill Switch", icon: OctagonX, action: "kill" as const },
 ];
 
 export function CommandPalette() {
   const router = useRouter();
   const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore();
   const inputRef = useRef<HTMLInputElement>(null);
+  const killAllAgents = useAgentsStore((s) => s.killAllAgents);
+  const [evalOpen, setEvalOpen] = useState(false);
+  const [workflowOpen, setWorkflowOpen] = useState(false);
+  const [killOpen, setKillOpen] = useState(false);
 
   const close = useCallback(() => setCommandPaletteOpen(false), [setCommandPaletteOpen]);
 
@@ -53,11 +61,38 @@ export function CommandPalette() {
     router.push(href);
   };
 
-  const handleActionSelect = (label: string) => {
+  const handleActionSelect = (action: "deploy" | "eval" | "workflow" | "kill") => {
     close();
-    toast.success(`${label} triggered`, {
-      description: "Action dispatched successfully.",
-    });
+    // Small delay so the palette close animation doesn't fight with the modal open
+    setTimeout(() => {
+      switch (action) {
+        case "deploy":
+          router.push("/agents/builder");
+          break;
+        case "eval":
+          setEvalOpen(true);
+          break;
+        case "workflow":
+          setWorkflowOpen(true);
+          break;
+        case "kill":
+          setKillOpen(true);
+          break;
+      }
+    }, 50);
+  };
+
+  const handleKillAll = async () => {
+    try {
+      const stopped = await killAllAgents();
+      if (stopped === 0) {
+        toast.info("No running agents to stop");
+      } else {
+        toast.error(`Kill switch activated — ${stopped} agent${stopped !== 1 ? "s" : ""} stopped`);
+      }
+    } catch {
+      toast.error("Failed to stop agents");
+    }
   };
 
   return (
@@ -170,13 +205,13 @@ export function CommandPalette() {
                     heading="Quick Actions"
                     className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.1em] [&_[cmdk-group-heading]]:text-muted-foreground"
                   >
-                    {QUICK_ACTIONS.map((action) => {
-                      const Icon = action.icon;
+                    {QUICK_ACTIONS.map((qa) => {
+                      const Icon = qa.icon;
                       return (
                         <CommandPrimitive.Item
-                          key={action.label}
-                          value={action.label}
-                          onSelect={() => handleActionSelect(action.label)}
+                          key={qa.label}
+                          value={qa.label}
+                          onSelect={() => handleActionSelect(qa.action)}
                           className="group mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[14px] text-foreground/80 outline-none transition-colors duration-100 data-[selected=true]:bg-[rgba(0,217,146,0.05)] data-[selected=true]:text-foreground"
                         >
                           <div className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-transparent group-data-[selected=true]:bg-[#00d992] transition-colors duration-100" />
@@ -184,7 +219,7 @@ export function CommandPalette() {
                             className="size-4 shrink-0 text-muted-foreground group-data-[selected=true]:text-[#00d992] transition-colors duration-100"
                             strokeWidth={1.5}
                           />
-                          <span className="flex-1">{action.label}</span>
+                          <span className="flex-1">{qa.label}</span>
                         </CommandPrimitive.Item>
                       );
                     })}
@@ -212,6 +247,19 @@ export function CommandPalette() {
           </div>
         </>
       )}
+
+      {/* Modals for Quick Actions — rendered outside the palette so they persist after close */}
+      <RunEvalDialog open={evalOpen} onOpenChange={setEvalOpen} />
+      <NewWorkflowModal open={workflowOpen} onOpenChange={setWorkflowOpen} />
+      <ConfirmDialog
+        open={killOpen}
+        onOpenChange={setKillOpen}
+        title="Emergency Kill Switch"
+        description="This will immediately stop ALL running agents. This action cannot be undone. Are you sure?"
+        confirmLabel="Stop All Agents"
+        variant="danger"
+        onConfirm={handleKillAll}
+      />
     </AnimatePresence>
   );
 }

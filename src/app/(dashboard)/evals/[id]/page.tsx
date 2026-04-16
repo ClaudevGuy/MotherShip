@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, Play, Bot, Loader2, CheckCircle2, XCircle, Trash2, Plus, Clock, DollarSign, Trophy, Hash,
+  ArrowLeft, Play, Bot, Loader2, CheckCircle2, XCircle, Trash2, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -254,7 +254,7 @@ export default function EvalSuiteDetailPage() {
       {tab === "history" && (
         <div className="space-y-2">
           {suite.runs.length === 0 ? (
-            <p className="text-xs text-muted-foreground/40 text-center py-10">No runs yet. Click "Run Now" to execute.</p>
+            <p className="text-xs text-muted-foreground/40 text-center py-10">No runs yet. Click &quot;Run Now&quot; to execute.</p>
           ) : (
             suite.runs.map((run, i) => (
               <div

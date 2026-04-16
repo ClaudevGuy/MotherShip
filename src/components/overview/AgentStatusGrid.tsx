@@ -6,31 +6,42 @@ import { GlassPanel, StatusBadge } from "@/components/shared";
 import { useAgentsStore } from "@/stores/agents-store";
 import { formatRelativeTime, formatTokens } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
-import { Bot, Rocket } from "lucide-react";
+import { Bot, Play, TestTube, ArrowRight } from "lucide-react";
 
 export function AgentStatusGrid() {
   const agents = useAgentsStore((s) => s.agents);
 
-  // Empty state
+  // Empty state — mirrors the grid's visual footprint (3 cards) with onboarding steps
   if (agents.length === 0) {
+    const steps = [
+      { num: 1, label: "Create an Agent", desc: "Name it, paste a prompt, go", icon: Bot, href: "/agents", cta: "Start here" },
+      { num: 2, label: "Run it", desc: "Real-time streaming with cost tracking", icon: Play, href: "/agents" },
+      { num: 3, label: "Evaluate it", desc: "Automated test suites with AI judge", icon: TestTube, href: "/evals" },
+    ];
+
     return (
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">Agents</p>
-        <div className="flex flex-col items-center gap-3 py-12 text-center rounded-xl border border-border bg-card/50">
-          <div className="flex items-center justify-center size-12 rounded-xl bg-muted/30">
-            <Bot className="size-6 text-muted-foreground/25" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">No agents deployed yet</p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">Deploy your first AI agent to see it here</p>
-          </div>
-          <Link
-            href="/agents/builder"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#00d992] px-4 py-2 text-xs font-medium text-black hover:bg-[#00d992]/90 transition-colors mt-1"
-          >
-            <Rocket className="size-3.5" />
-            Deploy your first agent
-          </Link>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {steps.map((s) => (
+            <Link key={s.num} href={s.href} className="block">
+              <GlassPanel hover padding="md" className="h-full cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20">
+                    <s.icon className="size-4 text-[#00d992]" />
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground/40">Step {s.num}</span>
+                </div>
+                <p className="text-sm font-semibold text-foreground">{s.label}</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5 mb-3">{s.desc}</p>
+                {s.cta && (
+                  <div className="flex items-center gap-1 text-[10px] text-[#00d992]">
+                    {s.cta} <ArrowRight className="size-3" />
+                  </div>
+                )}
+              </GlassPanel>
+            </Link>
+          ))}
         </div>
       </div>
     );

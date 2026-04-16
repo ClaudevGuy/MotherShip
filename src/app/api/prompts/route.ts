@@ -5,7 +5,6 @@ import {
   requireAuth,
   getProjectId,
   apiResponse,
-  apiError,
 } from "@/lib/api-helpers";
 import { z } from "zod";
 
@@ -24,7 +23,7 @@ function estimateTokens(text: string): number {
 // ── GET /api/prompts — list all prompts (latest version per name) ──
 
 export const GET = withErrorHandler(async () => {
-  const user = await requireAuth();
+  await requireAuth();
   const projectId = await getProjectId();
 
   // Get all prompt versions, grouped by name — return latest version per name

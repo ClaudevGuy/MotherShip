@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   FileCode, Plus, Search, Bot, Save, CheckCircle2, Play, Square, Copy,
-  Clock, ChevronRight, Sparkles, X, RotateCcw, AlertTriangle,
+  ChevronRight, Sparkles, X, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -522,8 +522,8 @@ function EditorTab({
       {/* Editor area with line numbers */}
       <div className="flex-1 overflow-auto">
         <div className="flex min-h-[400px]">
-          {/* Line numbers */}
-          <div className="shrink-0 py-4 px-2 text-right select-none border-r border-border/20 bg-[#050507]/30">
+          {/* Line numbers — subtle bg, no border (border ran the full editor height even for single lines) */}
+          <div className="shrink-0 py-4 px-3 text-right select-none bg-[#050507]/30">
             {lines.map((_, i) => (
               <div key={i} className="text-[11px] font-mono text-muted-foreground/20 leading-6 h-6">{i + 1}</div>
             ))}
@@ -705,7 +705,7 @@ function VersionsTab({
   return (
     <div className="flex h-full">
       {/* Version list */}
-      <div className={cn("overflow-y-auto border-r border-border/30", showDiff ? "w-[320px] shrink-0" : "flex-1 max-w-2xl mx-auto")}>
+      <div className={cn("overflow-y-auto", showDiff ? "w-[320px] shrink-0 border-r border-border/30" : "flex-1")}>
         {versions.map((v, i) => {
           const prevVersion = versions[i + 1] || null; // versions are desc, so i+1 is the previous
           return (

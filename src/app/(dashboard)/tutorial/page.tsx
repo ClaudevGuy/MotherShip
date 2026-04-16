@@ -1,7 +1,8 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Bot, GitBranch, Rocket, DollarSign,
   BarChart3, ScrollText, Users, AlertTriangle, Settings,
@@ -661,8 +662,21 @@ const SECTION_CONTENT: Record<string, React.ReactNode> = {
 };
 
 // ── Main page ──────────────────────────────────────────────────────────────────
-export default function TutorialPage() {
-  const [activeId, setActiveId] = useState("getting-started");
+function TutorialPageInner() {
+  const searchParams = useSearchParams();
+  const requestedSection = searchParams.get("section");
+  const initialId = requestedSection && SECTIONS.some((s) => s.id === requestedSection)
+    ? requestedSection
+    : "getting-started";
+  const [activeId, setActiveId] = useState(initialId);
+
+  // Keep section in sync if the URL changes while on page
+  useEffect(() => {
+    if (requestedSection && SECTIONS.some((s) => s.id === requestedSection)) {
+      setActiveId(requestedSection);
+    }
+  }, [requestedSection]);
+
   const active = SECTIONS.find((s) => s.id === activeId)!;
   const ActiveIcon = active.icon;
 
@@ -743,5 +757,14 @@ export default function TutorialPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense because useSearchParams requires it under Next.js App Router
+export default function TutorialPage() {
+  return (
+    <Suspense fallback={<div className="py-24 flex justify-center"><div className="size-6 rounded-full border-2 border-[#00d992]/20 border-t-[#00d992] animate-spin" /></div>}>
+      <TutorialPageInner />
+    </Suspense>
   );
 }

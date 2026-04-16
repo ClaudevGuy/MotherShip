@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { apiFetch } from "@/lib/api-client";
-import { isFresh, markFetched, markInflight, invalidate } from "@/lib/store-cache";
+import { isFresh, markFetched, markInflight } from "@/lib/store-cache";
 
 export interface Notification {
   id: string;

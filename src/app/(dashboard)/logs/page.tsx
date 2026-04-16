@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useLogsStore } from "@/stores/logs-store";
 import { useLogStream } from "@/lib/hooks/use-log-stream";
 import {
@@ -33,7 +34,7 @@ function formatTime(ts: string) {
 }
 
 export default function LogsPage() {
-  const [tab, setTab] = useState<"stream" | "errors" | "llm" | "traces">("stream");
+  const [tab, setTab] = useState<"stream" | "errors" | "llm" | "traces" | "runs">("stream");
   const {
     getFilteredLogs, errorGroups, llmCalls, traceSpans,
     levelFilter, serviceFilter, searchQuery, isLive,
@@ -71,6 +72,7 @@ export default function LogsPage() {
     { id: "errors" as const, label: "Errors" },
     { id: "llm" as const, label: "LLM Calls" },
     { id: "traces" as const, label: "Traces" },
+    { id: "runs" as const, label: "Agent Runs" },
   ];
 
   // LLM stats — computed from real data
@@ -396,6 +398,196 @@ export default function LogsPage() {
           )}
         </div>
       )}
+
+      {/* ═══ AGENT RUNS ═══ */}
+      {tab === "runs" && <AgentRunsTab />}
     </div>
+  );
+}
+
+// ─── Agent Runs Tab ─────────────────────────────────────────────────────
+// Cross-agent run stream — every run, every agent, newest first.
+interface AgentRunEntry {
+  id: string;
+  agentId: string;
+  agentName: string;
+  agentModel: string | null;
+  startedAt: string;
+  duration: number;
+  status: string;
+  tokensUsed: number;
+  tokensIn: number | null;
+  tokensOut: number | null;
+  cost: number;
+  model: string | null;
+  tier: number | null;
+  input: string | null;
+  output: string;
+}
+
+function AgentRunsTab() {
+  const [runs, setRuns] = useState<AgentRunEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed" | "running">("all");
+  const [search, setSearch] = useState("");
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  const fetchRuns = React.useCallback(() => {
+    const params = new URLSearchParams({ limit: "100" });
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    fetch(`/api/agents/runs?${params.toString()}`)
+      .then((r) => r.json())
+      .then((json) => setRuns(json.data?.runs ?? []))
+      .catch(() => setRuns([]))
+      .finally(() => setLoading(false));
+  }, [statusFilter]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchRuns();
+  }, [fetchRuns]);
+
+  // Poll every 5s when autoRefresh is on
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const i = setInterval(fetchRuns, 5000);
+    return () => clearInterval(i);
+  }, [autoRefresh, fetchRuns]);
+
+  const filtered = runs.filter((r) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return r.agentName.toLowerCase().includes(q)
+      || (r.input?.toLowerCase().includes(q) ?? false)
+      || r.output.toLowerCase().includes(q);
+  });
+
+  const statusInfo = (s: string): { label: string; color: string } => {
+    const x = s.toLowerCase();
+    if (x === "run_success" || x === "success") return { label: "success", color: "#00d992" };
+    if (x === "run_failed" || x === "failed" || x === "error") return { label: "failed", color: "#EF4444" };
+    if (x === "run_running" || x === "running") return { label: "running", color: "#F59E0B" };
+    return { label: x, color: "#8b949e" };
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Toolbar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+          className="h-8 rounded-lg border border-border bg-muted/30 px-3 text-xs text-foreground outline-none"
+        >
+          <option value="all">All statuses</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+          <option value="running">Running</option>
+        </select>
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search agent, input, or output..."
+            className="h-8 w-full rounded-lg border border-border bg-muted/30 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <span className={cn("flex items-center gap-1.5 text-xs font-mono", autoRefresh ? "text-green-400" : "text-muted-foreground")}>
+            {autoRefresh && (
+              <span className="relative flex size-1.5">
+                <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-40" />
+                <span className="relative size-1.5 rounded-full bg-green-400" />
+              </span>
+            )}
+            {autoRefresh ? "Live" : "Paused"}
+          </span>
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border"
+          >
+            {autoRefresh ? <Pause className="size-3" /> : <Play className="size-3" />}
+          </button>
+          <button
+            onClick={fetchRuns}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border"
+            title="Refresh now"
+          >
+            <Activity className="size-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* Stream */}
+      <GlassPanel padding="none" className="overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="size-5 rounded-full border-2 border-[#00d992]/20 border-t-[#00d992] animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <Activity className="size-8 text-muted-foreground/20" />
+            <p className="text-xs text-muted-foreground/60">No agent runs yet</p>
+            <p className="text-[10px] text-muted-foreground/30">Runs from every agent will appear here in real time</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/30 max-h-[70vh] overflow-y-auto">
+            {filtered.map((r) => {
+              const s = statusInfo(r.status);
+              return (
+                <Link
+                  key={r.id}
+                  href={`/agents/${r.agentId}/runs/${r.id}`}
+                  className="flex items-start gap-3 px-4 py-3 hover:bg-muted/20 transition-colors"
+                >
+                  <span
+                    className="mt-1 size-2 rounded-full shrink-0"
+                    style={{ background: s.color }}
+                  />
+                  <span className="text-[10px] font-mono text-muted-foreground/50 w-20 shrink-0 pt-0.5" suppressHydrationWarning>
+                    {formatTime(r.startedAt)}
+                  </span>
+                  <span
+                    className="text-[9px] font-bold uppercase tracking-wider w-16 shrink-0 pt-0.5"
+                    style={{ color: s.color }}
+                  >
+                    {s.label}
+                  </span>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-foreground truncate">{r.agentName}</span>
+                      {r.model && <span className="text-[10px] font-mono text-muted-foreground/40">{r.model}</span>}
+                      {r.tier && <TierBadgeInline tier={r.tier} />}
+                    </div>
+                    {r.input && (
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        <span className="text-muted-foreground/40">&gt;</span> {r.input}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground/60 shrink-0 pt-0.5">
+                    <span>{(r.duration / 1000).toFixed(1)}s</span>
+                    <span>{r.tokensUsed.toLocaleString()}t</span>
+                    <span>{formatCurrency(r.cost)}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </GlassPanel>
+    </div>
+  );
+}
+
+function TierBadgeInline({ tier }: { tier: number }) {
+  const color = tier === 1 ? "bg-purple-500/15 text-purple-400" :
+                tier === 2 ? "bg-[#00d992]/15 text-[#00d992]" :
+                "bg-green-500/15 text-green-400";
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-bold", color)}>
+      T{tier}
+    </span>
   );
 }

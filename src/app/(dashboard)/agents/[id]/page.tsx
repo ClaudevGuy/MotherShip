@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { invalidate } from "@/lib/store-cache";
 import { useAgentsStore } from "@/stores/agents-store";
 import {
   formatRelativeTime,
@@ -20,6 +24,7 @@ import {
   GaugeWidget,
   CodeBlock,
   DataTable,
+  ConfirmDialog,
 } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -106,13 +111,35 @@ export default function AgentDetailPage({
   params: { id: string };
 }) {
   const { id } = params;
+  const router = useRouter();
   const [tab, setTab] = useState<string>("overview");
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { agents, fetch: fetchAgents } = useAgentsStore();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAgents(); }, []);
 
   const agent = agents.find((a) => a.id === id);
+
+  const handleDelete = async () => {
+    if (!agent) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/agents/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed to delete" }));
+        throw new Error(data.error || "Failed to delete");
+      }
+      toast.success(`Agent "${agent.name}" deleted`);
+      invalidate("agents");
+      router.push("/agents");
+    } catch (err) {
+      toast.error((err as Error).message);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   if (!agent) {
     return (
@@ -140,18 +167,40 @@ export default function AgentDetailPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/agents"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="size-4" />
-        </Link>
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
-          <StatusBadge status={agent.status} size="sm" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/agents"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
+            <StatusBadge status={agent.status} size="sm" />
+          </div>
         </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setConfirmDelete(true)}
+          disabled={deleting}
+          className="text-muted-foreground hover:text-red-400"
+          title="Delete agent"
+        >
+          {deleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+        </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete agent?"
+        description={`This will permanently delete "${agent.name}" and all its runs, evals, and execution history. This cannot be undone.`}
+        confirmLabel="Yes, delete"
+        variant="danger"
+        onConfirm={handleDelete}
+      />
 
       <div className="border-b border-border mb-6">
           <div className="flex gap-6">
@@ -333,6 +382,10 @@ export default function AgentDetailPage({
             columns={runColumns as any}
             data={agent.runs as unknown as Record<string, unknown>[]}
             emptyMessage="No runs recorded yet."
+            onRowClick={(item) => {
+              const run = item as unknown as AgentRun;
+              router.push(`/agents/${id}/runs/${run.id}`);
+            }}
           />
         )}
 

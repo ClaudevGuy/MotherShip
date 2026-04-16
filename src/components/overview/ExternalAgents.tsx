@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { GlassPanel, StatusBadge } from "@/components/shared";
-import { Globe, Zap, ExternalLink } from "lucide-react";
+import { GlassPanel, StatusBadge, ConfirmDialog } from "@/components/shared";
+import { Globe, Zap, ExternalLink, Trash2, Loader2 } from "lucide-react";
 import { formatRelativeTime, formatCurrency } from "@/lib/format";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface ExternalAgent {
@@ -32,6 +33,8 @@ const SOURCE_COLORS: Record<string, string> = {
 export function ExternalAgentsWidget() {
   const [agents, setAgents] = useState<ExternalAgent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [targetAgent, setTargetAgent] = useState<ExternalAgent | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/agents/external")
@@ -40,6 +43,32 @@ export function ExternalAgentsWidget() {
       .catch(() => setAgents([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const openDeleteDialog = (agent: ExternalAgent, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTargetAgent(agent);
+  };
+
+  const confirmDelete = async () => {
+    if (!targetAgent) return;
+    const agent = targetAgent;
+    setDeletingId(agent.id);
+    setTargetAgent(null);
+    try {
+      const res = await fetch(`/api/agents/external/${agent.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed to delete" }));
+        throw new Error(data.error || "Failed to delete");
+      }
+      toast.success(`External agent "${agent.name}" deleted`);
+      setAgents((prev) => prev.filter((a) => a.id !== agent.id));
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) return null;
   if (agents.length === 0) return null;
@@ -58,9 +87,19 @@ export function ExternalAgentsWidget() {
         {agents.slice(0, 8).map((agent) => {
           const sourceColor = SOURCE_COLORS[agent.source] || "#8b949e";
           const statusMap: Record<string, string> = { idle: "idle", running: "running", error: "error", completed: "success" };
+          const isDeleting = deletingId === agent.id;
           return (
-            <GlassPanel key={agent.id} padding="md" hover className="cursor-default">
-              <div className="flex items-start justify-between mb-1.5">
+            <GlassPanel key={agent.id} padding="md" hover className="cursor-default group relative">
+              {/* Delete button — hover-reveal, opens confirmation dialog */}
+              <button
+                onClick={(e) => openDeleteDialog(agent, e)}
+                disabled={isDeleting}
+                title="Delete external agent"
+                className="absolute top-2 right-2 z-10 flex size-6 items-center justify-center rounded transition-all text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-red-400 hover:bg-red-500/10"
+              >
+                {isDeleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
+              </button>
+              <div className="flex items-start justify-between mb-1.5 pr-6">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider" style={{ background: `${sourceColor}15`, color: sourceColor, border: `1px solid ${sourceColor}30` }}>
                     {agent.source}
@@ -90,6 +129,16 @@ export function ExternalAgentsWidget() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={targetAgent !== null}
+        onOpenChange={(open) => { if (!open) setTargetAgent(null); }}
+        title="Delete external agent?"
+        description={targetAgent ? `This will permanently remove "${targetAgent.name}" and all its tracked events. This cannot be undone.` : ""}
+        confirmLabel="Yes, delete"
+        variant="danger"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

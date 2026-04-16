@@ -84,9 +84,7 @@ export async function POST(
             messages: [{ role: "user", content: body.userMessage }],
           });
 
-          let fullContent = "";
           stream.on("text", (text) => {
-            fullContent += text;
             send({ type: "delta", content: text });
           });
 

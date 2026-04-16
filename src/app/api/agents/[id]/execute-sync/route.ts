@@ -32,7 +32,7 @@ const PROVIDER_DEFAULT_MODEL: Record<string, string> = {
 
 export const POST = withErrorHandler(
   async (request: NextRequest, context?: { params: Record<string, string> }) => {
-    const user = await requireRole("developer");
+    await requireRole("developer");
     const projectId = await getProjectId();
     const agentId = context?.params?.id;
     if (!agentId) return apiError("Agent ID is required", 400);
