@@ -1,28 +1,35 @@
 # MOTHERSHIP
 
-AI-powered operations dashboard for managing AI agents, deployments, costs, and team — all in one place.
+The open-source command deck for AI agents. Build, run, and optimize AI agents with intelligent model routing, automated testing, real-time cost visibility, and complete operational observability — all self-hosted.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Prisma](https://img.shields.io/badge/Prisma-5-2D3748)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38BDF8)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## What is MOTHERSHIP?
 
-MOTHERSHIP is a full-stack admin dashboard for AI-powered projects. It gives you visibility into:
+MOTHERSHIP is a full-stack operations dashboard for AI agents. It gives you a single place to build agents from scratch, connect existing agents from any framework, watch every run stream in real time, auto-route to the cheapest model that still passes your evals, and keep every run replayable and auditable.
 
-- **AI Agents** — Create, configure, and execute AI agents with real-time streaming output
-- **Prompt Studio** — Write, test, version, and manage agent prompts with a built-in playground
-- **Evals** — Automated test suites for measuring agent quality with string matching + AI judge scoring
-- **Workflows** — Visual pipeline builder (React Flow) for chaining agents together
-- **Costs & Billing** — Track spend per agent, per model, with auto-selection savings and cost anomaly auto-pause
+Core capabilities:
+
+- **AI Agents** — Quick-create in 60 seconds or use the full 7-step builder. Real-time streaming execution with multi-turn conversations by default
+- **Prompt Studio** — Git-like versioning with side-by-side diffs. Activate a version and the next run uses it — no deployment
+- **Evals** — Two-engine scoring: deterministic string matching for facts, Claude-as-judge for tone and nuance
+- **Workflows** — Visual pipeline builder (React Flow) for chaining agents, with step-level replay
+- **Costs & Billing** — Per-agent tracking, auto-selection savings shown inline on every run, trailing-7-day forecast, cost-anomaly auto-pause
+- **Run Detail** — Every run gets its own page: full input/output, model selection reasoning, tier badge, savings vs Tier 1
+- **Agent Runs Stream** — Unified live feed of every run across every agent (/logs → "Agent Runs" tab)
 - **Deployments** — Service deployment tracking across dev/staging/production
-- **Logs & Observability** — Unified log stream, LLM call inspection, traces
+- **Logs & Observability** — Unified log stream, LLM call inspection, distributed traces
+- **Audit Log** — Every admin action, agent change, and deletion. Who, when, what. Searchable + filterable
 - **Incidents** — Alert rules, on-call scheduling, incident management
 - **Analytics** — User engagement, growth metrics, agent performance, health drift detection
-- **Notifications** — Real-time notification system with auto-alerts on agent runs, workflow completions, and cost thresholds
-- **Team** — Member management, role-based access, API keys
-- **Settings** — Project config, integrations, appearance, auto-pause thresholds
+- **Notifications** — Real-time alerts on agent failures, workflow completions, cost thresholds, auto-pause events
+- **Team** — Member management, role-based access (admin/developer/agent-manager/viewer), scoped API keys
+- **Settings** — Clean 5-tab layout (General / Appearance / Notifications / Data & Privacy / Security)
+- **External Agent SDK** — `@mothership/sdk` ingests run events from CrewAI, LangGraph, Paperclip, AutoGen, or any custom framework
 
 ## Quick Start
 
@@ -34,8 +41,8 @@ MOTHERSHIP is a full-stack admin dashboard for AI-powered projects. It gives you
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/ClaudevGuy/mothership.git
-cd mothership
+git clone https://github.com/ClaudevGuy/MotherShip.git
+cd MotherShip
 npm install
 ```
 
@@ -71,7 +78,7 @@ npx prisma db seed    # Create default project + admin user
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you'll see the empty dashboard ready to use.
+Open [http://localhost:3000](http://localhost:3000). The overview page gives you a 3-step onboarding guide when empty, then switches to the populated dashboard once you create your first agent.
 
 ## Adding AI Providers
 
@@ -79,12 +86,12 @@ To run AI agents, you need at least one AI provider API key.
 
 ### Option A: Through the UI
 
-1. Go to **Settings > Integrations > + Add Integration**
+1. Go to **Integrations > + Add Integration**
 2. Enter the service name (e.g. "Anthropic") and paste your API key
-3. The key is encrypted and stored in the database
-4. Create an agent and run it — it uses the key automatically
+3. The key is encrypted at rest in the database
+4. Create an agent and run it — it picks up the key automatically
 
-### Option B: Through .env
+### Option B: Through `.env`
 
 ```env
 # Anthropic (Claude) — get from console.anthropic.com
@@ -101,20 +108,21 @@ Restart the dev server after adding keys to `.env`.
 
 ## Core Features
 
-### AI Agent Execution
+### Agent Creation — Two Paths
 
-Agents execute with real-time streaming via Anthropic's API:
+**Quick Create** (60 seconds)
 
-1. **Create an agent** — Agent Builder wizard (7 steps: identity, model strategy, system prompt, tools, memory, triggers, review)
-2. **Execute it** — Go to agent detail > Execution tab > type a task > click Run
-3. **Watch live output** — Tokens stream in real-time in a terminal-style panel
-4. **See results** — Token count, cost, duration, model used — all tracked
+Click **Create Agent** on the `/agents` page. A modal pops up: name + system prompt + Run button. Defaults: auto model selection, manual trigger, session memory. Good enough for 90% of cases.
+
+**Full Builder** (7-step wizard)
+
+For production agents that need tools, persistent memory, scheduled triggers, or custom model strategies. Accessible via "Advanced Setup" link on the quick-create modal, or directly at `/agents/builder`.
 
 ### Agent Templates
 
-8 pre-built agent templates on the Agents page for 1-click deployment:
+8 pre-built agent templates on the Agents page for 1-click deployment — they now create the agent immediately without going through the wizard:
 
-- **Code Reviewer** — Reviews code for bugs, security, and best practices (Sonnet, Auto)
+- **Code Reviewer** — Reviews code for bugs, security, best practices (Sonnet, Auto)
 - **Security Scanner** — Analyzes code for security vulnerabilities (Opus, Quality-First)
 - **Documentation Writer** — Generates technical docs from code (Haiku, Cost-First)
 - **Data Pipeline Agent** — Processes and validates data pipelines (Haiku, Cost-First)
@@ -123,11 +131,32 @@ Agents execute with real-time streaming via Anthropic's API:
 - **API Designer** — Designs RESTful/GraphQL APIs (Sonnet, Auto)
 - **Incident Responder** — Analyzes incidents and suggests fixes (Opus, Quality-First)
 
-Click "Use Template" to pre-fill the agent builder with the template's config and system prompt.
+### Agent Execution — Multi-Turn Conversations
+
+Agents now hold a conversation, not just a single-shot request:
+
+1. Open an agent, click the **Execution** tab
+2. Type a message → watch tokens stream live with a pulsing status dot, terminal glow border, live token counter, and elapsed timer
+3. When the assistant finishes, per-turn stats appear below the bubble: duration, tokens in/out, cost, savings vs Tier 1, tier badge
+4. Continue the conversation — the next message sends the full prior history for context
+5. Click **New Conversation** to reset; **Retry** on any failed turn
+
+Every run creates a record with the full input, output, model, tier, tokens, and cost — accessible from the History tab or by clicking any row in the Agent Runs stream.
+
+### Run Detail Page
+
+Click any row in an agent's history, or any line in the cross-agent Runs stream, to open that run's dedicated page at `/agents/[id]/runs/[runId]`. You get:
+
+- **Status + timestamp** with icon
+- **4 stat tiles** — duration, tokens in/out, cost, model
+- **Model selection panel** — which tier, why the selector picked it, whether it was upgraded mid-flight, selection overhead in ms
+- **Input block** — full prompt, copyable
+- **Output block** — full response, copyable
+- **Tool Use section** — ready for when tool invocation is wired (shows honest empty state today)
 
 ### Intelligent Model Selection
 
-The system automatically picks the optimal model tier per task:
+The routing engine profiles every task on the way in and picks the lowest tier that will pass.
 
 | Tier | Anthropic | OpenAI | Google |
 |------|-----------|--------|--------|
@@ -135,74 +164,121 @@ The system automatically picks the optimal model tier per task:
 | Tier 2 (balanced) | claude-sonnet-4-6 | gpt-4o-mini | gemini-2.0-flash |
 | Tier 3 (simple) | claude-haiku-4-5 | gpt-3.5-turbo | gemini-1.5-flash-8b |
 
-Safety guardrails ensure critical tasks always use Tier 1.
+Safety overrides force Tier 1 for production-critical paths, security scans, first runs, and high-error-cost tasks.
 
-### Prompt Studio
+**Savings are visible everywhere:**
+- Inline on every run: "Saved $0.0287 vs Tier 1"
+- Banner on the overview: "Auto-selection saved you $XX.XX this month"
+- Full breakdown on `/costs`: tier distribution, actual vs baseline, upgrade events
 
-A dedicated section for writing, testing, versioning, and managing agent prompts:
+### Cost Forecasting
 
-- **Editor** — Monospace editor with line numbers and live token counter
-- **Playground** — Test prompts against any Claude model with streaming output (Haiku/Sonnet/Opus), adjustable temperature and max tokens
-- **Version History** — Every save creates a new version. Side-by-side diff viewer to compare versions
-- **Agent Linking** — Link a prompt to an agent. When the active version changes, the agent automatically uses the new version on its next run — no agent config change needed
+On the `/costs` overview tab, a live forecast replaces a static total:
 
-### Evals (Automated Testing)
-
-Create test suites to measure and track agent quality over time:
-
-1. **Create a suite** — Name it, pick an agent, and add test cases
-2. **Define test cases** — Input text + pass criteria (e.g. "mentions pricing", "under 100 words", "is professional tone")
-3. **Run the suite** — Each case sends input to the agent, scores the output, and reports pass/fail
-4. **Track quality** — Score history with sparklines, pass/fail breakdowns, case-by-case results
-
-**Scoring engine** supports two methods:
-- **String matching** — Fast, deterministic checks: `mentions [X]`, `under N words`, `includes code block`, `starts with`, `does not mention [X]`
-- **AI Judge** — For complex criteria like tone, quality, or correctness: uses claude-haiku-4-5 to evaluate PASS/FAIL
-
-### Visual Workflow Builder
-
-Chain multiple agents into pipelines using a drag-and-drop canvas (React Flow):
-
-- Custom node types: Trigger, Agent, End
-- Animated connection edges
-- Save/load canvas state
-- Validation before activation
-- **Real execution** — Workflows call agents via the sync endpoint, pipe output between steps, and save complete WorkflowRun records with step-level results
-
-### Notification System
-
-Real-time notifications with automatic alerts:
-
-- **Bell icon** in topbar with unread count badge and pulse animation
-- **Slide-over panel** — 380px wide, grouped by Today/Yesterday/Earlier
-- **Auto-notifications** on: agent run success/failure, workflow completion/failure, eval completion, cost threshold exceeded, agent auto-paused
-- **30-second polling** for new notifications
-- API: mark read, mark all read, dismiss, delete
+- **"At this pace: $X.XX this month"** — using the trailing-7-day average daily spend × remaining days
+- **Week-over-week trend** — ↑/↓ with percent change vs prior 7 days
+- **Budget pressure indicator** — progress bar turns red if projected to exceed budget, amber above 85%, green otherwise
 
 ### Cost Anomaly Auto-Pause
 
-Automatic protection against runaway agent costs:
+Automatic protection against runaway agents:
 
-- Configure in **Settings > Notifications**: toggle + hourly spend threshold (default $10)
-- After every agent run, the system checks hourly spend for that agent
-- If threshold exceeded: agent is automatically paused + warning notification created
-- Paused agents can be resumed manually
+- Configure in **Settings > Notifications** (toggle + hourly threshold, default $10)
+- After every run, the system checks hourly spend for that agent
+- If exceeded: agent is paused, a warning notification is created, and an audit entry logged
+- Paused agents resume manually from the agent detail page
 
-### Performance Drift Detection
+### Cross-Agent Run Stream
 
-Agent health monitoring in the **Analytics > Agent Health** tab:
+Every run across every agent in the project, newest first, at `/logs` → **Agent Runs** tab:
 
-- Health score (0-100) per agent based on error rate and status
-- Sparkline of recent scores
-- Drift detection: amber badge when score drops 10+ points below average
-- Trend indicators: ↑ Improving / ↓ Degrading / → Stable
+- Status filter (success / failed / running)
+- Search across agent name, input, and output
+- 5-second live polling with pause toggle
+- Click any row to open the run detail page
+- Color-coded status dots (green success, red failed, amber running)
+
+### Prompt Studio
+
+Git-like prompt versioning:
+
+- **Editor** — Monospace editor with line numbers and live token counter
+- **Playground** — Test prompts against Haiku / Sonnet / Opus with streaming output, adjustable temperature and max tokens
+- **Versions** — Every save creates an immutable version. Side-by-side diff viewer
+- **Activation** — Activate a version and the agent uses it on the very next run. No deployment. Roll back with one click
+- **Agent Linking** — Link a prompt to an agent via `__PROMPT_STUDIO__:{id}` reference
+
+### Evals
+
+Create test suites to measure and track agent quality:
+
+1. **Create a suite** — Name it, pick an agent, add test cases
+2. **Define test cases** — Input text + pass criteria (e.g. "mentions pricing", "under 100 words", "professional tone")
+3. **Run the suite** — Each case executes against the agent (sync), scores the output, reports pass/fail
+4. **Track quality** — Score history with sparklines, pass/fail breakdowns, case-by-case results
+
+**Two scoring engines run in parallel:**
+- **String matching** — Deterministic: `mentions [X]`, `under N words`, `includes code block`, `starts with`, `does not mention [X]`
+- **AI Judge** — For tone and nuance: claude-haiku-4-5 evaluates PASS/FAIL
+
+### Visual Workflow Builder
+
+Chain agents into pipelines on a React Flow canvas:
+
+- Custom node types: Trigger (manual / schedule / webhook / event), Agent, End
+- Animated connection edges
+- Validation before activation
+- **Real execution** — Calls agents via the sync endpoint, pipes output between steps, saves complete `WorkflowRun` records with step-level results
+
+### Audit Log
+
+Every create, update, delete — tracked in `AuditLogEntry`. View at **Settings > Audit Log**:
+
+- Search across user, action, target, details
+- Filter by specific action (e.g. `agent.delete`, `prompt.activate`)
+- Pagination (50 entries per page)
+- Color-coded actions: create (green), update (amber), delete (red)
+- Full timestamp with second precision
+
+### Notification System
+
+Real-time notifications with auto-alerts:
+
+- Bell icon in topbar with unread count + pulse animation
+- 380px slide-over panel grouped by Today / Yesterday / Earlier
+- Auto-fired on: agent run success/failure, workflow completion/failure, eval completion, cost threshold exceeded, auto-pause triggered
+- 30-second polling
+- Mark read, mark all read, dismiss, delete
 
 ### External Agent Integration
 
-Connect agents from any external framework (Paperclip, CrewAI, LangGraph, etc.):
+Connect agents from any external framework. Events show up on the Overview within seconds.
 
-1. Create an API key in **Settings > API Keys**
-2. Send events from your app:
+**Via SDK:**
+
+```bash
+npm install @mothership/sdk
+```
+
+```typescript
+import { Mothership } from '@mothership/sdk'
+
+const mc = new Mothership({
+  url: 'https://your-dashboard.com',
+  apiKey: 'mc_your_key',
+  source: 'crewai',
+})
+
+await mc.trackRun({
+  agent: { id: 'researcher', name: 'Market Researcher' },
+  status: 'completed',
+  tokens: { in: 842, out: 1204 },
+  cost: 0.0384,
+  model: 'claude-sonnet-4-6',
+})
+```
+
+**Via raw API:**
 
 ```bash
 curl -X POST https://your-dashboard.com/api/events/ingest \
@@ -216,79 +292,96 @@ curl -X POST https://your-dashboard.com/api/events/ingest \
   }'
 ```
 
-Or use the SDK:
+**Managing external agents:**
+- Appear on the Overview in the "External Agents" section
+- Hover any card to reveal a trash icon → ConfirmDialog deletes the agent + all its ingest events
+- Full list at `/agents?tab=external`
 
-```bash
-npm install @mothership/sdk
-```
+### Delete Safeguards
 
-```typescript
-import { Mothership } from '@mothership/sdk'
+All destructive operations use a consistent ConfirmDialog pattern:
 
-const mc = new Mothership({
-  url: 'https://your-dashboard.com',
-  apiKey: 'mc_your_key',
-  source: 'my-app',
-})
+- **Agents** — Trash icon on each list row, and in the detail page header. Confirms with the agent name, warns cascade will remove all runs/evals/history
+- **External agents** — Hover-reveal trash icon on each card
+- **Kill Switch** — Ctrl+K → "Kill Switch" or the Overview quick action. Confirms, then calls `/api/agents/kill-all`
 
-await mc.trackRun({
-  agent: { id: 'agent-1', name: 'My Agent' },
-  status: 'completed',
-  cost: 0.05,
-  duration: 3000,
-})
-```
+### Command Palette
 
-External agents appear automatically on the Overview page.
+`Ctrl+K` (or `Cmd+K`) opens a unified command palette:
+
+- **Navigation** — Jump to any page with `g + [key]` (see shortcuts below)
+- **Quick Actions** — Deploy Agent (→ builder), Run Eval (→ dialog), New Workflow (→ dialog), Kill Switch (→ confirm + kill-all)
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── (dashboard)/          # All dashboard pages
-│   │   ├── overview/         # Home dashboard
-│   │   ├── agents/           # AI agents + builder + templates
-│   │   ├── workflows/        # Pipeline builder (React Flow)
-│   │   ├── prompts/          # Prompt Studio
-│   │   ├── evals/            # Eval suites + results
-│   │   ├── deployments/      # Deployment tracking
-│   │   ├── costs/            # Cost & billing
-│   │   ├── analytics/        # User + agent analytics + health
-│   │   ├── logs/             # Log stream + LLM calls
-│   │   ├── team/             # Team management
-│   │   ├── incidents/        # Alerts & incidents
-│   │   ├── settings/         # Project settings
-│   │   ├── tutorial/         # Interactive tutorial
-│   │   └── profile/          # User profile
-│   └── api/                  # API routes
-│       ├── agents/           # CRUD + execute (streaming) + execute-sync
-│       ├── evals/            # Eval suites, cases, runs, execution engine
-│       ├── prompts/          # Prompt CRUD, versioning, playground test
-│       ├── events/ingest/    # External agent webhook
-│       ├── workflows/        # Workflow CRUD + run pipeline
-│       ├── notifications/    # List, read, read-all, delete
-│       ├── costs/            # Cost aggregation
-│       ├── team/             # Members, invites, API keys
+│   ├── (dashboard)/                     # All dashboard pages
+│   │   ├── overview/                    # Home — unified layout, onboarding in empty state
+│   │   ├── agents/                      # Agent list + quick-create modal
+│   │   │   ├── builder/                 # 7-step wizard for full config
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx             # Agent detail w/ LiveExecutionPanel
+│   │   │       └── runs/[runId]/        # Individual run detail page
+│   │   ├── workflows/                   # Visual pipeline builder
+│   │   ├── prompts/                     # Prompt Studio w/ versioning
+│   │   ├── evals/                       # Eval suites + results + diff
+│   │   ├── deployments/                 # Deployment tracking
+│   │   ├── costs/                       # Costs + trailing-7d forecast
+│   │   ├── analytics/                   # User + agent analytics + health
+│   │   ├── logs/                        # Stream / Errors / LLM / Traces / Agent Runs
+│   │   ├── team/                        # Members, invites, API keys
+│   │   ├── incidents/                   # Alerts & incidents
+│   │   ├── settings/                    # General / Appearance / Notif / Data / Security / Audit
+│   │   ├── tutorial/                    # Interactive tutorial w/ ?section= deep links
+│   │   └── profile/                     # User profile
+│   └── api/
+│       ├── agents/
+│       │   ├── route.ts                 # CRUD
+│       │   ├── [id]/route.ts            # Detail + DELETE
+│       │   ├── [id]/execute/route.ts    # Streaming SSE with history[] for multi-turn
+│       │   ├── [id]/execute-sync/       # Sync for eval + workflow engines
+│       │   ├── [id]/runs/route.ts       # Runs for one agent
+│       │   ├── [id]/runs/[runId]/       # Individual run detail
+│       │   ├── runs/route.ts            # Cross-agent run aggregator
+│       │   ├── external/route.ts        # List external agents
+│       │   ├── external/[id]/           # DELETE external agent
+│       │   └── kill-all/                # Emergency stop
+│       ├── evals/                       # Suites, cases, runs
+│       ├── prompts/                     # Prompt CRUD + versioning + playground
+│       ├── events/ingest/               # External agent webhook
+│       ├── workflows/                   # CRUD + run pipeline
+│       ├── notifications/               # List, read, delete
+│       ├── costs/                       # Aggregation + model-savings endpoint
+│       ├── team/
+│       │   ├── members/                 # Members, invites
+│       │   ├── api-keys/                # Scoped key management
+│       │   └── audit-log/               # Powers the audit log viewer
 │       └── ...
 ├── components/
-│   ├── layout/               # Sidebar, Topbar, CommandPalette
-│   ├── shared/               # Reusable (GlassPanel, MetricCard, etc.)
-│   ├── overview/             # Overview page widgets
-│   ├── workflows/            # React Flow nodes + edges
-│   ├── agents/               # LiveExecutionPanel
-│   └── team/                 # Invite modal, API key modal
-├── stores/                   # Zustand state management
-├── lib/                      # Utilities
-│   ├── model-selector.ts     # AI model auto-selection engine
-│   ├── agent-profiler.ts     # Task complexity profiler
-│   ├── cost-guard.ts         # Cost anomaly auto-pause checker
-│   ├── create-notification.ts # Notification helper
-│   ├── store-cache.ts        # Session-based fetch cache
-│   ├── api-client.ts         # Project-aware fetch wrapper
+│   ├── layout/                          # Sidebar, Topbar, CommandPalette, ProjectSwitcher
+│   ├── shared/                          # GlassPanel, MetricCard, ConfirmDialog, etc.
+│   ├── overview/                        # Widgets + onboarding
+│   ├── workflows/                       # React Flow nodes + edges
+│   ├── agents/
+│   │   └── LiveExecutionPanel.tsx       # Multi-turn chat transcript
+│   └── team/                            # Invite + API key modals
+├── stores/                              # Zustand state
+├── lib/
+│   ├── model-selector.ts                # Auto-selection engine (tier config + rates)
+│   ├── agent-profiler.ts                # Task complexity profiler
+│   ├── cost-guard.ts                    # Cost anomaly auto-pause checker
+│   ├── create-notification.ts           # Notification helper
+│   ├── audit.ts                         # logAuditEvent() helper
+│   ├── store-cache.ts                   # Session-based fetch cache
+│   ├── api-client.ts                    # Project-aware fetch wrapper
 │   └── ...
-├── types/                    # TypeScript interfaces
-└── packages/sdk/             # @mothership/sdk npm package
+├── types/                               # TypeScript interfaces
+└── packages/sdk/                        # @mothership/sdk npm package
+
+landing/
+└── index.html                           # Editorial publication landing page (served via npx serve)
 ```
 
 ## Tech Stack
@@ -296,40 +389,44 @@ src/
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL via Prisma ORM
-- **State**: Zustand
+- **State**: Zustand (stores are project-scoped and cached per session)
 - **UI**: Tailwind CSS + shadcn/ui
-- **Charts**: Recharts
+- **Charts**: Recharts (area, donut, sparklines)
 - **Canvas**: React Flow (@xyflow/react)
-- **AI**: Anthropic SDK (streaming + sync)
-- **Auth**: NextAuth.js (optional)
+- **AI**: Anthropic SDK (direct, with streaming + sync)
+- **Auth**: NextAuth.js (email + GitHub + Google OAuth, optional)
+- **Rate limiting**: In-memory / Redis (configurable)
+- **Encryption**: AES-256 for integration secrets at rest
 
 ## Customization
 
-Everything is customizable:
-
-- **Branding** — Change colors in `src/app/globals.css`, logo in `Sidebar.tsx`
-- **Pages** — Add/remove pages in `src/app/(dashboard)/`
-- **Navigation** — Edit `src/lib/constants.ts`
+- **Branding** — Colors in `src/app/globals.css`, wordmark in `ProjectSwitcher.tsx`
+- **Pages** — Add/remove in `src/app/(dashboard)/`; register in `src/lib/constants.ts`
+- **Navigation** — Sidebar entries in `src/lib/constants.ts`; command palette picks them up automatically
 - **Database** — Modify `prisma/schema.prisma` and run `npx prisma db push`
-- **Design system** — See `DESIGN.md` for the full design token reference
+- **Model tiers & costs** — Adjust in `src/lib/model-selector.ts`
+- **Routing heuristics** — Profile logic in `src/lib/agent-profiler.ts`
+- **Design system** — See `DESIGN.md` for full token reference
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+K` | Command palette |
+| `Ctrl+K` / `Cmd+K` | Command palette |
 | `?` | Show all shortcuts |
-| `g o` | Go to Overview |
-| `g a` | Go to Agents |
-| `g w` | Go to Workflows |
-| `g p` | Go to Prompt Studio |
-| `g e` | Go to Evals |
-| `g d` | Go to Deployments |
-| `g $` | Go to Costs |
-| `g n` | Go to Analytics |
-| `g l` | Go to Logs |
-| `g t` | Go to Team |
-| `g s` | Go to Settings |
+| `g o` | Overview |
+| `g a` | AI Agents |
+| `g w` | Workflows |
+| `g p` | Prompt Studio |
+| `g e` | Evals |
+| `g d` | Deployments |
+| `g $` | Costs & Billing |
+| `g n` | Analytics |
+| `g l` | Logs (includes Agent Runs stream) |
+| `g t` | Team |
+| `g !` | Incidents |
+| `g s` | Settings |
+| `g h` | Tutorial |
 
 ## Deploy to Vercel
 
@@ -338,8 +435,8 @@ npm i -g vercel
 vercel
 ```
 
-Set environment variables in the Vercel dashboard (same as `.env`).
+Set environment variables in the Vercel dashboard (same as `.env`). The Prisma schema is auto-pushed during build if you add `prisma generate && prisma db push` to your build command, or run it manually from your local machine against the production `DATABASE_URL`.
 
 ## License
 
-MIT
+MIT — self-host it, extend it, fork it, keep it.
