@@ -9,17 +9,19 @@ The open-source command deck for AI agents. Build, run, and optimize AI agents w
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 <p align="center">
-  <a href="https://github.com/ClaudevGuy/MotherShip/raw/master/assets/mothership-hero.mp4">
-    <video src="assets/mothership-hero.mp4" controls muted playsinline loop width="100%">
-      28-second editorial film — the cold-open terminal, the live run, the savings curve, the close. <a href="assets/mothership-hero.mp4">Download the MP4</a> if your browser can't embed this tag.
-    </video>
-  </a>
+  <video
+    src="https://github.com/ClaudevGuy/MotherShip/raw/master/assets/mothership-hero.mp4"
+    controls
+    muted
+    playsinline
+    loop
+    width="900">
+    <a href="https://github.com/ClaudevGuy/MotherShip/raw/master/assets/mothership-hero.mp4">Download the 28-second hero film</a>
+  </video>
 </p>
 
 <p align="center">
-  <sub>
-    <em>28-second silent editorial film — built in <a href="./remotion">Remotion</a>, not recorded.</em>
-  </sub>
+  <sub><em>28-second silent editorial film — built in <a href="./remotion">Remotion</a>, not recorded.</em></sub>
 </p>
 
 ## What is MOTHERSHIP?
