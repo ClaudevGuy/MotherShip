@@ -1,7 +1,12 @@
 import { formatDistanceToNow, format, subDays, subHours, subMinutes } from "date-fns";
 
-export function formatRelativeTime(date: Date | string): string {
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+  if (date == null) return "Never";
   const d = typeof date === "string" ? new Date(date) : date;
+  // date-fns coerces falsy/invalid dates to the Unix epoch ("56 years ago"); guard here.
+  if (!(d instanceof Date) || Number.isNaN(d.getTime()) || d.getTime() === 0) {
+    return "Never";
+  }
   return formatDistanceToNow(d, { addSuffix: true });
 }
 

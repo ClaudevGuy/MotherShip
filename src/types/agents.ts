@@ -36,7 +36,7 @@ export interface Agent {
   avgLatency: number;
   costPerHour: number;
   totalCost: number;
-  lastRun: string;
+  lastRun: string | null;
   createdAt: string;
   createdBy: string;
   healthScore: number;
