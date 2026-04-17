@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Bot,
@@ -100,7 +100,7 @@ function PlateQuickCreate() {
         </div>
         <div className="flex gap-2 pt-2">
           <button className="flex-1 rounded px-3 py-2 text-xs font-medium text-white/60 border border-white/10">Cancel</button>
-          <button className="flex-1 rounded px-3 py-2 text-xs font-semibold text-white" style={{ background: OXBLOOD }}>Create &amp; Run →</button>
+          <button className="flex-1 rounded px-3 py-2 text-xs font-semibold" style={{ background: BRAND, color: "#0a0908" }}>Create &amp; Run →</button>
         </div>
       </div>
     </div>
@@ -484,48 +484,144 @@ export default function TutorialPage() {
               }}
             />
           </div>
-          {/* Step dots */}
-          <div className="flex items-center justify-between mt-4">
-            {STEPS.map((s, i) => {
-              const done = hydrated && completed.has(s.id);
-              const active = i === activeIdx;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveIdx(i)}
-                  className={cn(
-                    "group flex flex-col items-center gap-2 transition-all",
-                    "hover:opacity-100",
-                    active ? "opacity-100" : done ? "opacity-90" : "opacity-50"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "size-7 rounded-full border-2 flex items-center justify-center transition-all",
-                      active && "scale-110"
-                    )}
-                    style={{
-                      borderColor: done ? EMERALD : active ? OXBLOOD : "rgba(255,255,255,0.15)",
-                      background: done ? `${EMERALD}15` : active ? `${OXBLOOD}18` : "transparent",
-                    }}
-                  >
-                    {done ? (
-                      <Check className="size-3.5" style={{ color: EMERALD }} />
-                    ) : (
-                      <span className="font-mono text-[10px] font-bold" style={{ color: active ? OXBLOOD : "rgba(255,255,255,0.45)" }}>
-                        {s.n}
+          {/* Step rail — circles on a continuous track with connector segments */}
+          <div className="relative mt-5">
+            <div className="flex items-start">
+              {STEPS.map((s, i) => {
+                const done = hydrated && completed.has(s.id);
+                const active = i === activeIdx;
+                const isLast = i === STEPS.length - 1;
+                const nextDone = hydrated && i < STEPS.length - 1 && completed.has(STEPS[i + 1].id);
+                // Segment state: "done" both sides complete, "active" bridge to current, "future" muted
+                let segState: "done" | "active" | "future" = "future";
+                if (done && nextDone) segState = "done";
+                else if (done || (active && i < STEPS.length - 1)) segState = "active";
+
+                return (
+                  <React.Fragment key={s.id}>
+                    {/* Step node — circle + label */}
+                    <button
+                      onClick={() => setActiveIdx(i)}
+                      className={cn(
+                        "group flex flex-col items-center gap-2.5 transition-opacity shrink-0",
+                        active ? "opacity-100" : done ? "opacity-95" : "opacity-55 hover:opacity-80"
+                      )}
+                      style={{ width: 92 }}
+                    >
+                      <div className="relative">
+                        {/* Pulsing halo behind the active step circle */}
+                        {active && (
+                          <span
+                            className="absolute inset-0 rounded-full animate-ping"
+                            style={{ background: `${BRAND}20`, animationDuration: "2.2s" }}
+                          />
+                        )}
+                        <div
+                          className={cn(
+                            "relative size-8 rounded-full border flex items-center justify-center transition-all",
+                            active && "scale-110"
+                          )}
+                          style={{
+                            borderColor: done
+                              ? EMERALD
+                              : active
+                              ? BRAND
+                              : "rgba(255,255,255,0.18)",
+                            borderWidth: done || active ? 2 : 1,
+                            background: done
+                              ? `${EMERALD}18`
+                              : active
+                              ? `${BRAND}14`
+                              : "rgba(255,255,255,0.015)",
+                            boxShadow: active
+                              ? `0 0 0 4px ${BRAND}08, 0 2px 10px ${BRAND}20`
+                              : done
+                              ? `0 0 10px ${EMERALD}30`
+                              : "none",
+                          }}
+                        >
+                          {done ? (
+                            <Check className="size-3.5" style={{ color: EMERALD }} strokeWidth={2.5} />
+                          ) : (
+                            <span
+                              className="font-mono text-[11px] font-bold"
+                              style={{
+                                color: active ? BRAND : "rgba(255,255,255,0.5)",
+                              }}
+                            >
+                              {s.n}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span
+                        className={cn(
+                          "font-mono text-[9px] tracking-[0.16em] uppercase text-center leading-[1.3] max-w-[82px]",
+                          active ? "text-foreground" : done ? "text-foreground/70" : "text-muted-foreground/55"
+                        )}
+                      >
+                        {s.id.replace("-", " ")}
                       </span>
+                    </button>
+
+                    {/* Connector segment between this step and the next */}
+                    {!isLast && (
+                      <div className="relative flex-1 flex items-center self-start mt-4">
+                        {/* Baseline rail — always present, subtle */}
+                        <div className="h-px w-full bg-white/[0.07]" />
+
+                        {/* Progress overlay */}
+                        <div
+                          className="absolute inset-0 flex items-center transition-opacity duration-500"
+                          style={{ opacity: segState === "future" ? 0 : 1 }}
+                        >
+                          <div
+                            className={cn(
+                              "h-px w-full transition-all duration-700",
+                              segState === "active" && "animate-segment-shimmer"
+                            )}
+                            style={{
+                              background:
+                                segState === "done"
+                                  ? EMERALD
+                                  : segState === "active"
+                                  ? `linear-gradient(90deg, ${done ? EMERALD : BRAND}cc 0%, ${BRAND}30 60%, transparent 100%)`
+                                  : "transparent",
+                              boxShadow:
+                                segState === "done"
+                                  ? `0 0 4px ${EMERALD}55`
+                                  : segState === "active"
+                                  ? `0 0 6px ${BRAND}40`
+                                  : "none",
+                            }}
+                          />
+                        </div>
+
+                        {/* Center arrow glyph — serif italic */}
+                        <span
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-heading italic pointer-events-none transition-colors"
+                          style={{
+                            fontSize: 15,
+                            fontVariationSettings: '"opsz" 24, "SOFT" 100, "wght" 360',
+                            color:
+                              segState === "done"
+                                ? EMERALD
+                                : segState === "active"
+                                ? BRAND
+                                : "rgba(255,255,255,0.25)",
+                            letterSpacing: "-0.02em",
+                            background: "var(--background)",
+                            padding: "0 6px",
+                          }}
+                        >
+                          →
+                        </span>
+                      </div>
                     )}
-                  </div>
-                  <span className={cn(
-                    "font-mono text-[9px] tracking-[0.15em] uppercase max-w-[80px] text-center leading-tight",
-                    active ? "text-foreground" : "text-muted-foreground/60"
-                  )}>
-                    {s.id.replace("-", " ")}
-                  </span>
-                </button>
-              );
-            })}
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -563,16 +659,16 @@ export default function TutorialPage() {
                   href={step.ctaHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold text-white transition-transform hover:-translate-y-px"
-                  style={{ background: OXBLOOD, boxShadow: `0 2px 8px ${OXBLOOD}40` }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold transition-transform hover:-translate-y-px"
+                  style={{ background: BRAND, color: "#0a0908", boxShadow: `0 2px 10px ${BRAND}22` }}
                 >
                   {step.ctaLabel} <ArrowRight className="size-3.5" />
                 </a>
               ) : (
                 <Link
                   href={step.ctaHref}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold text-white transition-transform hover:-translate-y-px"
-                  style={{ background: OXBLOOD, boxShadow: `0 2px 8px ${OXBLOOD}40` }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold transition-transform hover:-translate-y-px"
+                  style={{ background: BRAND, color: "#0a0908", boxShadow: `0 2px 10px ${BRAND}22` }}
                 >
                   {step.ctaLabel} <ArrowRight className="size-3.5" />
                 </Link>
@@ -632,8 +728,8 @@ export default function TutorialPage() {
           ) : (
             <button
               onClick={toggleDone}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white"
-              style={{ background: isStepDone ? EMERALD : OXBLOOD }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold"
+              style={{ background: isStepDone ? EMERALD : BRAND, color: "#0a0908" }}
             >
               {isStepDone ? "Tutorial complete ✓" : "Finish tutorial"}
             </button>

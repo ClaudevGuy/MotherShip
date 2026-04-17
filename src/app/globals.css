@@ -270,6 +270,15 @@
   100% { background-position: 200% 0; }
 }
 
+/* Tutorial step-rail — flowing segment animation */
+@keyframes segment-shimmer {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.55; }
+}
+.animate-segment-shimmer {
+  animation: segment-shimmer 2.2s ease-in-out infinite;
+}
+
 @keyframes fade-in-up {
   0% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: translateY(0); }
