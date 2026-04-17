@@ -115,7 +115,7 @@ export default function AgentDetailPage({
   const [tab, setTab] = useState<string>("overview");
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const { agents, fetch: fetchAgents } = useAgentsStore();
+  const { agents, isLoading, fetch: fetchAgents } = useAgentsStore();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAgents(); }, []);
@@ -142,6 +142,25 @@ export default function AgentDetailPage({
   };
 
   if (!agent) {
+    // While the initial list fetch is in flight (e.g. arriving here via
+    // router.push after creating an agent), show a skeleton instead of
+    // flashing "Agent not found".
+    if (isLoading || agents.length === 0) {
+      return (
+        <div className="space-y-6">
+          <Link href="/agents" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="size-3.5" />
+            Back to Agents
+          </Link>
+          <GlassPanel padding="lg">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              <span className="text-sm">Loading agent…</span>
+            </div>
+          </GlassPanel>
+        </div>
+      );
+    }
     return (
       <div className="space-y-6">
         <Link href="/agents" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">

@@ -304,7 +304,14 @@ function TemplatesRow() {
         }),
       });
       if (!res.ok) throw new Error("Failed");
-      const agent = await res.json();
+      // API wraps the created record as { data: agent } — unwrap before using.
+      const { data: agent } = await res.json();
+      if (!agent?.id) throw new Error("Missing agent id in response");
+      // Seed the store so the detail page finds the agent on mount,
+      // avoiding a "not found" flash while the fetch completes.
+      useAgentsStore.setState((s) => ({
+        agents: [{ ...agent, runs: [], evalResults: [] }, ...s.agents],
+      }));
       invalidate("agents");
       router.push(`/agents/${agent.id}`);
     } catch {
@@ -406,10 +413,15 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
         }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: "Failed" }));
-        throw new Error(data.error || "Failed to create agent");
+        const errData = await res.json().catch(() => ({ error: "Failed" }));
+        throw new Error(errData.error || "Failed to create agent");
       }
-      const agent = await res.json();
+      // API wraps the created record as { data: agent } — unwrap before using.
+      const { data: agent } = await res.json();
+      if (!agent?.id) throw new Error("Missing agent id in response");
+      useAgentsStore.setState((s) => ({
+        agents: [{ ...agent, runs: [], evalResults: [] }, ...s.agents],
+      }));
       invalidate("agents");
       router.push(`/agents/${agent.id}`);
     } catch (err) {
