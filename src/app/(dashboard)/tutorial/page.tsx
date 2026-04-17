@@ -484,7 +484,10 @@ export default function TutorialPage() {
               <span className="font-mono text-[11px] ml-0.5 opacity-70">%</span>
             </div>
           </div>
-          <div className="relative h-[5px] rounded-full bg-white/[0.04] overflow-hidden">
+          <div
+            className="relative h-[5px] rounded-full overflow-hidden"
+            style={{ background: "rgb(var(--ink-rgb) / 0.08)" }}
+          >
             <div
               className="relative h-full transition-all duration-700 ease-out rounded-full overflow-hidden"
               style={{
@@ -526,7 +529,7 @@ export default function TutorialPage() {
                       onClick={() => setActiveIdx(i)}
                       className={cn(
                         "group flex flex-col items-center gap-2.5 transition-opacity shrink-0",
-                        active ? "opacity-100" : done ? "opacity-95" : "opacity-55 hover:opacity-80"
+                        active ? "opacity-100" : done ? "opacity-95" : "opacity-65 hover:opacity-90"
                       )}
                       style={{ width: 92 }}
                     >
@@ -590,7 +593,7 @@ export default function TutorialPage() {
                     {!isLast && (
                       <div className="relative flex-1 flex items-center self-start mt-4">
                         {/* Baseline rail — always present, subtle */}
-                        <div className="h-px w-full bg-white/[0.07]" />
+                        <div className="h-px w-full" style={{ background: "rgb(var(--ink-rgb) / 0.12)" }} />
 
                         {/* Progress overlay */}
                         <div
@@ -636,7 +639,7 @@ export default function TutorialPage() {
                                 ? done
                                   ? EMERALD
                                   : BRAND
-                                : "rgb(var(--ink-rgb) / 0.25)",
+                                : "rgb(var(--ink-rgb) / 0.38)",
                             textShadow:
                               segState === "done" || (segState === "active" && done)
                                 ? `0 0 8px ${EMERALD}88, 0 0 14px ${EMERALD}44`
