@@ -1,0 +1,25 @@
+{
+  "name": "mothership-remotion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Editorial film — 15s landing hero loop for MOTHERSHIP",
+  "scripts": {
+    "studio": "remotion studio src/index.ts --port=3030",
+    "render": "remotion render src/index.ts MothershipHero out/mothership-hero.mp4",
+    "render:webm": "remotion render src/index.ts MothershipHero out/mothership-hero.webm --codec=vp9",
+    "render:gif": "remotion render src/index.ts MothershipHero out/mothership-hero.gif --codec=gif",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.4.0"
+  }
+}
