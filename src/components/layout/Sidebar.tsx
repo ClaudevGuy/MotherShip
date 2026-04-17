@@ -62,12 +62,12 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
         {/* Logo mark */}
         <div className="sidebar-logo-mark relative flex size-[30px] shrink-0 items-center justify-center">
           {/* Outer ring */}
-          <div className="absolute inset-0 rounded-[9px] border border-[#00d992]/25" />
+          <div className="absolute inset-0 rounded-[9px] border border-[#f5f1e8]/25" />
           {/* Inner glow */}
-          <div className="absolute inset-[2px] rounded-[7px] bg-gradient-to-br from-[#00d992]/20 via-[#00d992]/8 to-transparent" />
+          <div className="absolute inset-[2px] rounded-[7px] bg-gradient-to-br from-[#f5f1e8]/20 via-[#f5f1e8]/8 to-transparent" />
           {/* Icon */}
           <Zap
-            className="relative z-10 size-[13px] text-[#00d992]"
+            className="relative z-10 size-[13px] text-[#f5f1e8]"
             strokeWidth={2.5}
             fill="rgba(0,217,146,0.3)"
           />
@@ -82,7 +82,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
             <span className="font-heading text-[11.5px] font-bold uppercase tracking-[0.16em] text-foreground/90 whitespace-nowrap">
               MOTHERSHIP
             </span>
-            <span className="text-[9px] tracking-[0.08em] text-[#00d992]/40 font-medium uppercase mt-[2px]">
+            <span className="text-[9px] tracking-[0.08em] text-[#f5f1e8]/40 font-medium uppercase mt-[2px]">
               AI Operations
             </span>
           </div>
@@ -141,11 +141,11 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       <div className={cn(
                         "absolute inset-0 rounded-lg",
                         collapsed
-                          ? "bg-[#00d992]/[0.08]"
-                          : "bg-gradient-to-r from-[#00d992]/[0.10] via-[#00d992]/[0.03] to-transparent"
+                          ? "bg-[#f5f1e8]/[0.08]"
+                          : "bg-gradient-to-r from-[#f5f1e8]/[0.10] via-[#f5f1e8]/[0.03] to-transparent"
                       )}>
                         {/* Top edge highlight */}
-                        <div className="absolute inset-x-[1px] top-0 h-px bg-gradient-to-r from-transparent via-[#00d992]/20 to-transparent" />
+                        <div className="absolute inset-x-[1px] top-0 h-px bg-gradient-to-r from-transparent via-[#f5f1e8]/20 to-transparent" />
                       </div>
                     )}
 
@@ -156,10 +156,10 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
 
                     {/* Active indicator bar */}
                     {isActive && !collapsed && (
-                      <div className="sidebar-active-bar absolute left-0 top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00d992]" />
+                      <div className="sidebar-active-bar absolute left-0 top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#f5f1e8]" />
                     )}
                     {isActive && collapsed && (
-                      <div className="sidebar-active-bar absolute left-[3px] top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#00d992]" />
+                      <div className="sidebar-active-bar absolute left-[3px] top-[6px] bottom-[6px] w-[2px] rounded-r-full bg-[#f5f1e8]" />
                     )}
 
                     {/* Icon */}
@@ -169,7 +169,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                           "transition-all duration-200",
                           collapsed ? "size-[17px]" : "size-[15px]",
                           isActive
-                            ? "text-[#00d992]"
+                            ? "text-[#f5f1e8]"
                             : "text-muted-foreground/40 group-hover:text-muted-foreground/70"
                         )}
                         strokeWidth={isActive ? 2 : 1.6}
@@ -202,7 +202,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       <span className={cn(
                         "relative z-10 ml-auto inline-flex items-center rounded-md px-1.5 py-[3px] font-mono text-[9px] leading-none animate-fade-in-up",
                         isActive
-                          ? "bg-[#00d992]/10 text-[#00d992]/60 border border-[#00d992]/15"
+                          ? "bg-[#f5f1e8]/10 text-[#f5f1e8]/60 border border-[#f5f1e8]/15"
                           : "bg-white/[0.04] text-muted-foreground/30 border border-white/[0.04]"
                       )}>
                         {item.shortcut.split(" ")[1]}
