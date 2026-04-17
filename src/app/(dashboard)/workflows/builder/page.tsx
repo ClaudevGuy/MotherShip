@@ -27,6 +27,7 @@ import { useAgentsStore } from "@/stores/agents-store";
 import { TriggerNode, AgentNode, EndNode } from "@/components/workflows/nodes";
 import { AnimatedEdge } from "@/components/workflows/AnimatedEdge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Register custom node and edge types
 const nodeTypes = {
@@ -175,10 +176,25 @@ function WorkflowBuilderInner() {
     [onNodesChange, setDirty]
   );
 
-  // Add trigger node
+  // Add (or swap) trigger node. A workflow has exactly one entry point, so
+  // clicking a different trigger in the sidebar swaps the current one in place
+  // — preserving position and outgoing edges — instead of erroring.
   const addTrigger = (type: string) => {
-    if (nodes.some((n) => n.type === "trigger")) {
-      toast.error("Only one trigger allowed per workflow");
+    const existing = nodes.find((n) => n.type === "trigger");
+    if (existing) {
+      if (existing.data?.type === type) {
+        // Clicking the already-active trigger: just focus it for editing.
+        setSelectedNode(existing);
+        return;
+      }
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === existing.id ? { ...n, data: { ...n.data, type } } : n
+        )
+      );
+      setDirty(true);
+      const label = TRIGGERS.find((t) => t.type === type)?.label ?? type;
+      toast.success(`Trigger changed to ${label}`);
       return;
     }
     const newNode: Node = {
@@ -425,21 +441,53 @@ function WorkflowBuilderInner() {
 
           {/* Triggers section */}
           <div className="p-3 border-b border-border/50">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Triggers</p>
+            <div className="flex items-baseline justify-between mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Triggers</p>
+              <p className="text-[9px] text-muted-foreground/60">One per workflow</p>
+            </div>
             <div className="space-y-1">
-              {TRIGGERS.map((t) => (
-                <button
-                  key={t.type}
-                  onClick={() => addTrigger(t.type)}
-                  className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left hover:bg-[#A855F7]/[0.06] transition-colors group"
-                >
-                  <t.icon className="size-3.5 text-[#A855F7]/50 group-hover:text-[#A855F7] shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-foreground">{t.label}</p>
-                    <p className="text-[9px] text-muted-foreground">{t.desc}</p>
-                  </div>
-                </button>
-              ))}
+              {TRIGGERS.map((t) => {
+                const triggerNode = nodes.find((n) => n.type === "trigger");
+                const activeType = triggerNode?.data?.type;
+                const isActive = activeType === t.type;
+                return (
+                  <button
+                    key={t.type}
+                    onClick={() => addTrigger(t.type)}
+                    title={
+                      isActive
+                        ? "Active trigger — click to configure"
+                        : activeType
+                        ? `Swap current trigger for ${t.label}`
+                        : `Add ${t.label} trigger`
+                    }
+                    className={cn(
+                      "flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left transition-colors group",
+                      isActive
+                        ? "bg-[#A855F7]/[0.1] ring-1 ring-[#A855F7]/25"
+                        : "hover:bg-[#A855F7]/[0.06]"
+                    )}
+                  >
+                    <t.icon
+                      className={cn(
+                        "size-3.5 shrink-0 transition-colors",
+                        isActive
+                          ? "text-[#A855F7]"
+                          : "text-[#A855F7]/50 group-hover:text-[#A855F7]"
+                      )}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-foreground">{t.label}</p>
+                      <p className="text-[9px] text-muted-foreground">{t.desc}</p>
+                    </div>
+                    {isActive && (
+                      <span className="text-[8px] font-semibold uppercase tracking-wider text-[#A855F7]">
+                        Active
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -448,9 +496,12 @@ function WorkflowBuilderInner() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Flow Control</p>
             <button
               onClick={addEndNode}
-              className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left hover:bg-[#39FF14]/[0.06] transition-colors group"
+              className="flex items-center gap-2 w-full rounded-lg px-2 py-1.5 text-left hover:bg-[rgb(var(--color-end-rgb)/0.07)] transition-colors group"
             >
-              <CircleCheck className="size-3.5 text-[#39FF14]/50 group-hover:text-[#39FF14] shrink-0" />
+              <CircleCheck
+                className="size-3.5 shrink-0 transition-colors"
+                style={{ color: "rgb(var(--color-end-rgb) / 0.6)" }}
+              />
               <div>
                 <p className="text-xs font-medium text-foreground">End Node</p>
                 <p className="text-[9px] text-muted-foreground">Pipeline terminator</p>
@@ -508,7 +559,7 @@ function WorkflowBuilderInner() {
               }}
               nodeColor={(n) =>
                 n.type === "trigger" ? "#A855F7" :
-                n.type === "end" ? "#39FF14" :
+                n.type === "end" ? (isDark ? "#39FF14" : "#059669") :
                 "var(--primary)"
               }
               maskColor={isDark ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.08)"}
@@ -533,7 +584,10 @@ function WorkflowBuilderInner() {
 
             {/* Empty canvas hint */}
             {nodes.length === 0 && (
-              <Panel position="top-center" className="!top-1/2 !-translate-y-1/2">
+              <Panel
+                position="top-center"
+                className="!top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 pointer-events-none"
+              >
                 <div className="text-center space-y-3 p-8 rounded-2xl border-2 border-dashed border-border/40">
                   {noAgentsInDb ? (
                     /* T15: No agents in DB state */

@@ -151,13 +151,13 @@ export function WorkflowDetailPanel({ workflow, onClose, onRun }: Props) {
                     </React.Fragment>
                   ))}
 
-                  {/* End */}
+                  {/* End — theme-aware via --color-end-rgb */}
                   <div className="flex justify-center py-1">
-                    <div className="w-px h-4 bg-[#39FF14]/30" />
+                    <div className="w-px h-4 bg-[rgb(var(--color-end-rgb)/0.4)]" />
                   </div>
-                  <div className="flex items-center gap-2 rounded-lg border border-[#39FF14]/20 bg-[#39FF14]/[0.03] px-4 py-2.5">
-                    <CheckCircle2 className="size-4 text-[#39FF14]/70" />
-                    <span className="text-xs font-semibold text-[#39FF14]/80 uppercase tracking-wider">End</span>
+                  <div className="flex items-center gap-2 rounded-lg border border-[rgb(var(--color-end-rgb)/0.25)] bg-[rgb(var(--color-end-rgb)/0.04)] px-4 py-2.5">
+                    <CheckCircle2 className="size-4" style={{ color: "rgb(var(--color-end-rgb) / 0.85)" }} />
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgb(var(--color-end-rgb) / 0.95)" }}>End</span>
                   </div>
                 </div>
               </div>
