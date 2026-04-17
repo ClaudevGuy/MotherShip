@@ -351,7 +351,8 @@ function TemplatesRow() {
           return (
             <div
               key={t.name}
-              className="flex flex-col justify-between min-w-[220px] max-w-[220px] rounded-xl border border-border/50 bg-card/40 p-4 hover:border-[#f5f1e8]/20 hover:bg-[#f5f1e8]/[0.02] transition-colors shrink-0"
+              className="group flex flex-col justify-between min-w-[220px] max-w-[220px] rounded-xl border border-border/50 bg-card/40 p-4 hover:border-[#f5f1e8]/20 hover:bg-[#f5f1e8]/[0.02] hover:[box-shadow:var(--card-shadow-hover)] transition-all shrink-0"
+              style={{ boxShadow: "var(--card-shadow)" }}
             >
               <div>
                 <div className="flex items-center gap-2.5 mb-2">

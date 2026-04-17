@@ -38,7 +38,7 @@ export function GlassPanel({
       className={cn(
         "rounded-lg backdrop-blur-xl transition-all duration-200",
         glow && glowMap[glow],
-        hover && "hover:border-[var(--glass-hover-border)]",
+        hover && "hover:border-[var(--glass-hover-border)] hover:[box-shadow:var(--card-shadow-hover)]",
         paddingMap[padding],
         className
       )}
