@@ -50,10 +50,10 @@ const STATUS_STYLES: Record<string, StatusStyle> = {
     animation: "badge-pulse 0.8s ease-in-out infinite",
   },
   deploying: {
-    bg: "rgba(0,217,146,0.08)",
-    border: "rgba(0,217,146,0.31)",
-    text: "#00d992",
-    dot: "#00d992",
+    bg: "rgba(245, 241, 232,0.08)",
+    border: "rgba(245, 241, 232,0.31)",
+    text: "#f5f1e8",
+    dot: "#f5f1e8",
     animation: "badge-spin 1s linear infinite",
   },
   success: {
@@ -69,10 +69,10 @@ const STATUS_STYLES: Record<string, StatusStyle> = {
     dot: "#EF4444",
   },
   in_progress: {
-    bg: "rgba(0,217,146,0.08)",
-    border: "rgba(0,217,146,0.31)",
-    text: "#00d992",
-    dot: "#00d992",
+    bg: "rgba(245, 241, 232,0.08)",
+    border: "rgba(245, 241, 232,0.31)",
+    text: "#f5f1e8",
+    dot: "#f5f1e8",
     animation: "badge-spin 1s linear infinite",
   },
   pending: {

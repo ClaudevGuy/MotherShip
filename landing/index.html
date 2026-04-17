@@ -182,7 +182,11 @@ header.pub {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 32px;
-  padding: 14px 0 16px;
+  padding: 18px 24px;
+  margin: 0 -24px;
+  background: var(--paper-deep);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
   font-family: var(--mono);
   font-size: 10.5px;
   letter-spacing: 0.18em;
@@ -193,35 +197,86 @@ header.pub {
 .masthead-bottom .dateline {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
+  color: var(--gray);
+}
+.masthead-bottom .dateline strong {
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.22em;
 }
 .masthead-bottom .dateline .sep {
-  color: var(--silver);
-  font-size: 8px;
+  color: var(--accent);
+  font-size: 6px;
+  opacity: 0.6;
 }
 
 .masthead-bottom .strapline {
   text-align: center;
   font-family: var(--serif);
   font-style: italic;
-  font-variation-settings: "opsz" 14, "SOFT" 100, "wght" 400;
-  font-size: 14px;
-  letter-spacing: 0;
-  color: var(--charcoal);
+  font-variation-settings: "opsz" 18, "SOFT" 100, "wght" 400;
+  font-size: 15.5px;
+  letter-spacing: -0.002em;
+  color: var(--ink);
   text-transform: none;
 }
+.masthead-bottom .strapline em {
+  color: var(--accent);
+  font-variation-settings: "opsz" 18, "SOFT" 100, "wght" 420;
+}
 
+/* ── Nav: editorial serif links with animated underline ───────────────── */
 .masthead-bottom nav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 8px;
   justify-content: flex-end;
 }
 .masthead-bottom nav a {
-  transition: color .2s;
+  position: relative;
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 18, "SOFT" 0, "wght" 440;
+  font-style: normal;
+  font-size: 15.5px;
+  letter-spacing: -0.008em;
+  text-transform: none;
+  color: var(--ink);
+  padding: 6px 10px;
+  transition: color .2s ease;
 }
-.masthead-bottom nav a:hover { color: var(--accent); }
-.masthead-bottom nav .nav-sep { color: var(--silver); font-size: 8px; }
+.masthead-bottom nav a::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 2px;
+  height: 1.5px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.masthead-bottom nav a:hover {
+  color: var(--accent);
+}
+.masthead-bottom nav a:hover::after {
+  transform: scaleX(1);
+}
+.masthead-bottom nav a.external {
+  color: var(--accent);
+  font-style: italic;
+  font-variation-settings: "opsz" 18, "SOFT" 100, "wght" 420;
+}
+.masthead-bottom nav a.external::after { display: none; }
+.masthead-bottom nav a.external:hover {
+  color: var(--ink);
+}
+.masthead-bottom nav .nav-sep {
+  color: var(--silver);
+  font-size: 5px;
+  opacity: 0.5;
+}
 
 /* ─── Cover / Hero ────────────────────────────────────────────────────── */
 
@@ -238,15 +293,17 @@ header.pub {
 }
 .cover-grid > main { min-width: 0; }
 
-/* Right column: editorial epigraph + pull quote (complements the headline, no duplicate info) */
+/* Right column: editorial epigraph + pull quote card (paper-deep, matches the Subject strip) */
 .cover-aside {
-  padding-left: 40px;
-  border-left: 1px solid var(--hairline);
+  background: var(--paper-deep);
+  border: 1px solid var(--hairline);
+  padding: 36px 36px 32px;
   position: sticky;
   top: 48px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
+  box-shadow: 4px 4px 0 var(--ink);
 }
 .cover-aside .dateline {
   font-family: var(--mono);
@@ -2382,12 +2439,13 @@ pre.code .p { color: rgba(231,226,211,0.55); }
 
 @media (max-width: 1080px) {
   .frame { padding: 0 32px; }
-  .masthead-bottom { grid-template-columns: 1fr; gap: 12px; text-align: center; padding: 12px 0 14px; }
+  .masthead-bottom { grid-template-columns: 1fr; gap: 14px; text-align: center; padding: 16px 24px; margin: 0 -32px; }
   .masthead-bottom .dateline { justify-content: center; flex-wrap: wrap; gap: 10px 14px; }
-  .masthead-bottom .strapline { text-align: center; }
-  .masthead-bottom nav { justify-content: center; flex-wrap: wrap; gap: 18px; }
+  .masthead-bottom .strapline { text-align: center; font-size: 15px; }
+  .masthead-bottom nav { justify-content: center; flex-wrap: wrap; gap: 4px; }
+  .masthead-bottom nav a { font-size: 14.5px; padding: 4px 8px; }
   .cover-grid { grid-template-columns: 1fr; gap: 56px; }
-  .cover-aside { position: static; padding-left: 0; border-left: 0; border-top: 1px solid var(--hairline); padding-top: 40px; }
+  .cover-aside { position: static; }
   .hero-issue-strip { grid-template-columns: 1fr; gap: 0; }
   .hero-issue-strip .issue-label { padding-right: 0; padding-bottom: 24px; border-right: 0; border-bottom: 1px solid var(--hairline); margin-bottom: 24px; }
   .hero-issue-strip .issue-stat { padding: 24px 0; border-right: 0; border-bottom: 1px solid var(--hairline); }
@@ -2396,8 +2454,9 @@ pre.code .p { color: rgba(231,226,211,0.55); }
   .strip-row { grid-template-columns: 1fr; gap: 24px; }
   .strip-item { border-right: 0; padding-right: 0; padding-bottom: 24px; border-bottom: 1px solid var(--hairline); }
   .strip-item:last-child { border-bottom: 0; padding-bottom: 0; }
-  .feature-head { grid-template-columns: 1fr; gap: 48px; }
-  .feature-head aside .num { font-size: 96px; }
+  .feature-head { grid-template-columns: 1fr; gap: 40px; padding-bottom: 56px; }
+  .feature-head aside { position: static; top: auto; }
+  .feature-head aside .num { font-size: 88px; }
   .dossier { grid-template-columns: 1fr; gap: 40px; }
   .dossier-right { border-left: 0; padding-left: 0; padding-top: 32px; border-top: 1px solid var(--hairline); }
   .interlude .head { grid-template-columns: 1fr; gap: 32px; align-items: start; }
@@ -2425,9 +2484,11 @@ pre.code .p { color: rgba(231,226,211,0.55); }
   .masthead-flourish { justify-content: center; }
   .masthead-flourish.right { justify-content: center; }
   .wordmark { font-size: 52px; }
-  .masthead-bottom { grid-template-columns: 1fr; gap: 10px; text-align: center; padding: 12px 0 14px; }
-  .masthead-bottom .dateline { justify-content: center; }
-  .masthead-bottom nav { justify-content: center; flex-wrap: wrap; }
+  .masthead-bottom { padding: 14px 20px; margin: 0 -22px; gap: 12px; }
+  .masthead-bottom .dateline { justify-content: center; font-size: 9.5px; }
+  .masthead-bottom .strapline { font-size: 14px; }
+  .masthead-bottom nav { justify-content: center; flex-wrap: wrap; gap: 2px; }
+  .masthead-bottom nav a { font-size: 13.5px; padding: 4px 7px; }
   .running-folio { display: none; }
   .cover { padding: 40px 0 64px; }
   .cover h1 { font-size: clamp(38px, 11vw, 56px) !important; max-width: 100%; }
@@ -2444,6 +2505,7 @@ pre.code .p { color: rgba(231,226,211,0.55); }
   .hero-signoff { margin-top: 36px; }
   .hero-meta { font-size: 13.5px; }
   .hero-issue-strip { margin-top: 40px; padding-top: 28px; }
+  .cover-aside { padding: 28px 24px 26px; box-shadow: none; gap: 22px; }
   .cover-aside .dateline { font-size: 10px; }
   .cover-aside .epigraph blockquote { font-size: 19px; line-height: 1.3; }
   .cover-aside .epigraph-mark { font-size: 42px; }
@@ -2454,8 +2516,13 @@ pre.code .p { color: rgba(231,226,211,0.55); }
   .strip-item .strip-num { font-size: 22px; }
   .strip-item .strip-text { font-size: 14.5px; }
 
-  .feature-head aside .num { font-size: 80px; }
-  .feature-head main h2 { font-size: clamp(34px, 8vw, 48px); }
+  .feature-head { grid-template-columns: 1fr !important; gap: 36px !important; padding-bottom: 48px !important; }
+  .feature-head aside { position: static !important; top: auto !important; }
+  .feature-head aside .num { font-size: 64px; line-height: 0.9; }
+  .feature-head aside .label { font-size: 16px; margin-top: 14px; max-width: 100%; }
+  .feature-head aside .cat { margin-bottom: 10px; font-size: 10px; }
+  .feature-head main h2 { font-size: clamp(30px, 8vw, 44px) !important; line-height: 1.08; }
+  .feature-head main .lede { font-size: 15px; margin-top: 20px; }
 
   .feature-plate { margin-top: 48px; }
   .plate-caption { grid-template-columns: 1fr; gap: 6px; margin-bottom: 18px; padding-bottom: 10px; }
@@ -2602,23 +2669,19 @@ pre.code .p { color: rgba(231,226,211,0.55); }
     <hr class="masthead-rule">
     <div class="masthead-bottom">
       <div class="dateline">
-        <span>Vol. I</span>
-        <span class="sep">◆</span>
+        <span><strong>Vol. I</strong></span>
+        <span class="sep">●</span>
         <span>Issue 01</span>
-        <span class="sep">◆</span>
+        <span class="sep">●</span>
         <span>Apr 2026</span>
       </div>
-      <div class="strapline">For people who ship software that thinks.</div>
+      <div class="strapline">For people who <em>ship software that thinks.</em></div>
       <nav>
         <a href="#subject">Subject</a>
-        <span class="nav-sep">◆</span>
         <a href="#intelligence">Intelligence</a>
-        <span class="nav-sep">◆</span>
         <a href="#integrate">Integrate</a>
-        <span class="nav-sep">◆</span>
         <a href="#field">Field</a>
-        <span class="nav-sep">◆</span>
-        <a href="https://github.com/ClaudevGuy/MotherShip">Repository ↗</a>
+        <a href="https://github.com/ClaudevGuy/MotherShip" class="external">Repository ↗</a>
       </nav>
     </div>
     <hr class="rule">

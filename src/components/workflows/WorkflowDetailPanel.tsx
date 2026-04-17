@@ -85,7 +85,7 @@ export function WorkflowDetailPanel({ workflow, onClose, onRun }: Props) {
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-4">
-            <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={onRun}>
+            <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={onRun}>
               <Play className="size-3.5 mr-1" /> Run Now
             </Button>
             <Button size="sm" variant="outline">
@@ -110,7 +110,7 @@ export function WorkflowDetailPanel({ workflow, onClose, onRun }: Props) {
                 )}
               >
                 {t.label}
-                {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#00d992]" />}
+                {tab === t.id && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f5f1e8]" />}
               </button>
             ))}
           </div>
@@ -138,7 +138,7 @@ export function WorkflowDetailPanel({ workflow, onClose, onRun }: Props) {
                   {workflow.steps.map((step, i) => (
                     <React.Fragment key={step.id}>
                       <div className="flex justify-center py-1">
-                        <div className="w-px h-4 bg-[#00d992]/30" />
+                        <div className="w-px h-4 bg-[#f5f1e8]/30" />
                       </div>
                       <div className="rounded-lg border border-border bg-card px-4 py-3">
                         <div className="flex items-center justify-between">
@@ -224,7 +224,7 @@ export function WorkflowDetailPanel({ workflow, onClose, onRun }: Props) {
                               "inline-flex items-center gap-1 text-xs font-medium",
                               run.status === "completed" ? "text-green-400" :
                               run.status === "failed" ? "text-red-400" :
-                              run.status === "running" ? "text-[#00d992]" :
+                              run.status === "running" ? "text-[#f5f1e8]" :
                               "text-muted-foreground"
                             )}>
                               {run.status === "completed" && <CheckCircle2 className="size-3" />}

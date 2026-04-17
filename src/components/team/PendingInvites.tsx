@@ -18,7 +18,7 @@ interface Invite {
 
 const ROLE_STYLES: Record<string, { bg: string; border: string; text: string }> = {
   admin: { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.3)", text: "#EF4444" },
-  developer: { bg: "rgba(0,217,146,0.12)", border: "rgba(0,217,146,0.3)", text: "#00d992" },
+  developer: { bg: "rgba(245, 241, 232,0.12)", border: "rgba(245, 241, 232,0.3)", text: "#f5f1e8" },
   agent_manager: { bg: "rgba(168,85,247,0.12)", border: "rgba(168,85,247,0.3)", text: "#A855F7" },
   viewer: { bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.12)", text: "#888" },
 };

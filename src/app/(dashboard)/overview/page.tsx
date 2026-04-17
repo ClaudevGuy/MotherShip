@@ -43,19 +43,19 @@ function SavingsBanner() {
   if (!savings || savings.saved <= 0) return null;
 
   return (
-    <div className="rounded-xl border border-[#00d992]/20 bg-[#00d992]/[0.04] p-4 flex items-center gap-3">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/10">
-        <TrendingDown className="size-5 text-[#00d992]" />
+    <div className="rounded-xl border border-[#f5f1e8]/20 bg-[#f5f1e8]/[0.04] p-4 flex items-center gap-3">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#f5f1e8]/10">
+        <TrendingDown className="size-5 text-[#f5f1e8]" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#00d992]">
+        <p className="text-sm font-semibold text-[#f5f1e8]">
           Auto-selection saved you ${savings.saved.toFixed(2)} this month
         </p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
           {savings.percent}% less than always using premium models &middot; Actual: ${savings.actual.toFixed(2)} vs ${savings.tier1.toFixed(2)} at Tier 1
         </p>
       </div>
-      <Link href="/costs" className="text-[10px] text-[#00d992] hover:underline shrink-0">View details</Link>
+      <Link href="/costs" className="text-[10px] text-[#f5f1e8] hover:underline shrink-0">View details</Link>
     </div>
   );
 }

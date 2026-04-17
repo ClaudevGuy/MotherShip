@@ -103,8 +103,8 @@ export default function SettingsPage() {
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Project Identity</h3>
               <div className="space-y-4 max-w-lg">
-                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50" /></div>
-                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#00d992]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#f5f1e8]/50" /></div>
+                <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-[#f5f1e8]/50" /></div>
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">Logo URL</label>
                   <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                       value={projectLogo}
                       onChange={(e) => storeSetProjectLogo(e.target.value)}
                       placeholder="https://example.com/logo.png"
-                      className="h-9 flex-1 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#00d992]/50 placeholder:text-muted-foreground/30"
+                      className="h-9 flex-1 rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-[#f5f1e8]/50 placeholder:text-muted-foreground/30"
                     />
                   </div>
                   <p className="mt-1 text-[11px] text-muted-foreground/50">Appears in the sidebar. Use a square image for best results.</p>
@@ -129,7 +129,7 @@ export default function SettingsPage() {
                 <div><label className="text-xs text-muted-foreground block mb-1">Timezone</label>
                   <select className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none"><option>America/Los_Angeles (PST)</option><option>America/New_York (EST)</option><option>Europe/London (GMT)</option><option>UTC</option></select>
                 </div>
-                <button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
+                <button className="text-xs font-medium text-primary-foreground bg-[#f5f1e8] rounded-lg px-4 py-2 hover:bg-[#f5f1e8]/80" onClick={() => toast.success("Settings saved")}>Save Changes</button>
               </div>
             </GlassPanel>
           )}
@@ -150,7 +150,7 @@ export default function SettingsPage() {
               <GlassPanel padding="lg">
                 <h3 className="text-sm font-semibold text-foreground mb-4">Live Polling</h3>
                 <div className="flex items-center gap-4">
-                  <Switch checked={polling} onCheckedChange={setPolling} className="data-[state=checked]:bg-[#00d992]" />
+                  <Switch checked={polling} onCheckedChange={setPolling} className="data-[state=checked]:bg-[#f5f1e8]" />
                   <span className="text-sm text-foreground">{polling ? "Enabled" : "Disabled"}</span>
                   {polling && (
                     <select value={pollInterval} onChange={(e) => setPollInterval(e.target.value)} className="h-8 rounded-lg border border-border bg-muted/30 px-3 text-xs text-foreground outline-none">
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                   <Switch
                     checked={autoPauseEnabled}
                     onCheckedChange={(v) => { setAutoPauseEnabled(v); localStorage.setItem("mc_auto_pause_enabled", String(v)); toast.success(v ? "Auto-pause enabled" : "Auto-pause disabled"); }}
-                    className="data-[state=checked]:bg-[#00d992]"
+                    className="data-[state=checked]:bg-[#f5f1e8]"
                   />
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Pause if hourly spend exceeds</span>
@@ -212,14 +212,14 @@ export default function SettingsPage() {
                           <td className="px-4 py-2 text-foreground">{n.name}</td>
                           {(["app", "email", "slack"] as const).map((ch) => (
                             <td key={ch} className="px-4 py-2">
-                              <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#00d992]" />
+                              <Switch checked={n[ch]} onCheckedChange={(v) => { const next = [...notifs]; next[i] = { ...next[i], [ch]: v }; setNotifs(next); }} className="data-[state=checked]:bg-[#f5f1e8]" />
                             </td>
                           ))}
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#00d992] rounded-lg px-4 py-2 hover:bg-[#00d992]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
+                  <div className="px-4 py-3"><button className="text-xs font-medium text-primary-foreground bg-[#f5f1e8] rounded-lg px-4 py-2 hover:bg-[#f5f1e8]/80" onClick={() => toast.success("Preferences saved")}>Save Preferences</button></div>
                 </GlassPanel>
               )}
             </div>
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                   ].map((s) => (
                     <div key={s.label}>
                       <div className="flex justify-between text-xs mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-mono text-foreground">{s.value} days</span></div>
-                      <input type="range" min={7} max={90} step={1} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-[#00d992]" />
+                      <input type="range" min={7} max={90} step={1} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="w-full accent-[#f5f1e8]" />
                     </div>
                   ))}
                 </div>
@@ -267,7 +267,7 @@ export default function SettingsPage() {
                     <div><p className="text-sm text-foreground">Require 2FA for all members</p>
                       {!require2FA && <p className="text-[10px] text-amber-400 flex items-center gap-1 mt-0.5"><ShieldX className="size-3" /> 2 team members don&apos;t have 2FA enabled</p>}
                     </div>
-                    <Switch checked={require2FA} onCheckedChange={setRequire2FA} className="data-[state=checked]:bg-[#00d992]" />
+                    <Switch checked={require2FA} onCheckedChange={setRequire2FA} className="data-[state=checked]:bg-[#f5f1e8]" />
                   </div>
                 </div>
               </GlassPanel>
@@ -304,11 +304,11 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <a href="/team" className="flex items-center justify-between text-xs text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/30 transition-colors">
                     <span className="flex items-center gap-2"><Key className="size-3.5" /> API Keys</span>
-                    <span className="text-[10px] text-[#00d992]">Manage in Team &rarr;</span>
+                    <span className="text-[10px] text-[#f5f1e8]">Manage in Team &rarr;</span>
                   </a>
                   <a href="/integrations" className="flex items-center justify-between text-xs text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/30 transition-colors">
                     <span className="flex items-center gap-2"><Link2 className="size-3.5" /> Integrations</span>
-                    <span className="text-[10px] text-[#00d992]">Manage Integrations &rarr;</span>
+                    <span className="text-[10px] text-[#f5f1e8]">Manage Integrations &rarr;</span>
                   </a>
                 </div>
               </GlassPanel>
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                     <h3 className="text-sm font-semibold text-foreground">API Keys</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">Keys for external tools to send events to your dashboard</p>
                   </div>
-                  <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={() => setCreateKeyOpen(true)}>
+                  <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={() => setCreateKeyOpen(true)}>
                     <Key className="size-3.5 mr-1" /> Create Key
                   </Button>
                 </div>
@@ -418,7 +418,7 @@ export default function SettingsPage() {
                     <Key className="size-8 text-muted-foreground/20" />
                     <p className="text-sm font-medium text-muted-foreground">No API keys yet</p>
                     <p className="text-xs text-muted-foreground/50">Create a key to let external tools send data to MOTHERSHIP</p>
-                    <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black mt-1" onClick={() => setCreateKeyOpen(true)}>
+                    <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black mt-1" onClick={() => setCreateKeyOpen(true)}>
                       <Key className="size-3.5 mr-1" /> Create your first key
                     </Button>
                   </div>
@@ -484,14 +484,14 @@ export default function SettingsPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">1</span>
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#f5f1e8]/10 text-[10px] font-bold text-[#f5f1e8] font-mono mt-0.5">1</span>
                       <div>
                         <p className="text-xs font-medium text-foreground">Create an API key above</p>
                         <p className="text-[11px] text-muted-foreground">Select the &quot;Ingest&quot; scope so the key can receive events.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">2</span>
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#f5f1e8]/10 text-[10px] font-bold text-[#f5f1e8] font-mono mt-0.5">2</span>
                       <div>
                         <p className="text-xs font-medium text-foreground">Send events from your app</p>
                         <p className="text-[11px] text-muted-foreground mb-2">After each agent run, POST to the ingest endpoint:</p>
@@ -507,7 +507,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#00d992]/10 text-[10px] font-bold text-[#00d992] font-mono mt-0.5">3</span>
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded bg-[#f5f1e8]/10 text-[10px] font-bold text-[#f5f1e8] font-mono mt-0.5">3</span>
                       <div>
                         <p className="text-xs font-medium text-foreground">See agents on your dashboard</p>
                         <p className="text-[11px] text-muted-foreground">External agents appear automatically on the Overview page with their status, run count, and costs.</p>
@@ -518,8 +518,8 @@ export default function SettingsPage() {
                   <div className="mt-4 pt-3 border-t border-border/30">
                     <p className="text-[10px] text-muted-foreground">
                       <span className="font-medium text-foreground/70">Or use the SDK:</span>{" "}
-                      <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">npm install @mothership/sdk</code>{" "}
-                      — see <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5">packages/sdk/README.md</code> for full docs.
+                      <code className="font-mono text-[#f5f1e8] bg-[#f5f1e8]/10 rounded px-1 py-0.5">npm install @mothership/sdk</code>{" "}
+                      — see <code className="font-mono text-[#f5f1e8] bg-[#f5f1e8]/10 rounded px-1 py-0.5">packages/sdk/README.md</code> for full docs.
                     </p>
                   </div>
                 </GlassPanel>
@@ -532,7 +532,7 @@ export default function SettingsPage() {
                       <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
                         <div className="flex items-center justify-between border-b border-border px-5 py-4">
                           <div className="flex items-center gap-2">
-                            <Key className="size-4 text-[#00d992]" />
+                            <Key className="size-4 text-[#f5f1e8]" />
                             <h2 className="text-sm font-semibold text-foreground">{createdKeyRaw ? "Key Created" : "Create API Key"}</h2>
                           </div>
                           {!createdKeyRaw && <button onClick={handleDoneKey} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>}
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                               <p className="font-mono text-xs text-foreground break-all select-all">{createdKeyRaw}</p>
                             </div>
                             <div className="flex gap-2">
-                              <Button className="flex-1 bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={() => { navigator.clipboard.writeText(createdKeyRaw); toast.success("Copied"); }}>
+                              <Button className="flex-1 bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={() => { navigator.clipboard.writeText(createdKeyRaw); toast.success("Copied"); }}>
                                 <Copy className="size-3.5 mr-1.5" /> Copy Key
                               </Button>
                               <Button variant="outline" onClick={handleDoneKey}>Done</Button>
@@ -599,7 +599,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
                               <Button variant="outline" size="sm" onClick={handleDoneKey} disabled={creatingKey}>Cancel</Button>
-                              <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={handleCreateKey} disabled={creatingKey || !newKeyName.trim()}>
+                              <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={handleCreateKey} disabled={creatingKey || !newKeyName.trim()}>
                                 {creatingKey ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Generating...</> : "Generate Key"}
                               </Button>
                             </div>
@@ -617,7 +617,7 @@ export default function SettingsPage() {
           {section === "Integrations" && (() => {
             const coreServices = [
               { name: "Anthropic (Claude)", desc: "AI model provider — powers agent execution", color: "#CC785C" },
-              { name: "Neon PostgreSQL", desc: "Serverless database — stores all project data", color: "#00d992" },
+              { name: "Neon PostgreSQL", desc: "Serverless database — stores all project data", color: "#f5f1e8" },
             ];
 
             const handleAddInt = async () => {
@@ -660,7 +660,7 @@ export default function SettingsPage() {
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Connected Services ({coreServices.length + integrations.filter((i) => i.status === "connected").length})
                   </p>
-                  <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={() => setAddIntOpen(true)}>
+                  <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={() => setAddIntOpen(true)}>
                     <Plus className="size-3.5 mr-1" /> Add Integration
                   </Button>
                 </div>
@@ -668,7 +668,7 @@ export default function SettingsPage() {
                 {/* Core services (always connected) */}
                 <div className="space-y-2">
                   {coreServices.map((svc) => (
-                    <div key={svc.name} className="flex items-center justify-between rounded-lg border border-[#00d992]/20 bg-[#00d992]/[0.03] px-4 py-3.5">
+                    <div key={svc.name} className="flex items-center justify-between rounded-lg border border-[#f5f1e8]/20 bg-[#f5f1e8]/[0.03] px-4 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${svc.color}15`, color: svc.color }}>
                           {svc.name.charAt(0)}
@@ -686,9 +686,9 @@ export default function SettingsPage() {
 
                   {/* User-added integrations from DB */}
                   {integrations.filter((i) => i.status === "connected").map((integ) => (
-                    <div key={integ.id} className="flex items-center justify-between rounded-lg border border-[#00d992]/20 bg-[#00d992]/[0.03] px-4 py-3.5">
+                    <div key={integ.id} className="flex items-center justify-between rounded-lg border border-[#f5f1e8]/20 bg-[#f5f1e8]/[0.03] px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold bg-[#00d992]/10 text-[#00d992]">
+                        <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold bg-[#f5f1e8]/10 text-[#f5f1e8]">
                           {integ.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -706,7 +706,7 @@ export default function SettingsPage() {
                 {/* Fallback note */}
                 <div className="rounded-lg border border-border/50 bg-muted/5 px-4 py-3">
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground/70">Troubleshooting:</span> If an integration added here isn&apos;t working, you can also add the API key directly to your <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5 text-[10px]">.env</code> file as a fallback. See <code className="font-mono text-[#00d992] bg-[#00d992]/10 rounded px-1 py-0.5 text-[10px]">.env.example</code> for the key names.
+                    <span className="font-medium text-foreground/70">Troubleshooting:</span> If an integration added here isn&apos;t working, you can also add the API key directly to your <code className="font-mono text-[#f5f1e8] bg-[#f5f1e8]/10 rounded px-1 py-0.5 text-[10px]">.env</code> file as a fallback. See <code className="font-mono text-[#f5f1e8] bg-[#f5f1e8]/10 rounded px-1 py-0.5 text-[10px]">.env.example</code> for the key names.
                   </p>
                 </div>
 
@@ -718,7 +718,7 @@ export default function SettingsPage() {
                       <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
                         <div className="flex items-center justify-between border-b border-border px-5 py-4">
                           <div className="flex items-center gap-2">
-                            <Link2 className="size-4 text-[#00d992]" />
+                            <Link2 className="size-4 text-[#f5f1e8]" />
                             <h2 className="text-sm font-semibold text-foreground">Add Integration</h2>
                           </div>
                           <button onClick={() => setAddIntOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
@@ -752,7 +752,7 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
                           <Button variant="outline" size="sm" onClick={() => setAddIntOpen(false)} disabled={addingInt}>Cancel</Button>
-                          <Button size="sm" className="bg-[#00d992] hover:bg-[#00d992]/90 text-black" onClick={handleAddInt} disabled={addingInt || !addIntName.trim() || !addIntKey.trim()}>
+                          <Button size="sm" className="bg-[#f5f1e8] hover:bg-[#f5f1e8]/90 text-black" onClick={handleAddInt} disabled={addingInt || !addIntName.trim() || !addIntKey.trim()}>
                             {addingInt ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Connecting...</> : "Connect"}
                           </Button>
                         </div>
@@ -851,7 +851,7 @@ function formatAuditTimestamp(ts: string) {
 
 function actionColor(action: string): string {
   if (action.endsWith(".delete") || action.includes("remove")) return "text-red-400";
-  if (action.endsWith(".create") || action.endsWith(".add")) return "text-[#00d992]";
+  if (action.endsWith(".create") || action.endsWith(".add")) return "text-[#f5f1e8]";
   if (action.endsWith(".update") || action.endsWith(".change")) return "text-amber-400";
   return "text-muted-foreground";
 }
@@ -915,7 +915,7 @@ function AuditLogSection() {
           <select
             value={actionFilter}
             onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
-            className="h-9 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none focus:border-[#00d992]/40"
+            className="h-9 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none focus:border-[#f5f1e8]/40"
           >
             <option value="">All actions</option>
             {uniqueActions.map((a) => (

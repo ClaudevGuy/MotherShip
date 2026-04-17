@@ -43,7 +43,7 @@ function ChartTooltip({
 
 export function BarChartWidget({
   data,
-  color = "#00d992",
+  color = "#f5f1e8",
   height = 200,
   formatValue = formatNumber,
 }: BarChartWidgetProps) {

@@ -27,15 +27,15 @@ export function AgentStatusGrid() {
             <Link key={s.num} href={s.href} className="block">
               <GlassPanel hover padding="md" className="h-full cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20">
-                    <s.icon className="size-4 text-[#00d992]" />
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-[#f5f1e8]/10 border border-[#f5f1e8]/20">
+                    <s.icon className="size-4 text-[#f5f1e8]" />
                   </div>
                   <span className="text-[10px] font-mono text-muted-foreground/40">Step {s.num}</span>
                 </div>
                 <p className="text-sm font-semibold text-foreground">{s.label}</p>
                 <p className="text-[10px] text-muted-foreground/60 mt-0.5 mb-3">{s.desc}</p>
                 {s.cta && (
-                  <div className="flex items-center gap-1 text-[10px] text-[#00d992]">
+                  <div className="flex items-center gap-1 text-[10px] text-[#f5f1e8]">
                     {s.cta} <ArrowRight className="size-3" />
                   </div>
                 )}

@@ -236,7 +236,7 @@ export function LiveExecutionPanel({ agentId }: Props) {
           className={cn(
             "rounded-lg border bg-[#050507] p-4 max-h-[500px] overflow-y-auto space-y-4 transition-all duration-300",
             isStreaming
-              ? "border-[#00d992]/40 shadow-[0_0_15px_rgba(0,217,146,0.08)]"
+              ? "border-[#f5f1e8]/40 shadow-[0_0_15px_rgba(245, 241, 232,0.08)]"
               : "border-[#3d3a39]"
           )}
         >
@@ -252,7 +252,7 @@ export function LiveExecutionPanel({ agentId }: Props) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={hasMessages ? "Continue the conversation..." : "Enter a task for this agent..."}
-          className="w-full rounded-lg border border-[#3d3a39] bg-[#050507] px-4 py-3 text-sm text-[#f2f2f2] font-mono placeholder:text-[#8b949e] resize-none focus:outline-none focus:border-[#00d992]/50"
+          className="w-full rounded-lg border border-[#3d3a39] bg-[#050507] px-4 py-3 text-sm text-[#f2f2f2] font-mono placeholder:text-[#8b949e] resize-none focus:outline-none focus:border-[#f5f1e8]/50"
           rows={3}
           disabled={isStreaming}
           onKeyDown={(e) => {
@@ -262,10 +262,10 @@ export function LiveExecutionPanel({ agentId }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isStreaming && (
-              <span className="flex items-center gap-1.5 text-[10px] text-[#00d992]">
+              <span className="flex items-center gap-1.5 text-[10px] text-[#f5f1e8]">
                 <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d992] opacity-75" />
-                  <span className="relative inline-flex rounded-full size-2 bg-[#00d992]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f5f1e8] opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2 bg-[#f5f1e8]" />
                 </span>
                 Running...
               </span>
@@ -307,7 +307,7 @@ export function LiveExecutionPanel({ agentId }: Props) {
                 )}
                 <Button
                   size="sm"
-                  className="bg-[#00d992] text-black hover:bg-[#00d992]/90"
+                  className="bg-[#f5f1e8] text-black hover:bg-[#f5f1e8]/90"
                   onClick={handleRun}
                   disabled={!input.trim()}
                 >
@@ -327,8 +327,8 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20">
-          <Bot className="size-3.5 text-[#00d992]" />
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#f5f1e8]/10 border border-[#f5f1e8]/20">
+          <Bot className="size-3.5 text-[#f5f1e8]" />
         </div>
       )}
       <div className={cn("min-w-0 max-w-[85%] space-y-1.5", isUser && "items-end flex flex-col")}>
@@ -336,7 +336,7 @@ function MessageBubble({ message }: { message: Message }) {
           className={cn(
             "rounded-lg px-3 py-2 text-[13px] font-mono whitespace-pre-wrap leading-relaxed",
             isUser
-              ? "bg-[#00d992]/[0.06] border border-[#00d992]/20 text-foreground"
+              ? "bg-[#f5f1e8]/[0.06] border border-[#f5f1e8]/20 text-foreground"
               : "bg-transparent text-[#f2f2f2]"
           )}
         >
@@ -345,7 +345,7 @@ function MessageBubble({ message }: { message: Message }) {
             <span className="text-[#8b949e]">Waiting for response...</span>
           )}
           {message.streaming && (
-            <span className="inline-block w-[2px] h-[14px] bg-[#00d992] ml-0.5 animate-pulse align-middle" />
+            <span className="inline-block w-[2px] h-[14px] bg-[#f5f1e8] ml-0.5 animate-pulse align-middle" />
           )}
           {message.error && (
             <div className="flex items-start gap-2 mt-2 text-red-400 text-[12px]">
@@ -384,7 +384,7 @@ function StatsRow({ stats }: { stats: TurnStats }) {
         ${stats.cost.toFixed(4)}
       </span>
       {savings !== null && savings > 0 && (
-        <span className="flex items-center gap-1 text-[#00d992]">
+        <span className="flex items-center gap-1 text-[#f5f1e8]">
           <TrendingDown className="size-2.5" />
           Saved ${savings.toFixed(4)}
         </span>
@@ -396,7 +396,7 @@ function StatsRow({ stats }: { stats: TurnStats }) {
 
 function TierBadge({ tier, small }: { tier: number; small?: boolean }) {
   const color = tier === 1 ? "bg-purple-500/15 text-purple-400" :
-                tier === 2 ? "bg-[#00d992]/15 text-[#00d992]" :
+                tier === 2 ? "bg-[#f5f1e8]/15 text-[#f5f1e8]" :
                 "bg-green-500/15 text-green-400";
   return (
     <span className={cn(

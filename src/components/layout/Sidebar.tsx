@@ -46,12 +46,12 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
 
       {/* ── Ambient top glow ── */}
       <div className="pointer-events-none absolute top-0 inset-x-0 h-40 z-[1]"
-        style={{ background: "radial-gradient(ellipse 80% 70% at 50% -10%, rgba(0,217,146,0.07) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse 80% 70% at 50% -10%, rgba(245, 241, 232,0.07) 0%, transparent 70%)" }}
       />
 
       {/* ── Right border (gradient fade) ── */}
       <div className="absolute right-0 top-0 bottom-0 w-px z-[15]"
-        style={{ background: "linear-gradient(180deg, rgba(0,217,146,0.15) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.04) 60%, transparent 100%)" }}
+        style={{ background: "linear-gradient(180deg, rgba(245, 241, 232,0.15) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.04) 60%, transparent 100%)" }}
       />
 
       {/* ═══════════ LOGO ═══════════ */}
@@ -69,11 +69,11 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
           <Zap
             className="relative z-10 size-[13px] text-[#f5f1e8]"
             strokeWidth={2.5}
-            fill="rgba(0,217,146,0.3)"
+            fill="rgba(245, 241, 232,0.3)"
           />
           {/* Ambient shadow */}
           <div className="absolute inset-0 rounded-[9px]"
-            style={{ boxShadow: "0 0 14px rgba(0,217,146,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+            style={{ boxShadow: "0 0 14px rgba(245, 241, 232,0.15), inset 0 1px 0 rgba(255,255,255,0.05)" }}
           />
         </div>
 
@@ -177,7 +177,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
                       {/* Icon glow for active */}
                       {isActive && (
                         <div className="absolute inset-0 -m-1 pointer-events-none"
-                          style={{ filter: "blur(6px)", background: "radial-gradient(circle, rgba(0,217,146,0.3) 0%, transparent 70%)" }}
+                          style={{ filter: "blur(6px)", background: "radial-gradient(circle, rgba(245, 241, 232,0.3) 0%, transparent 70%)" }}
                         />
                       )}
                       {/* Badge */}
@@ -227,7 +227,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
       <div className="relative z-20 shrink-0 border-t border-white/[0.04]">
         {/* Subtle top gradient on the border */}
         <div className="absolute inset-x-0 -top-px h-px"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(0,217,146,0.08), transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, rgba(245, 241, 232,0.08), transparent)" }}
         />
 
         <div className="px-2 py-2.5">

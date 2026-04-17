@@ -63,7 +63,7 @@ export function LiveStatsRow() {
         <StatCard label="Active Agents" value={activeAgents} icon={Bot} color="#22C55E" pulse={activeAgents > 0} />
         <StatCard label="Failing Agents" value={failingAgents} icon={AlertCircle} color={failingAgents > 0 ? "#EF4444" : "#8b949e"} pulse={failingAgents > 0} />
         <StatCard label="Cost Today" value={todayCost > 0 ? `$${todayCost.toFixed(2)}` : "$0"} icon={DollarSign} color="#F59E0B" />
-        <StatCard label="Runs Today" value={totalRuns} icon={Activity} color="#00d992" />
+        <StatCard label="Runs Today" value={totalRuns} icon={Activity} color="#f5f1e8" />
       </div>
 
       {/* Collapsible secondary stats */}
@@ -77,9 +77,9 @@ export function LiveStatsRow() {
 
       {showMore && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <StatCard label="API Calls 24h" value={apiCalls > 0 ? apiCalls.toLocaleString() : "0"} icon={Zap} color="#00d992" />
+          <StatCard label="API Calls 24h" value={apiCalls > 0 ? apiCalls.toLocaleString() : "0"} icon={Zap} color="#f5f1e8" />
           <StatCard label="Tokens 24h" value={totalTokens > 0 ? `${(totalTokens / 1000).toFixed(1)}k` : "0"} icon={Coins} color="#A855F7" />
-          <StatCard label="Deploys Live" value={prodDeploys} icon={Rocket} color="#00d992" />
+          <StatCard label="Deploys Live" value={prodDeploys} icon={Rocket} color="#f5f1e8" />
           <StatCard label="Incidents Open" value={openIncidents} icon={AlertTriangle} color="#EF4444" />
         </div>
       )}

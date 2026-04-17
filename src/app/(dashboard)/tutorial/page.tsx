@@ -29,8 +29,10 @@ import { cn } from "@/lib/utils";
 // Progress persists to localStorage (`mothership.tutorial.completed`).
 // ══════════════════════════════════════════════════════════════════════════════
 
-const OXBLOOD = "#d8442e";
-const EMERALD = "#00d992";
+// Monochrome brand + strict semantic palette
+const BRAND = "#f5f1e8";      // warm cream — primary / interactive / active
+const EMERALD = "#00d992";    // semantic success — savings, passing, live
+const OXBLOOD = BRAND;        // alias retained so mini-plates below keep compiling
 const STORAGE_KEY = "mothership.tutorial.completed";
 
 interface TutorialStep {

@@ -351,12 +351,12 @@ function TemplatesRow() {
           return (
             <div
               key={t.name}
-              className="flex flex-col justify-between min-w-[220px] max-w-[220px] rounded-xl border border-border/50 bg-card/40 p-4 hover:border-[#00d992]/20 hover:bg-[#00d992]/[0.02] transition-colors shrink-0"
+              className="flex flex-col justify-between min-w-[220px] max-w-[220px] rounded-xl border border-border/50 bg-card/40 p-4 hover:border-[#f5f1e8]/20 hover:bg-[#f5f1e8]/[0.02] transition-colors shrink-0"
             >
               <div>
                 <div className="flex items-center gap-2.5 mb-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-[#00d992]/8 border border-[#00d992]/15">
-                    <Icon className="size-3.5 text-[#00d992]/70" />
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-[#f5f1e8]/8 border border-[#f5f1e8]/15">
+                    <Icon className="size-3.5 text-[#f5f1e8]/70" />
                   </div>
                   <span className="text-[10px] font-mono text-muted-foreground/40 bg-muted/30 px-1.5 py-0.5 rounded">{t.modelLabel}</span>
                 </div>
@@ -365,7 +365,7 @@ function TemplatesRow() {
               </div>
               <button
                 onClick={() => handleUseTemplate(t)}
-                className="mt-3 w-full h-7 rounded-md border border-[#00d992]/20 bg-[#00d992]/5 text-[10px] font-medium text-[#00d992] hover:bg-[#00d992]/10 transition-colors"
+                className="mt-3 w-full h-7 rounded-md border border-[#f5f1e8]/20 bg-[#f5f1e8]/5 text-[10px] font-medium text-[#f5f1e8] hover:bg-[#f5f1e8]/10 transition-colors"
               >
                 Use Template
               </button>
@@ -428,7 +428,7 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
             <h3 className="text-sm font-semibold text-foreground">Quick Create Agent</h3>
             <p className="text-[10px] text-muted-foreground mt-0.5">Name it, prompt it, run it. Configure more later.</p>
           </div>
-          <Link href="/agents/builder" className="text-[10px] text-[#00d992] hover:underline">
+          <Link href="/agents/builder" className="text-[10px] text-[#f5f1e8] hover:underline">
             Advanced Setup
           </Link>
         </div>
@@ -449,7 +449,7 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
               placeholder="You are an expert..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-[#00d992]/50"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-[#f5f1e8]/50"
               rows={4}
             />
             <p className="text-[10px] text-muted-foreground/50 mt-1">
@@ -468,7 +468,7 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
           </Button>
           <Button
             size="sm"
-            className="bg-[#00d992] text-black hover:bg-[#00d992]/90"
+            className="bg-[#f5f1e8] text-black hover:bg-[#f5f1e8]/90"
             onClick={handleCreate}
             disabled={!name.trim() || !prompt.trim() || creating}
           >
