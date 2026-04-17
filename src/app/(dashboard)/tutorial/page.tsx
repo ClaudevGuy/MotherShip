@@ -1,770 +1,676 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
-  LayoutDashboard, Bot, GitBranch, Rocket, DollarSign,
-  BarChart3, ScrollText, Users, AlertTriangle, Settings,
-  BookOpen, Zap, ChevronRight, Keyboard, FolderOpen,
-  Play, CheckCircle2, Info, Lightbulb, Terminal, Shield,
-  Bell, Palette, Link2, Flame, Activity, TrendingUp, Plug,
-  FileCode, FlaskConical, DollarSign as DollarIcon,
+  Bot,
+  Zap,
+  GitBranch,
+  FileCode,
+  FlaskConical,
+  Shield,
+  TrendingDown,
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  Terminal,
+  Sparkles,
+  Circle,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface Section {
+// ══════════════════════════════════════════════════════════════════════════════
+// Tutorial — a linear 7-step onboarding flow.
+// Each step walks the user from zero to a streaming agent with tier-routed
+// savings, a versioned prompt, an eval, and safeguards turned on.
+// Progress persists to localStorage (`mothership.tutorial.completed`).
+// ══════════════════════════════════════════════════════════════════════════════
+
+const OXBLOOD = "#d8442e";
+const EMERALD = "#00d992";
+const STORAGE_KEY = "mothership.tutorial.completed";
+
+interface TutorialStep {
   id: string;
-  label: string;
+  n: number;
   icon: React.ElementType;
-  color: string;
-  tagline: string;
+  title: string;
+  subtitle: string;
+  readTime: string;
+  ctaLabel: string;
+  ctaHref: string;
+  body: React.ReactNode;
+  plate: React.ReactNode;
 }
 
-// ── Section registry ──────────────────────────────────────────────────────────
-const SECTIONS: Section[] = [
-  { id: "getting-started",  label: "Getting Started",  icon: Zap,            color: "#00d992", tagline: "First steps with MOTHERSHIP" },
-  { id: "overview",         label: "Overview",         icon: LayoutDashboard, color: "#00d992", tagline: "Your real-time command centre" },
-  { id: "ai-agents",        label: "AI Agents",        icon: Bot,            color: "#A78BFA", tagline: "Create, run, and monitor agents" },
-  { id: "workflows",        label: "Workflows",        icon: GitBranch,      color: "#34D399", tagline: "Multi-agent automation pipelines" },
-  { id: "deployments",      label: "Deployments",      icon: Rocket,         color: "#F59E0B", tagline: "Ship and track every release" },
-  { id: "costs",            label: "Costs & Billing",  icon: DollarSign,     color: "#10B981", tagline: "Budget and spend management" },
-  { id: "analytics",        label: "Analytics",        icon: BarChart3,      color: "#60A5FA", tagline: "Agent performance insights" },
-  { id: "logs",             label: "Logs",             icon: ScrollText,     color: "#94A3B8", tagline: "Unified log stream" },
-  { id: "team",             label: "Team",             icon: Users,          color: "#F472B6", tagline: "Members, roles, and permissions" },
-  { id: "incidents",        label: "Incidents",        icon: AlertTriangle,  color: "#EF4444", tagline: "Alert rules and on-call" },
-  { id: "settings",         label: "Settings",         icon: Settings,       color: "#6B7280", tagline: "Project configuration" },
-  { id: "projects",         label: "Projects",         icon: FolderOpen,     color: "#8B5CF6", tagline: "Multi-project workspace" },
-  { id: "prompt-studio",    label: "Prompt Studio",    icon: FileCode,       color: "#00d992", tagline: "Write, test, and version prompts" },
-  { id: "evals",            label: "Evals",            icon: FlaskConical,   color: "#8B5CF6", tagline: "Automated agent quality testing" },
-  { id: "notifications",    label: "Notifications",    icon: Bell,           color: "#F59E0B", tagline: "Real-time alerts and updates" },
-  { id: "external-agents",  label: "External Agents",  icon: Plug,           color: "#F97316", tagline: "Connect agents from any framework" },
-  { id: "shortcuts",        label: "Shortcuts",        icon: Keyboard,       color: "#00d992", tagline: "Navigate without a mouse" },
+// ── Step 1 — The Install ─────────────────────────────────────────────────────
+function PlateTerminal() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden font-mono text-[12.5px] leading-[1.7]">
+      <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2.5">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#e96d5a]" />
+          <span className="size-2.5 rounded-full bg-[#e8b24d]" />
+          <span className="size-2.5 rounded-full bg-[#5fbf7a]" />
+        </div>
+        <span className="text-[10px] tracking-[0.22em] text-white/30 uppercase ml-auto">terminal</span>
+      </div>
+      <div className="px-5 py-4 text-[#e7e2d3] space-y-0.5">
+        <div><span className="text-[#d8442e] font-medium">$</span> <span className="text-[#f0a87a]">git</span> clone <span className="text-[#5fbf7a]">https://github.com/ClaudevGuy/MotherShip</span></div>
+        <div className="pl-5 text-white/45 text-[11.5px]">Cloning into 'MotherShip'… ✓ 18,426 lines</div>
+        <div className="mt-2"><span className="text-[#d8442e] font-medium">$</span> cd MotherShip &amp;&amp; <span className="text-[#f0a87a]">npm</span> install</div>
+        <div className="pl-5 text-white/45 text-[11.5px]">added 827 packages in 14s ✓</div>
+        <div className="mt-2"><span className="text-[#d8442e] font-medium">$</span> <span className="text-[#f0a87a]">npm</span> run dev</div>
+        <div className="pl-5 text-white/55 text-[11.5px]"><span className="text-[#5fbf7a]">▲ Next.js 14</span> — ready on <span className="text-[#f0a87a]">http://localhost:3000</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 2 — Create an Agent ─────────────────────────────────────────────────
+function PlateQuickCreate() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2.5">
+        <Sparkles className="size-3.5" style={{ color: OXBLOOD }} />
+        <span className="text-xs font-medium text-[#e7e2d3]">Create an Agent</span>
+        <span className="ml-auto text-[10px] tracking-[0.2em] text-white/30 uppercase">Modal</span>
+      </div>
+      <div className="p-5 space-y-3.5">
+        <div className="space-y-1.5">
+          <label className="block text-[10px] tracking-[0.2em] text-white/40 uppercase font-mono">Agent name</label>
+          <div className="rounded border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-[#e7e2d3]">Marcus — code reviewer</div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-[10px] tracking-[0.2em] text-white/40 uppercase font-mono">System prompt</label>
+          <div className="rounded border border-white/10 bg-white/[0.02] px-3 py-2 text-[12.5px] text-[#e7e2d3]/80 leading-relaxed font-mono">
+            You review GitHub PRs for SQL injection, hardcoded secrets, and<br/>async error handling. You respond in under 200 words…
+          </div>
+        </div>
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-[10px] tracking-[0.16em] text-[#5fbf7a] uppercase font-mono px-2 py-0.5 rounded border border-[#5fbf7a]/30 bg-[#5fbf7a]/10">
+            Auto-route · Tier 3 likely
+          </span>
+          <span className="ml-auto text-[11px] text-white/50 font-mono">~ $0.002 / run</span>
+        </div>
+        <div className="flex gap-2 pt-2">
+          <button className="flex-1 rounded px-3 py-2 text-xs font-medium text-white/60 border border-white/10">Cancel</button>
+          <button className="flex-1 rounded px-3 py-2 text-xs font-semibold text-white" style={{ background: OXBLOOD }}>Create &amp; Run →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3 — Live Execution ───────────────────────────────────────────────────
+function PlateLiveRun() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
+        <div className="size-8 rounded-full grid place-items-center text-[#0d0c0a] font-serif italic text-[15px] font-medium" style={{ background: `linear-gradient(135deg, ${OXBLOOD}, #e85a3d)` }}>M</div>
+        <div>
+          <div className="text-xs font-medium text-[#e7e2d3]">Marcus — code reviewer</div>
+        </div>
+        <span className="ml-auto text-[10px] tracking-[0.18em] uppercase font-mono px-2 py-0.5 rounded border border-[#5fbf7a]/30 bg-[#5fbf7a]/10 text-[#5fbf7a]">Tier 3 · Haiku</span>
+      </div>
+      <div className="px-5 py-4 space-y-3 text-sm leading-relaxed">
+        <div className="grid grid-cols-[40px_1fr] gap-3 items-start">
+          <span className="text-[10px] tracking-[0.2em] text-white/40 uppercase font-mono mt-0.5">You</span>
+          <div className="text-[#e7e2d3]">Review <span className="px-1.5 py-0.5 rounded bg-[#f0a87a]/10 text-[#f0a87a] font-mono text-[12px]">PR #247</span> — auth rewrite.</div>
+        </div>
+        <div className="grid grid-cols-[40px_1fr] gap-3 items-start">
+          <span className="text-[10px] tracking-[0.2em] uppercase font-mono mt-0.5" style={{ color: OXBLOOD }}>Marcus</span>
+          <div className="text-[#e7e2d3]">
+            Scanning diff — <strong className="font-medium text-white">auth.ts:47</strong> concatenates input into SQL. Use parameterized queries<span className="inline-block w-[7px] h-[14px] ml-0.5 align-text-bottom animate-pulse" style={{ background: OXBLOOD }} />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-4 border-t border-white/5 bg-white/[0.015]">
+        <div className="px-3.5 py-2.5 border-r border-white/5"><div className="text-[9.5px] tracking-[0.18em] text-white/40 uppercase font-mono mb-1">Tokens</div><div className="text-[15px] font-serif text-white">842</div></div>
+        <div className="px-3.5 py-2.5 border-r border-white/5"><div className="text-[9.5px] tracking-[0.18em] text-white/40 uppercase font-mono mb-1">Cost</div><div className="text-[15px] font-serif text-white">$0.0023</div></div>
+        <div className="px-3.5 py-2.5 border-r border-white/5"><div className="text-[9.5px] tracking-[0.18em] text-[#5fbf7a] uppercase font-mono mb-1">Saved</div><div className="text-[15px] font-serif italic" style={{ color: EMERALD }}>$0.0891</div></div>
+        <div className="px-3.5 py-2.5"><div className="text-[9.5px] tracking-[0.18em] text-white/40 uppercase font-mono mb-1">Elapsed</div><div className="text-[15px] font-serif text-white">1.4s</div></div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 4 — See Savings ──────────────────────────────────────────────────────
+function PlateCostChart() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden p-5">
+      <div className="flex items-baseline justify-between mb-3 pb-3 border-b border-white/5">
+        <div>
+          <div className="text-xs font-medium text-[#e7e2d3]">Monthly savings</div>
+          <div className="text-[10px] tracking-[0.18em] text-white/40 uppercase font-mono mt-1">vs pinned-Opus baseline</div>
+        </div>
+        <div className="font-serif italic text-2xl" style={{ color: EMERALD }}>$858</div>
+      </div>
+      <svg viewBox="0 0 400 110" className="w-full">
+        <defs>
+          <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={EMERALD} stopOpacity="0.35"/>
+            <stop offset="100%" stopColor={EMERALD} stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="30" x2="400" y2="30" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 3"/>
+        <line x1="0" y1="60" x2="400" y2="60" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 3"/>
+        <line x1="0" y1="90" x2="400" y2="90" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 3"/>
+        <path d="M0,92 L20,88 L40,84 L60,76 L80,70 L100,60 L120,58 L140,48 L160,52 L180,40 L200,34 L220,30 L240,34 L260,26 L280,22 L300,18 L320,24 L340,18 L360,12 L380,14 L400,8 L400,110 L0,110 Z" fill="url(#area)"/>
+        <path d="M0,92 L20,88 L40,84 L60,76 L80,70 L100,60 L120,58 L140,48 L160,52 L180,40 L200,34 L220,30 L240,34 L260,26 L280,22 L300,18 L320,24 L340,18 L360,12 L380,14 L400,8" fill="none" stroke={EMERALD} strokeWidth="1.5"/>
+        <circle cx="400" cy="8" r="3.5" fill={EMERALD}/>
+      </svg>
+      <div className="grid grid-cols-3 mt-4 pt-3 border-t border-white/5 text-[11px]">
+        <div><div className="text-white/40 font-mono text-[9.5px] tracking-[0.18em] uppercase mb-1">Baseline</div><div className="text-white/80 font-serif text-[15px]">$1,247</div></div>
+        <div><div className="text-white/40 font-mono text-[9.5px] tracking-[0.18em] uppercase mb-1">Actual</div><div className="text-white/80 font-serif text-[15px]">$389</div></div>
+        <div><div className="font-mono text-[9.5px] tracking-[0.18em] uppercase mb-1" style={{ color: EMERALD }}>Recovered</div><div className="font-serif italic text-[15px]" style={{ color: EMERALD }}>68.8%</div></div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 5 — Version the Prompt ──────────────────────────────────────────────
+function PlatePromptStudio() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2.5">
+        <FileCode className="size-3.5" style={{ color: OXBLOOD }} />
+        <span className="text-xs font-medium text-[#e7e2d3]">marcus-reviewer</span>
+        <span className="ml-auto text-[10px] tracking-[0.2em] text-white/30 uppercase font-mono">42 versions</span>
+      </div>
+      <div className="divide-y divide-white/5">
+        {[
+          { v: "v12", tag: "live", tagColor: OXBLOOD, time: "4d ago", note: "Added JWT_SECRET rule", active: true },
+          { v: "v11", tag: null, tagColor: null, time: "8d ago", note: "Tightened tone to under 200 words" },
+          { v: "v10", tag: null, tagColor: null, time: "12d ago", note: "Added async error handler check" },
+          { v: "v9",  tag: null, tagColor: null, time: "2w ago",  note: "Initial prompt" },
+        ].map((row) => (
+          <div key={row.v} className={cn("flex items-center gap-3 px-4 py-2.5", row.active && "bg-[#d8442e]/[0.05]")}>
+            <span className="font-mono text-[11px] text-white/60 w-8">{row.v}</span>
+            {row.tag && (
+              <span className="text-[9px] tracking-[0.18em] uppercase font-mono px-1.5 py-0.5 rounded" style={{ background: `${row.tagColor}20`, color: row.tagColor, border: `1px solid ${row.tagColor}40` }}>{row.tag}</span>
+            )}
+            <span className="text-[12px] text-[#e7e2d3]/80 flex-1 truncate">{row.note}</span>
+            <span className="text-[10px] text-white/35 font-mono">{row.time}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Step 6 — Write an Eval ───────────────────────────────────────────────────
+function PlateEval() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden">
+      <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2.5">
+        <FlaskConical className="size-3.5" style={{ color: OXBLOOD }} />
+        <span className="text-xs font-medium text-[#e7e2d3]">code-review.eval.ts</span>
+        <span className="ml-auto text-[10px] font-mono tracking-[0.18em] uppercase" style={{ color: EMERALD }}>94% passing</span>
+      </div>
+      <div className="p-4 space-y-2">
+        {[
+          { id: "01", desc: "catches SQL injection", pass: true },
+          { id: "02", desc: "catches hardcoded secrets", pass: true },
+          { id: "03", desc: "under 200 words", pass: true },
+          { id: "04", desc: "mentions line numbers", pass: true },
+          { id: "05", desc: "proposes concrete fix", pass: false },
+        ].map((c) => (
+          <div key={c.id} className="flex items-center gap-3 py-1.5 border-b border-white/5 last:border-0">
+            <span className="font-mono text-[10px] text-white/35">{c.id}</span>
+            {c.pass ? <Check className="size-3.5" style={{ color: EMERALD }} /> : <div className="size-3.5 rounded-full border border-[#e96d5a] flex items-center justify-center"><div className="size-1.5 rounded-full bg-[#e96d5a]"/></div>}
+            <span className="text-[12px] text-[#e7e2d3]/85 flex-1">{c.desc}</span>
+            <span className="font-mono text-[10px] text-white/40">42 cases</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Step 7 — Safeguards ──────────────────────────────────────────────────────
+function PlateSafeguards() {
+  return (
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden p-5">
+      <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/5">
+        <Shield className="size-4" style={{ color: OXBLOOD }} />
+        <span className="text-xs font-medium text-[#e7e2d3]">Safeguards</span>
+        <span className="ml-auto text-[10px] tracking-[0.2em] text-white/30 uppercase font-mono">Admin</span>
+      </div>
+      <div className="space-y-3">
+        <div className="p-3 rounded border border-white/10 bg-white/[0.02]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="size-1.5 rounded-full" style={{ background: EMERALD, boxShadow: `0 0 6px ${EMERALD}` }} />
+            <span className="text-[11px] font-medium text-[#e7e2d3]">Audit log · live</span>
+          </div>
+          <div className="text-[10.5px] text-white/50 font-mono leading-relaxed">
+            14:32 · <span className="text-[#e7e2d3]">david@mothership</span> activated prompt v12<br/>
+            14:08 · <span className="text-[#e7e2d3]">david@mothership</span> updated Marcus tier policy
+          </div>
+        </div>
+        <button className="w-full rounded px-3 py-3 text-xs font-semibold text-white border-2 flex items-center justify-center gap-2" style={{ borderColor: "#e96d5a", background: "rgba(233,109,90,0.08)", color: "#e96d5a" }}>
+          <Zap className="size-3.5" />
+          EMERGENCY KILL SWITCH
+        </button>
+        <div className="text-[10px] text-white/40 text-center font-mono tracking-[0.1em] uppercase">
+          Admin · confirmed · logged · under one second
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Steps data ────────────────────────────────────────────────────────────────
+const STEPS: TutorialStep[] = [
+  {
+    id: "install",
+    n: 1,
+    icon: Terminal,
+    title: "Install Mothership on your machine",
+    subtitle: "Three commands. Roughly ninety seconds from clone to dashboard.",
+    readTime: "2 min",
+    ctaLabel: "Open the repository",
+    ctaHref: "https://github.com/ClaudevGuy/MotherShip",
+    body: (
+      <>
+        <p>Mothership is self-hosted by design — no signup, no hosted tier, no email wall. You get the repo, the schema, and the SDK. Your keys stay on your machine.</p>
+        <p>The only requirements are Node 20 and a Postgres database — a local instance, Neon, or Supabase all work. After <code>npm run dev</code>, the console is live on <code>localhost:3000</code>.</p>
+        <p className="text-[11.5px] text-muted-foreground italic">You're already here — which means this step is done. Mark it complete and continue.</p>
+      </>
+    ),
+    plate: <PlateTerminal />,
+  },
+  {
+    id: "create-agent",
+    n: 2,
+    icon: Sparkles,
+    title: "Create your first agent",
+    subtitle: "Name it, give it a system prompt, and let auto-routing pick the model.",
+    readTime: "3 min",
+    ctaLabel: "Open the agent builder",
+    ctaHref: "/agents",
+    body: (
+      <>
+        <p>The quick-create takes two things: a name and a system prompt. That's it. Auto-routing will profile the first few runs and select the cheapest tier that still passes your eval threshold — so you don't have to pick between Opus and Haiku yourself.</p>
+        <p>Templates are available if you want to start from a known pattern (code reviewer, support classifier, document triager). You can always switch the prompt or the model policy after the first run.</p>
+        <p>Cost cap is optional but recommended on first setup — cap per-run tokens or daily spend so a runaway agent can't drain your budget.</p>
+      </>
+    ),
+    plate: <PlateQuickCreate />,
+  },
+  {
+    id: "live-run",
+    n: 3,
+    icon: Zap,
+    title: "Run it — watch the tokens stream",
+    subtitle: "Multi-turn by default. Every token, every decision, every cost visible as it happens.",
+    readTime: "2 min",
+    ctaLabel: "Go to agents",
+    ctaHref: "/agents",
+    body: (
+      <>
+        <p>Click <strong>Run</strong> on any agent and the live panel opens. Tokens stream in real time. The tier badge at the top shows which model the routing engine chose, and why — click it to see the reasoning.</p>
+        <p>The stats bar at the bottom updates every few tokens: input tokens, output tokens, running cost, and — the interesting one — savings versus a pinned Tier 1 policy. That number accrues run by run.</p>
+        <p>Runs are multi-turn. Reply, continue, branch. Every turn is saved to the run record, searchable forever.</p>
+      </>
+    ),
+    plate: <PlateLiveRun />,
+  },
+  {
+    id: "savings",
+    n: 4,
+    icon: TrendingDown,
+    title: "See what auto-routing saved you",
+    subtitle: "The cost dashboard shows baseline vs actual, rolled up per agent, per team, per month.",
+    readTime: "2 min",
+    ctaLabel: "Open Costs",
+    ctaHref: "/costs",
+    body: (
+      <>
+        <p>Auto-routing is the flagship feature — every task is profiled on the way in (complexity, expected output size, production-touching) and routed to the lowest tier that still passes your evals. Opus for the work that matters. Haiku for the classification most teams quietly overpay for.</p>
+        <p>The dashboard shows two numbers: <strong>baseline</strong> (what a pinned-Opus policy would have cost) and <strong>actual</strong> (what Mothership's routing delivered). The delta is the <em>recovered</em> spend.</p>
+        <p>Finance stops asking. Engineering stops defending.</p>
+      </>
+    ),
+    plate: <PlateCostChart />,
+  },
+  {
+    id: "prompt-studio",
+    n: 5,
+    icon: FileCode,
+    title: "Version your prompt like code",
+    subtitle: "Save, diff, activate. Each version is immutable and searchable. Roll back in one click.",
+    readTime: "3 min",
+    ctaLabel: "Open Prompt Studio",
+    ctaHref: "/prompts",
+    body: (
+      <>
+        <p>Prompts drift. One good edit leaves six in its wake — and by the time someone asks "what did we change last Tuesday," the context is gone. Prompt Studio treats prompts the way git treats code: every version saved, every version diffable, every version recoverable.</p>
+        <p>Activating a version changes what the agent uses on the next run — no deploy. You can link a prompt to one agent or many, and upgrade them all in flight.</p>
+        <p>Every activation is audit-logged — who, when, from which version to which.</p>
+      </>
+    ),
+    plate: <PlatePromptStudio />,
+  },
+  {
+    id: "evals",
+    n: 6,
+    icon: FlaskConical,
+    title: "Write your first eval",
+    subtitle: "Two scorers, no theatre — deterministic rules plus Claude-as-judge.",
+    readTime: "4 min",
+    ctaLabel: "Open Evals",
+    ctaHref: "/evals",
+    body: (
+      <>
+        <p>Evals are how you catch regressions before your customers do. Mothership supports two kinds of scorers: <strong>deterministic</strong> (string matches, length bounds, schema checks) and <strong>judge-based</strong> (Claude grading tone, completeness, or adherence).</p>
+        <p>Write a suite as a set of cases — input, expected behavior, scorer. Each run produces a score per case and a rollup for the suite. Attach a suite to a prompt version and the score shows up on the Prompt Studio timeline next to that version.</p>
+        <p>Routing uses eval scores to decide when Haiku can substitute for Opus on a given task. 94% parity on 42 cases? Haiku is allowed.</p>
+      </>
+    ),
+    plate: <PlateEval />,
+  },
+  {
+    id: "safeguards",
+    n: 7,
+    icon: Shield,
+    title: "Turn on the safeguards",
+    subtitle: "An audit log that logs everything, and a kill switch that stops everything.",
+    readTime: "2 min",
+    ctaLabel: "Open Settings",
+    ctaHref: "/settings",
+    body: (
+      <>
+        <p>Two settings you should turn on before your first real run. <strong>Audit log</strong> is already on — every create, update, delete is recorded with who, when, and what. Search it in Settings → Audit.</p>
+        <p>The <strong>kill switch</strong> is for the moment an agent decides to recurse forever at 3 a.m. or a prompt change drops a zero off a pricing field. One admin-scoped button stops every running agent in under a second. Confirmed. Logged. Quiet.</p>
+        <p>That's the tutorial. You've created an agent, watched it stream, seen it save money, versioned its prompt, written an eval, and turned on the safeguards. Open the overview and get to work.</p>
+      </>
+    ),
+    plate: <PlateSafeguards />,
+  },
 ];
 
-// ── Small reusable components ──────────────────────────────────────────────────
-function Callout({ icon: Icon, color, title, children }: { icon: React.ElementType; color: string; title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-3.5 rounded-lg border p-4" style={{ borderColor: `${color}25`, background: `${color}08` }}>
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg mt-0.5" style={{ background: `${color}15` }}>
-        <Icon className="size-4" style={{ color }} />
-      </div>
-      <div className="space-y-1 min-w-0">
-        <p className="text-xs font-semibold text-foreground">{title}</p>
-        <div className="text-xs text-muted-foreground leading-relaxed">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/10 border border-[#00d992]/20 text-[11px] font-bold text-[#00d992] font-mono">{n}</div>
-        <div className="w-px flex-1 bg-[#00d992]/10 mt-1.5" />
-      </div>
-      <div className="space-y-1.5 pb-5 flex-1">
-        <p className="text-sm font-semibold text-foreground">{title}</p>
-        <div className="text-xs text-[#b8b3b0] leading-relaxed">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function FeatureRow({ icon: Icon, label, desc }: { icon: React.ElementType; label: string; desc: string }) {
-  return (
-    <div className="flex items-start gap-3.5 p-3.5 rounded-lg border border-[#3d3a39]/60 bg-[#101010] hover:border-[#3d3a39] transition-colors">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#00d992]/8 border border-[#00d992]/15 mt-0.5">
-        <Icon className="size-3.5 text-[#00d992]/70" />
-      </div>
-      <div className="space-y-0.5">
-        <p className="text-[13px] font-semibold text-[#f2f2f2]">{label}</p>
-        <p className="text-xs text-[#b8b3b0] leading-relaxed">{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="inline-flex items-center rounded-md border border-[#3d3a39] bg-[#101010] px-1.5 py-0.5 font-mono text-[10px] text-[#00d992] mx-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.3)]">{children}</kbd>
-  );
-}
-
-function SectionCard({ section, active, onClick }: { section: Section; active: boolean; onClick: () => void }) {
-  const Icon = section.icon;
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-start gap-3 rounded-lg border p-3.5 text-left transition-all duration-150",
-        active
-          ? "border-[#00d992]/30 bg-[#00d992]/[0.04] shadow-[0_0_12px_rgba(0,217,146,0.06)]"
-          : "border-[#3d3a39]/60 bg-[#101010] hover:border-[#3d3a39] hover:bg-[#101010]/80"
-      )}
-    >
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg mt-0.5" style={{ background: `${section.color}12`, border: `1px solid ${section.color}20` }}>
-        <Icon className="size-3.5" style={{ color: section.color }} />
-      </div>
-      <div>
-        <p className="text-xs font-semibold text-[#f2f2f2] leading-tight">{section.label}</p>
-        <p className="text-[10px] text-[#8b949e] leading-tight mt-0.5">{section.tagline}</p>
-      </div>
-    </button>
-  );
-}
-
-// ── Section content ────────────────────────────────────────────────────────────
-function GettingStarted() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        MOTHERSHIP is an AI-powered operations dashboard. It gives your team a single pane of glass to deploy agents, ship code, monitor costs, and respond to incidents — all in one place.
-      </p>
-      <div className="space-y-3">
-        <Step n={1} title="Create your first project">
-          Click the project name at the top of the left sidebar. A dropdown opens — choose <strong className="text-foreground">Add project</strong>. Give it a name (e.g. &ldquo;My App&rdquo;) and press <em>Create Project</em>. The dashboard clears to a clean slate for that project.
-        </Step>
-        <Step n={2} title="Connect your database">
-          Go to <strong className="text-foreground">Settings → General</strong> and add your project name and logo. Then head to <strong className="text-foreground">Settings → Integrations</strong> and connect GitHub, Slack, or PagerDuty so alerts flow to the right channels.
-        </Step>
-        <Step n={3} title="Deploy your first agent">
-          Click <strong className="text-foreground">Deploy Agent</strong> on the Overview page (or press <Kbd>g</Kbd><Kbd>a</Kbd> then use the builder). Fill in the agent name, model, and what it should do. Hit Deploy — it appears on the Overview grid within seconds.
-        </Step>
-        <Step n={4} title="Set a budget alert">
-          Go to <strong className="text-foreground">Costs &amp; Billing</strong> and set a daily budget. When spend crosses the threshold you&apos;ll get notified via whichever channels are enabled in <strong className="text-foreground">Settings → Notifications</strong>.
-        </Step>
-        <Step n={5} title="Invite your team">
-          Go to <strong className="text-foreground">Team</strong> and invite members by email. Assign roles (Viewer, Member, Admin, Owner) to control who can deploy agents or kill them in an emergency.
-        </Step>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Power tip">
-        Hold <Kbd>g</Kbd> and then press a letter to jump to any section instantly — no mouse needed. Press <Kbd>?</Kbd> to see the full shortcut map.
-      </Callout>
-    </div>
-  );
-}
-
-function OverviewSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        The Overview is your mission-critical home screen. It refreshes automatically and surfaces the metrics that matter most: agent health, active incidents, spend velocity, and recent deployments.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What you see</p>
-        <div className="space-y-2">
-          <FeatureRow icon={Activity} label="System Health Bar" desc="Aggregated health across all services. Green = all good. Amber = degraded. Red = outage. Click any segment to jump to Incidents." />
-          <FeatureRow icon={TrendingUp} label="Live Stats Row" desc="Four real-time counters: Running Agents, Active Deployments, Open Incidents, and Today's AI Spend. These update every 5 seconds." />
-          <FeatureRow icon={Zap} label="Quick Actions" desc="Four one-click shortcuts: Deploy Agent, Run Eval, New Workflow, and the Emergency Kill Switch (red). Kill Switch stops all running agents immediately." />
-          <FeatureRow icon={Bot} label="Agent Status Grid" desc="Every deployed agent as a card: name, model, status badge (Running / Idle / Error), last run time, and cost today. Click a card to open the agent detail view." />
-          <FeatureRow icon={DollarSign} label="Cost Burn Chart" desc="7-day rolling spend plotted as an area chart. The dotted line is your daily budget. Hovering a point shows the exact date and amount." />
-          <FeatureRow icon={AlertTriangle} label="Top Issues" desc="The three most recent open or investigating incidents, ranked by severity. Click any row to open the full incident timeline." />
-          <FeatureRow icon={Rocket} label="Recent Deploys" desc="Last five deployments across all environments: status, branch, author, and how long ago. Green = success, red = failed, blue = in progress." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Auto-refresh">
-        Live Polling is on by default (every 5 s). You can slow it down or turn it off entirely in <strong className="text-foreground">Settings → Appearance → Live Polling</strong>.
-      </Callout>
-    </div>
-  );
-}
-
-function AIAgentsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        AI Agents are autonomous workers that execute tasks on your behalf — code reviews, bug hunting, test generation, deployment checks, and more. Each agent runs on a model of your choice and reports back costs and outcomes.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Agent lifecycle</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Play} label="Deploying" desc="Agent is being provisioned. Usually takes under 10 seconds. Status turns Running once it starts executing tasks." />
-          <FeatureRow icon={CheckCircle2} label="Running" desc="Actively executing. You'll see live token usage, elapsed time, and current task in the detail view." />
-          <FeatureRow icon={Activity} label="Idle" desc="Finished its last run, waiting for the next trigger (schedule, webhook, or manual)." />
-          <FeatureRow icon={AlertTriangle} label="Error" desc="Failed — click the agent card to see the full error trace and retry or edit the config." />
-        </div>
-      </div>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How to create an agent</p>
-        <Step n={1} title="Click Deploy Agent or use a Template">From the Overview quick actions, or go to AI Agents and click <strong className="text-foreground">Create Agent</strong>. You can also use one of the 8 pre-built templates (Code Reviewer, Security Scanner, Test Writer, etc.) — click <strong className="text-foreground">Use Template</strong> to pre-fill the builder instantly.</Step>
-        <Step n={2} title="Choose a model and strategy">Select Claude, GPT-4, or Gemini. Set the model strategy: <strong className="text-foreground">Auto</strong> (picks the best tier per task), <strong className="text-foreground">Cost-First</strong> (always cheapest), or <strong className="text-foreground">Quality-First</strong> (always best model).</Step>
-        <Step n={3} title="Write or link a system prompt">Write the prompt directly, or choose <strong className="text-foreground">Use from Prompt Studio</strong> to link a versioned prompt. Linked prompts auto-update when you activate a new version in Prompt Studio.</Step>
-        <Step n={4} title="Set triggers and schedule">Agents can run on a schedule (cron), on webhook events (GitHub PR opened), or manually on demand.</Step>
-        <Step n={5} title="Set a cost cap">Optional but recommended. Set a per-run token limit or daily spend cap so a runaway agent can&apos;t drain your budget.</Step>
-      </div>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Agent templates</p>
-        <p className="text-xs text-muted-foreground/60 leading-relaxed">
-          The Agents page shows a horizontally scrollable row of 8 pre-built templates: Code Reviewer, Security Scanner, Documentation Writer, Data Pipeline Agent, Test Writer, Performance Optimizer, API Designer, and Incident Responder. Each comes with a full system prompt, recommended model, and strategy — click <strong className="text-foreground">Use Template</strong> to pre-fill the Agent Builder and deploy in seconds.
-        </p>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Run Eval">
-        Use <strong className="text-foreground">Evals</strong> to create automated test suites for your agents. Define test cases with pass criteria and run them to measure quality over time. Access via the sidebar or the Overview &ldquo;Run Eval&rdquo; button.
-      </Callout>
-    </div>
-  );
-}
-
-function WorkflowsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Workflows chain multiple agents together into a pipeline. The output of one agent feeds as input to the next — enabling complex automations like &ldquo;analyse PR → write tests → run tests → comment results&rdquo;.
-      </p>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Workflow anatomy</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={GitBranch} label="Steps" desc="Each step is one agent. Steps run sequentially — the output of step N becomes the input of step N+1. This creates a real pipeline." />
-          <FeatureRow icon={Play} label="Trigger" desc="Workflows can be triggered manually, on a schedule, or via an incoming webhook (e.g. a GitHub push event)." />
-          <FeatureRow icon={CheckCircle2} label="Real execution" desc="Clicking Run calls each agent via the Anthropic API in sequence. Every run creates a WorkflowRun record with step-level results, cost, and duration." />
-          <FeatureRow icon={AlertTriangle} label="Error handling" desc="Set each step to 'halt on error' or 'continue'. If a step fails, the run is marked as failed with the error message." />
-        </div>
-      </div>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Example: PR review pipeline</p>
-        <div className="rounded-xl border border-border bg-muted/20 p-4 font-mono text-[11px] text-muted-foreground space-y-1.5 leading-relaxed">
-          <p><span className="text-[#00d992]">Step 1</span> — SecurityScanner: analyse diff for vulnerabilities</p>
-          <p className="pl-4 text-muted-foreground/50">↓ output: {"{"} issues: [...] {"}"}</p>
-          <p><span className="text-[#00d992]">Step 2</span> — TestWriter: write tests for changed functions</p>
-          <p className="pl-4 text-muted-foreground/50">↓ output: {"{"} tests: &quot;...&quot; {"}"}</p>
-          <p><span className="text-[#00d992]">Step 3</span> — PRCommenter: post summary as PR comment</p>
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="New Workflow shortcut">
-        Click <strong className="text-foreground">New Workflow</strong> on the Overview page to create a workflow without leaving your current context. You can also navigate directly with <Kbd>g</Kbd><Kbd>w</Kbd>.
-      </Callout>
-    </div>
-  );
-}
-
-function DeploymentsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        The Deployments section tracks every release across all environments — production, staging, and preview. It shows who deployed what, from which branch, and the live status.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What&apos;s tracked</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Rocket} label="Deployment history" desc="Every deploy with author, commit SHA, branch, target environment, and duration. Click any row for the full build log." />
-          <FeatureRow icon={Activity} label="Environment health" desc="Live status of Production, Staging, and Preview environments: healthy, degraded, or down — updated in real time." />
-          <FeatureRow icon={GitBranch} label="Feature flags" desc="Toggle features on/off per environment without redeploying. Useful for gradual rollouts and A/B tests." />
-          <FeatureRow icon={AlertTriangle} label="Rollback" desc="One-click rollback to any previous successful deployment. The rollback itself is tracked as a new deployment event." />
-        </div>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Connect your CI/CD">
-        Go to <strong className="text-foreground">Settings → Integrations</strong> and connect GitHub or your CI provider. Deployment events will then be captured automatically on every push to main.
-      </Callout>
-    </div>
-  );
-}
-
-function CostsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Costs & Billing keeps your AI spend under control. Set budgets, see breakdowns by agent and model, download invoices, and get alerted before you go over.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Key features</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={DollarSign} label="Daily cost burn" desc="7-day area chart vs your daily budget line. Spot trends before they become problems." />
-          <FeatureRow icon={Bot} label="Cost by agent" desc="Bar chart showing which agents are the most expensive. Great for identifying runaway agents or inefficient prompts." />
-          <FeatureRow icon={TrendingUp} label="Model breakdown" desc="See spend split by provider/model so you can make informed decisions about which model to use for which task." />
-          <FeatureRow icon={Bell} label="Budget alerts" desc="Set a daily budget. When spend crosses it you'll be notified via Slack, email, or in-app — whichever you've enabled." />
-          <FeatureRow icon={Shield} label="Invoices" desc="Download monthly PDF invoices from the Billing tab. Useful for accounting and expense reporting." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Per-agent caps">
-        You can set a per-agent daily spend cap in the agent builder. This is separate from the global budget alert and hard-stops the agent if hit.
-      </Callout>
-    </div>
-  );
-}
-
-function AnalyticsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Agent Analytics gives you four lenses on how your agents are performing: execution outcomes (Performance), spend efficiency (Costs), model usage (Usage), and reliability (Agent Health).
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Four tabs</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Activity} label="Performance" desc="Total runs, success rate %, average run duration, and a daily chart of successful vs failed runs. Use this to catch reliability regressions early." />
-          <FeatureRow icon={DollarSign} label="Costs" desc="Cost per run, most expensive agent, cost efficiency score, and a per-agent spend bar chart. Use this to optimise where your budget goes." />
-          <FeatureRow icon={BarChart3} label="Usage" desc="Token consumption over time (input vs output), average tokens per run, and a model breakdown showing how many calls hit each provider." />
-          <FeatureRow icon={AlertTriangle} label="Agent Health" desc="Health score (0-100) per agent based on error rate, with sparkline trends. Drift detection flags agents whose score drops 10+ points below their average with an amber badge." />
-        </div>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Drift detection">
-        The Agent Health tab automatically detects performance drift. If an agent&apos;s health score drops significantly, it shows a &ldquo;Drift&rdquo; badge — investigate before it impacts users.
-      </Callout>
-    </div>
-  );
-}
-
-function LogsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        The Logs page is a unified stream of everything that happened across your project: agent runs, API calls, deployment events, authentication, and system errors.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Log features</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Terminal} label="Live tail" desc="New log lines stream in as they happen. Toggle the live mode button to pause if you need to read without the screen jumping." />
-          <FeatureRow icon={ScrollText} label="Filtering" desc="Filter by level (info / warn / error), source (agent name, service), or search free-text. Filters are additive — combine them freely." />
-          <FeatureRow icon={Activity} label="Log levels" desc="Error (red) → Warn (amber) → Info (muted) → Debug (dimmed). Set the log level per agent in its config to reduce noise." />
-          <FeatureRow icon={Shield} label="Retention" desc="Configurable in Settings → Data & Privacy. Default is 30 days. Extend for compliance needs or reduce to save storage." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Debugging tip">
-        When an agent errors, jump straight to Logs and filter by that agent&apos;s name. The full exception trace and the input that caused it will be there.
-      </Callout>
-    </div>
-  );
-}
-
-function TeamSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        The Team page manages who has access to your project and what they can do. Roles are scoped per project — the same user can be an Admin on one project and a Viewer on another.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Roles</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Shield} label="Owner" desc="Full control. Can delete the project, manage billing, and transfer ownership. Only one owner per project." />
-          <FeatureRow icon={Settings} label="Admin" desc="Can invite/remove members, create and kill agents, configure integrations, and manage incidents." />
-          <FeatureRow icon={Users} label="Member" desc="Can deploy agents, trigger workflows, and view all data. Cannot manage team or billing." />
-          <FeatureRow icon={ScrollText} label="Viewer" desc="Read-only access. Can see dashboards and logs but cannot make any changes." />
-        </div>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Inviting members">
-        Enter the person&apos;s email and select their role. They&apos;ll receive an email invite. If <strong className="text-foreground">ALLOW_REGISTRATION</strong> is disabled in your env, invites are the only way to access the system.
-      </Callout>
-    </div>
-  );
-}
-
-function IncidentsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        The Incidents page is your war room for outages and anomalies. It tracks every incident from detection to resolution, with a full timeline of actions and an on-call schedule so the right person is always paged.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Incident flow</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Flame} label="Open" desc="Incident detected — either by an alert rule or manually created. Assignee is notified via configured channels." />
-          <FeatureRow icon={Activity} label="Investigating" desc="Someone has acknowledged and is actively working the incident. Timeline entries track their findings." />
-          <FeatureRow icon={CheckCircle2} label="Resolved" desc="Issue is fixed and confirmed stable. Resolution notes are added to the timeline for post-mortems." />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Alert rules</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Bell} label="Creating a rule" desc="Choose a metric (e.g. api.error_rate), operator (gt / lt / eq), threshold, and notification channels. The rule fires whenever the condition is met." />
-          <FeatureRow icon={AlertTriangle} label="Severity" desc="P1 (critical, page immediately), P2 (high, notify within 15 min), P3 (medium, email digest). Set severity when creating the incident or rule." />
-          <FeatureRow icon={Users} label="On-call schedule" desc="Define who is on-call each week in the On-Call tab. The scheduled person is auto-assigned when a P1 alert fires." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Red badge in sidebar">
-        The number on the Incidents nav item shows open + investigating incidents. It turns red when any P1 is open — you can&apos;t miss it.
-      </Callout>
-    </div>
-  );
-}
-
-function SettingsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Settings is the control panel for your project. Everything from the project name and logo to security policies and integrations lives here.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Sections</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Settings} label="General" desc="Project name, description, logo URL, and timezone. The name and logo appear in the sidebar project switcher." />
-          <FeatureRow icon={Palette} label="Appearance" desc="Switch between dark, light, and system themes. Enable or disable live polling and set the interval." />
-          <FeatureRow icon={Bell} label="Notifications" desc="Configure the cost anomaly auto-pause: set a threshold for hourly agent spend. When exceeded, the agent is paused automatically and you get a notification." />
-          <FeatureRow icon={Shield} label="Security" desc="Session timeout length, require 2FA for the whole project, SSO configuration, and recent login activity." />
-          <FeatureRow icon={Activity} label="API Keys" desc="Create API keys with scopes (read, write, ingest) to let external tools and agents send data to MOTHERSHIP. Keys start with mc_ and can be revoked." />
-          <FeatureRow icon={Link2} label="Integrations" desc="Connect AI providers (Anthropic, OpenAI, Google AI) by adding API keys. Keys are encrypted at rest. Also connect GitHub, Slack, and other services." />
-          <FeatureRow icon={AlertTriangle} label="Danger Zone" desc="Destructive actions: pause all agents, reset settings, export all data, or delete the project. All require confirmation." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Logo tip">
-        Upload your logo to any public image host (e.g. Cloudinary, GitHub raw, or your own CDN) and paste the URL into Settings → General → Logo URL. It appears instantly in the sidebar.
-      </Callout>
-    </div>
-  );
-}
-
-function ProjectsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        MOTHERSHIP is multi-project from day one. Each project gets its own completely isolated dashboard — separate agents, deployments, incidents, costs, and team members.
-      </p>
-      <div className="space-y-3">
-        <Step n={1} title="Open the project switcher">
-          Click the project name at the very top of the sidebar (below the MOTHERSHIP logo). A panel drops down showing all your projects.
-        </Step>
-        <Step n={2} title="Create a new project">
-          Click <strong className="text-foreground">Add project</strong> at the bottom of the panel. Enter a name and optional description. The dashboard immediately clears to a clean, empty state for the new project.
-        </Step>
-        <Step n={3} title="Switch between projects">
-          Click any project name in the dropdown. All dashboard data instantly switches to that project&apos;s context — agents, costs, incidents, everything.
-        </Step>
-        <Step n={4} title="Customise the project">
-          Head to <strong className="text-foreground">Settings → General</strong> to add a logo URL and description for the active project. These are saved per-project and appear in the switcher dropdown.
-        </Step>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Where projects are stored">
-        Projects are saved to your browser&apos;s localStorage, so they persist across page refreshes. In a full deployment, projects are stored in the database and tied to your user account — accessible from any device.
-      </Callout>
-    </div>
-  );
-}
-
-function PromptStudioSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Prompt Studio is a dedicated environment for writing, testing, versioning, and managing the system prompts that power your AI agents. Instead of editing prompts inline in the agent config, you manage them centrally — change a prompt once and it propagates to every agent using it.
-      </p>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Three tabs</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Terminal} label="Editor" desc="Monospace editor with line numbers, live token counter, and inline name editing. Each save creates a new version — nothing is ever overwritten." />
-          <FeatureRow icon={Play} label="Playground" desc="Test your prompt against any Claude model (Haiku, Sonnet, Opus) with adjustable temperature and max tokens. Output streams in real-time in a terminal panel with cost and token stats." />
-          <FeatureRow icon={Activity} label="Versions" desc="Full version history with side-by-side diff viewer (green for added, red for removed, amber for changed). Activate any version, or restore an old version to the editor." />
-        </div>
-      </div>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Agent linking</p>
-        <Step n={1} title="Create a prompt in Prompt Studio">Write and test your system prompt. Save it — it becomes v1 and is automatically active.</Step>
-        <Step n={2} title="Link it to an agent">In the Agent Builder (Step 3 — System Prompt), choose &ldquo;Use from Prompt Studio&rdquo; and select your prompt from the dropdown.</Step>
-        <Step n={3} title="Update without touching the agent">When you save a new version in Prompt Studio and activate it, the agent automatically uses the new version on its next run. No agent config change needed.</Step>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Version notes">
-        Always add a note when saving a new version (e.g. &ldquo;Added error handling instructions&rdquo;). This makes it easy to find and compare versions later.
-      </Callout>
-    </div>
-  );
-}
-
-function EvalsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Evals let you create automated test suites that measure and track agent quality over time. Define test cases with pass criteria, run them against an agent, and see a scored report showing exactly which cases passed or failed and why.
-      </p>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How it works</p>
-        <Step n={1} title="Create an eval suite">Give it a name and select which agent to test. Use the 3-step wizard to set everything up.</Step>
-        <Step n={2} title="Add test cases">Each case has an input (what to send the agent) and one or more pass criteria (what the output must satisfy).</Step>
-        <Step n={3} title="Run the suite">Click &ldquo;Run&rdquo; — each case is sent to the agent, the output is scored against all criteria, and you get an overall score (0-100%).</Step>
-        <Step n={4} title="Track quality over time">Run the suite regularly. The score history shows trends — catch regressions before they reach users.</Step>
-      </div>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Scoring methods</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={CheckCircle2} label="String matching" desc="Fast checks like 'mentions pricing', 'under 100 words', 'includes code block', 'starts with', 'does not mention [X]'. Instant, deterministic." />
-          <FeatureRow icon={Shield} label="AI Judge" desc="For complex criteria like 'is professional tone' or 'answers the question correctly'. Uses claude-haiku-4-5 as an impartial judge — responds PASS or FAIL." />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Results breakdown</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Activity} label="Score history" desc="Bar chart of scores across runs. See trends and catch regressions at a glance." />
-          <FeatureRow icon={AlertTriangle} label="Failed cases" desc="Auto-expanded in results view. Shows exactly which criteria failed, the full agent output, and whether it was string match or AI judge." />
-          <FeatureRow icon={TrendingUp} label="Notifications" desc="Auto-notification on completion: green if ≥80%, amber if 60-79%, red if under 60%." />
-        </div>
-      </div>
-      <Callout icon={Info} color="#60A5FA" title="Run Eval from Overview">
-        The &ldquo;Run Eval&rdquo; button on the Overview quick actions lets you pick a suite and run it without leaving the home screen.
-      </Callout>
-    </div>
-  );
-}
-
-function NotificationsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        MOTHERSHIP has a built-in notification system that alerts you to important events — agent runs, workflow completions, eval results, and cost threshold breaches. Notifications appear in the bell icon in the topbar.
-      </p>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What triggers notifications</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={CheckCircle2} label="Agent run completed" desc="Agent name, duration, and cost. Links to the agent detail page." />
-          <FeatureRow icon={AlertTriangle} label="Agent run failed" desc="Agent name and error message. Click to investigate." />
-          <FeatureRow icon={Activity} label="Workflow completed/failed" desc="Workflow name, step count, and duration or failure point." />
-          <FeatureRow icon={FlaskConical} label="Eval completed" desc="Suite name and score. Color-coded: green ≥80%, amber 60-79%, red <60%." />
-          <FeatureRow icon={DollarIcon} label="Agent auto-paused" desc="Triggered when hourly spend exceeds your threshold. Shows the spend amount." />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Features</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Bell} label="Unread badge" desc="Red badge on the bell icon shows unread count (1-9, or 9+). Pulses when new notifications arrive." />
-          <FeatureRow icon={Activity} label="30-second polling" desc="Notifications refresh every 30 seconds. No manual refresh needed." />
-          <FeatureRow icon={CheckCircle2} label="Mark all read" desc="One-click button in the notification panel header." />
-        </div>
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="Cost anomaly auto-pause">
-        Go to <strong className="text-foreground">Settings → Notifications</strong> to configure the auto-pause threshold. When an agent&apos;s hourly spend exceeds the limit, it&apos;s automatically paused and you get a warning notification.
-      </Callout>
-    </div>
-  );
-}
-
-function ExternalAgentsSection() {
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Already running AI agents with CrewAI, LangGraph, AutoGen, or your own custom framework? You don&apos;t need to rebuild them inside MOTHERSHIP. Connect them in minutes and get full visibility — costs, performance, and status — all in one dashboard.
-      </p>
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">How it works</p>
-        <Step n={1} title="Create an API key">
-          Go to <strong className="text-foreground">Settings → API Keys</strong> and click <strong className="text-foreground">Create API Key</strong>. Give it a name (e.g. &ldquo;My CrewAI App&rdquo;) and select the <strong className="text-foreground">Ingest</strong> scope. Copy the key — it starts with <code className="text-[#00d992] text-[11px]">mc_</code>.
-        </Step>
-        <Step n={2} title="Add a few lines to your existing code">
-          After each agent run in your app, send a POST request to MOTHERSHIP&apos;s ingest endpoint. This tells the dashboard what happened — which agent ran, how long it took, and what it cost.
-        </Step>
-        <Step n={3} title="See your agents on the dashboard">
-          External agents appear automatically on the <strong className="text-foreground">Overview</strong> page. You&apos;ll see their run history, costs, and performance alongside any agents you created natively in MOTHERSHIP.
-        </Step>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Option A — cURL / any language</p>
-        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`curl -X POST https://your-dashboard.com/api/events/ingest \\
-  -H "Authorization: Bearer mc_your_key" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "type": "agent.run.completed",
-    "source": "my-app",
-    "agent": { "id": "agent-1", "name": "My Agent" },
-    "data": { "cost": 0.05, "duration": 3000 }
-  }'`}</div>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Option B — JavaScript / TypeScript SDK</p>
-        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`npm install @mothership/sdk`}</div>
-        <div className="rounded-xl border border-border bg-[#050507] p-4 font-mono text-[11px] text-[#f2f2f2] overflow-x-auto whitespace-pre leading-relaxed">{`import { Mothership } from '@mothership/sdk'
-
-const mc = new Mothership({
-  url: 'https://your-dashboard.com',
-  apiKey: 'mc_your_key',
-  source: 'my-crewai-app',
-})
-
-// After each agent run:
-await mc.trackRun({
-  agent: { id: 'agent-1', name: 'Research Agent' },
-  status: 'completed',
-  cost: 0.05,
-  duration: 3000,
-})`}</div>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Supported event types</p>
-        <div className="rounded-xl border border-border bg-card/50 divide-y divide-border/50">
-          <FeatureRow icon={Play} label="agent.run.started" desc="Agent began executing. Marks it as Running on the dashboard." />
-          <FeatureRow icon={CheckCircle2} label="agent.run.completed" desc="Agent finished successfully. Includes cost, duration, and token usage." />
-          <FeatureRow icon={AlertTriangle} label="agent.run.failed" desc="Agent errored. Include an error message so it shows up in the Logs page." />
-          <FeatureRow icon={DollarSign} label="agent.cost.reported" desc="Report cost data separately from run events — useful for batch billing reconciliation." />
-        </div>
-      </div>
-
-      <Callout icon={Lightbulb} color="#F59E0B" title="Works with any framework">
-        CrewAI, LangGraph, AutoGen, Semantic Kernel, custom Python scripts — anything that can make an HTTP request can report to MOTHERSHIP. You only need to add 3-5 lines of code to your existing agent runner.
-      </Callout>
-
-      <Callout icon={Info} color="#60A5FA" title="API key scopes">
-        For external agents, you only need the <strong className="text-foreground">Ingest</strong> scope. This keeps the key limited to sending events — it can&apos;t read or modify anything else on your dashboard.
-      </Callout>
-    </div>
-  );
-}
-
-function ShortcutsSection() {
-  const shortcuts = [
-    { keys: ["Ctrl", "K"], desc: "Open command palette — search for any page or action" },
-    { keys: ["?"],         desc: "Show / hide keyboard shortcuts overlay" },
-    { keys: ["g", "o"],   desc: "Go to Overview" },
-    { keys: ["g", "a"],   desc: "Go to AI Agents" },
-    { keys: ["g", "w"],   desc: "Go to Workflows" },
-    { keys: ["g", "d"],   desc: "Go to Deployments" },
-    { keys: ["g", "$"],   desc: "Go to Costs & Billing" },
-    { keys: ["g", "n"],   desc: "Go to Analytics" },
-    { keys: ["g", "l"],   desc: "Go to Logs" },
-    { keys: ["g", "t"],   desc: "Go to Team" },
-    { keys: ["g", "!"],   desc: "Go to Incidents" },
-    { keys: ["g", "s"],   desc: "Go to Settings" },
-    { keys: ["Esc"],      desc: "Close any open dialog or modal" },
-  ];
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        MOTHERSHIP is built for keyboard-first navigation. Most actions have a shortcut so you never have to leave the keyboard during an incident.
-      </p>
-      <div className="rounded-xl border border-border bg-card/50 overflow-hidden">
-        {shortcuts.map((s, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-2.5 border-b border-border/40 last:border-0">
-            <div className="flex items-center gap-1 shrink-0 w-28">
-              {s.keys.map((k, ki) => (
-                <span key={ki} className="flex items-center gap-1">
-                  {ki > 0 && <span className="text-muted-foreground/30 text-[10px]">then</span>}
-                  <Kbd>{k}</Kbd>
-                </span>
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">{s.desc}</span>
-          </div>
-        ))}
-      </div>
-      <Callout icon={Lightbulb} color="#F59E0B" title="g + key navigation">
-        The <Kbd>g</Kbd> key is a leader key. Press and hold, then press the second key within 800ms. When you press <Kbd>g</Kbd> you&apos;ll see shortcut hints appear next to each nav item.
-      </Callout>
-    </div>
-  );
-}
-
-const SECTION_CONTENT: Record<string, React.ReactNode> = {
-  "getting-started":  <GettingStarted />,
-  "overview":         <OverviewSection />,
-  "ai-agents":        <AIAgentsSection />,
-  "workflows":        <WorkflowsSection />,
-  "deployments":      <DeploymentsSection />,
-  "costs":            <CostsSection />,
-  "analytics":        <AnalyticsSection />,
-  "logs":             <LogsSection />,
-  "team":             <TeamSection />,
-  "incidents":        <IncidentsSection />,
-  "settings":         <SettingsSection />,
-  "projects":         <ProjectsSection />,
-  "prompt-studio":    <PromptStudioSection />,
-  "evals":            <EvalsSection />,
-  "notifications":    <NotificationsSection />,
-  "external-agents":  <ExternalAgentsSection />,
-  "shortcuts":        <ShortcutsSection />,
-};
-
-// ── Main page ──────────────────────────────────────────────────────────────────
-function TutorialPageInner() {
-  const searchParams = useSearchParams();
-  const requestedSection = searchParams.get("section");
-  const initialId = requestedSection && SECTIONS.some((s) => s.id === requestedSection)
-    ? requestedSection
-    : "getting-started";
-  const [activeId, setActiveId] = useState(initialId);
-
-  // Keep section in sync if the URL changes while on page
-  useEffect(() => {
-    if (requestedSection && SECTIONS.some((s) => s.id === requestedSection)) {
-      setActiveId(requestedSection);
-    }
-  }, [requestedSection]);
-
-  const active = SECTIONS.find((s) => s.id === activeId)!;
-  const ActiveIcon = active.icon;
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#00d992]/10 border border-[#00d992]/20">
-          <BookOpen className="size-5 text-[#00d992]" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Tutorial</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Everything you need to know about MOTHERSHIP — from first login to advanced agent pipelines.
-          </p>
-        </div>
-      </div>
-
-      {/* Section grid (table of contents) */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {SECTIONS.map((s) => (
-          <SectionCard
-            key={s.id}
-            section={s}
-            active={s.id === activeId}
-            onClick={() => setActiveId(s.id)}
-          />
-        ))}
-      </div>
-
-      {/* Active section detail */}
-      <div className="rounded-2xl border border-border bg-card/60 overflow-hidden">
-        {/* Section header */}
-        <div className="flex items-center gap-3 border-b border-border px-6 py-4">
-          <ActiveIcon className="size-5 shrink-0" style={{ color: active.color }} />
-          <div>
-            <h2 className="text-sm font-bold text-foreground">{active.label}</h2>
-            <p className="text-xs text-muted-foreground">{active.tagline}</p>
-          </div>
-          <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/40">
-            <ChevronRight className="size-3" />
-            <span>Tutorial</span>
-            <ChevronRight className="size-3" />
-            <span className="text-muted-foreground/70">{active.label}</span>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-6">
-          {SECTION_CONTENT[activeId]}
-        </div>
-
-        {/* Navigation footer */}
-        <div className="flex items-center justify-between border-t border-border px-6 py-3">
-          <button
-            onClick={() => {
-              const idx = SECTIONS.findIndex((s) => s.id === activeId);
-              if (idx > 0) setActiveId(SECTIONS[idx - 1].id);
-            }}
-            disabled={SECTIONS[0].id === activeId}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            ← Previous
-          </button>
-          <span className="text-[10px] text-muted-foreground/40">
-            {SECTIONS.findIndex((s) => s.id === activeId) + 1} / {SECTIONS.length}
-          </span>
-          <button
-            onClick={() => {
-              const idx = SECTIONS.findIndex((s) => s.id === activeId);
-              if (idx < SECTIONS.length - 1) setActiveId(SECTIONS[idx + 1].id);
-            }}
-            disabled={SECTIONS[SECTIONS.length - 1].id === activeId}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Wrap in Suspense because useSearchParams requires it under Next.js App Router
+// ── Page ─────────────────────────────────────────────────────────────────────
 export default function TutorialPage() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate from localStorage
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+      if (raw) setCompleted(new Set(JSON.parse(raw)));
+    } catch {
+      // ignore parse errors
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(completed)));
+    } catch {
+      // ignore storage errors
+    }
+  }, [completed, hydrated]);
+
+  const step = STEPS[activeIdx];
+  const StepIcon = step.icon;
+  const percent = Math.round((completed.size / STEPS.length) * 100);
+  const isStepDone = completed.has(step.id);
+  const isFinal = percent === 100;
+
+  const toggleDone = () => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      if (next.has(step.id)) next.delete(step.id);
+      else next.add(step.id);
+      return next;
+    });
+  };
+
+  const markDoneAndAdvance = () => {
+    setCompleted((prev) => new Set(prev).add(step.id));
+    if (activeIdx < STEPS.length - 1) setActiveIdx(activeIdx + 1);
+  };
+
   return (
-    <Suspense fallback={<div className="py-24 flex justify-center"><div className="size-6 rounded-full border-2 border-[#00d992]/20 border-t-[#00d992] animate-spin" /></div>}>
-      <TutorialPageInner />
-    </Suspense>
+    <div className="min-h-screen relative">
+      {/* Ambient brand glow */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[280px]" style={{ background: `radial-gradient(ellipse 60% 100% at 50% 0%, ${OXBLOOD}10, transparent 70%)` }} />
+
+      <div className="relative px-8 py-10 max-w-6xl mx-auto">
+        {/* ── Page header ───────────────────────────────────────────── */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2.5 mb-3 font-mono text-[10.5px] tracking-[0.24em] uppercase text-muted-foreground">
+            <div className="h-px w-8" style={{ background: OXBLOOD }} />
+            <span style={{ color: OXBLOOD }}>Tutorial</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span>From clone to streaming agent in seven steps</span>
+          </div>
+          <h1 className="font-serif text-[44px] leading-[1.05] tracking-[-0.02em] text-foreground max-w-[20ch]">
+            Get your first agent running.
+          </h1>
+        </div>
+
+        {/* ── Progress bar ──────────────────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div className="font-mono text-[10.5px] tracking-[0.22em] uppercase text-muted-foreground">
+              Step {activeIdx + 1} of {STEPS.length}
+              {hydrated && (
+                <span className="ml-4 text-muted-foreground/60">· {completed.size} complete</span>
+              )}
+            </div>
+            <div className="font-mono text-[10.5px] tracking-[0.22em] uppercase" style={{ color: percent === 100 ? EMERALD : OXBLOOD }}>
+              {percent}%
+            </div>
+          </div>
+          <div className="h-[3px] rounded-full bg-white/[0.04] overflow-hidden">
+            <div
+              className="h-full transition-all duration-500 ease-out rounded-full"
+              style={{
+                width: `${percent}%`,
+                background: percent === 100 ? EMERALD : OXBLOOD,
+                boxShadow: `0 0 8px ${percent === 100 ? EMERALD : OXBLOOD}66`,
+              }}
+            />
+          </div>
+          {/* Step dots */}
+          <div className="flex items-center justify-between mt-4">
+            {STEPS.map((s, i) => {
+              const done = hydrated && completed.has(s.id);
+              const active = i === activeIdx;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveIdx(i)}
+                  className={cn(
+                    "group flex flex-col items-center gap-2 transition-all",
+                    "hover:opacity-100",
+                    active ? "opacity-100" : done ? "opacity-90" : "opacity-50"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "size-7 rounded-full border-2 flex items-center justify-center transition-all",
+                      active && "scale-110"
+                    )}
+                    style={{
+                      borderColor: done ? EMERALD : active ? OXBLOOD : "rgba(255,255,255,0.15)",
+                      background: done ? `${EMERALD}15` : active ? `${OXBLOOD}18` : "transparent",
+                    }}
+                  >
+                    {done ? (
+                      <Check className="size-3.5" style={{ color: EMERALD }} />
+                    ) : (
+                      <span className="font-mono text-[10px] font-bold" style={{ color: active ? OXBLOOD : "rgba(255,255,255,0.45)" }}>
+                        {s.n}
+                      </span>
+                    )}
+                  </div>
+                  <span className={cn(
+                    "font-mono text-[9px] tracking-[0.15em] uppercase max-w-[80px] text-center leading-tight",
+                    active ? "text-foreground" : "text-muted-foreground/60"
+                  )}>
+                    {s.id.replace("-", " ")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Active step body ─────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 mb-8 pt-6 border-t border-border/60">
+          {/* Left: text */}
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="size-11 rounded-lg border grid place-items-center"
+                style={{ borderColor: `${OXBLOOD}35`, background: `${OXBLOOD}10` }}
+              >
+                <StepIcon className="size-5" style={{ color: OXBLOOD }} />
+              </div>
+              <div>
+                <div className="font-mono text-[10px] tracking-[0.22em] uppercase" style={{ color: OXBLOOD }}>
+                  Step {step.n} · {step.readTime}
+                </div>
+              </div>
+            </div>
+            <h2 className="font-serif text-[30px] leading-[1.12] tracking-[-0.018em] text-foreground mb-3 max-w-[22ch]">
+              {step.title}
+            </h2>
+            <p className="font-serif italic text-[16px] leading-[1.5] text-muted-foreground mb-6 max-w-[46ch]">
+              {step.subtitle}
+            </p>
+            <div className="prose prose-invert max-w-none text-[14px] leading-[1.65] text-[#c7c3c0] space-y-3.5 [&_strong]:text-foreground [&_strong]:font-medium [&_code]:font-mono [&_code]:text-[12.5px] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-[#d8442e]/10 [&_code]:text-[#d8442e]">
+              {step.body}
+            </div>
+
+            {/* Action + done checkbox */}
+            <div className="mt-7 flex flex-wrap items-center gap-4">
+              {step.ctaHref.startsWith("http") ? (
+                <a
+                  href={step.ctaHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold text-white transition-transform hover:-translate-y-px"
+                  style={{ background: OXBLOOD, boxShadow: `0 2px 8px ${OXBLOOD}40` }}
+                >
+                  {step.ctaLabel} <ArrowRight className="size-3.5" />
+                </a>
+              ) : (
+                <Link
+                  href={step.ctaHref}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md text-xs font-semibold text-white transition-transform hover:-translate-y-px"
+                  style={{ background: OXBLOOD, boxShadow: `0 2px 8px ${OXBLOOD}40` }}
+                >
+                  {step.ctaLabel} <ArrowRight className="size-3.5" />
+                </Link>
+              )}
+
+              <button
+                onClick={toggleDone}
+                className="inline-flex items-center gap-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isStepDone ? (
+                  <CheckCircle2 className="size-5" style={{ color: EMERALD }} />
+                ) : (
+                  <Circle className="size-5 text-muted-foreground/40" />
+                )}
+                <span>{isStepDone ? "Completed" : "Mark as complete"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right: plate mockup */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            <div className="mb-3 flex items-baseline justify-between">
+              <span className="font-serif italic text-[14px]" style={{ color: OXBLOOD }}>
+                Plate {["I","II","III","IV","V","VI","VII"][activeIdx]}.
+              </span>
+              <span className="font-mono text-[9.5px] tracking-[0.2em] uppercase text-muted-foreground/50">
+                Preview · {step.id}
+              </span>
+            </div>
+            <div>{step.plate}</div>
+          </div>
+        </div>
+
+        {/* ── Footer navigation ───────────────────────────────────── */}
+        <div className="flex items-center justify-between pt-6 border-t border-border/60">
+          <button
+            onClick={() => setActiveIdx(Math.max(0, activeIdx - 1))}
+            disabled={activeIdx === 0}
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="size-4" />
+            Previous step
+          </button>
+
+          <div className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground/50">
+            {step.id.replace("-", " · ")}
+          </div>
+
+          {activeIdx < STEPS.length - 1 ? (
+            <button
+              onClick={markDoneAndAdvance}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-foreground border border-border hover:border-[#d8442e]/60 hover:bg-[#d8442e]/5 transition-colors"
+            >
+              Next step
+              <ChevronRight className="size-4" />
+            </button>
+          ) : (
+            <button
+              onClick={toggleDone}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white"
+              style={{ background: isStepDone ? EMERALD : OXBLOOD }}
+            >
+              {isStepDone ? "Tutorial complete ✓" : "Finish tutorial"}
+            </button>
+          )}
+        </div>
+
+        {/* ── Completion banner ───────────────────────────────────── */}
+        {hydrated && isFinal && (
+          <div
+            className="mt-10 rounded-lg border p-5 flex items-start gap-4"
+            style={{ borderColor: `${EMERALD}40`, background: `${EMERALD}08` }}
+          >
+            <CheckCircle2 className="size-5 shrink-0 mt-0.5" style={{ color: EMERALD }} />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                All seven steps complete. Mothership is yours to run.
+              </p>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                The overview is where you'll live now. Your first agent is streaming, your prompt is versioned, and the kill switch is one click away. Open the console and get to work.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <Link
+                  href="/overview"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+                  style={{ color: EMERALD }}
+                >
+                  Go to overview <ArrowRight className="size-3" />
+                </Link>
+                <button
+                  onClick={() => { setCompleted(new Set()); setActiveIdx(0); }}
+                  className="ml-4 text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Reset progress
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
