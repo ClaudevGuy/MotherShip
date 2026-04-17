@@ -130,7 +130,7 @@ export default function DashboardLayout({
         <main className="relative flex-1 overflow-y-auto">
           {/* Ambient background */}
           <div className="pointer-events-none absolute inset-0 bg-ambient" />
-          <div className="relative z-10 p-4 md:p-6">{children}</div>
+          <div className="relative p-4 md:p-6">{children}</div>
         </main>
       </div>
       <CommandPalette />
