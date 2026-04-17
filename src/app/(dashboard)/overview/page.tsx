@@ -180,7 +180,7 @@ await mc.trackRun({
               <Copy className="size-3" />
             </button>
           </div>
-          <Link href="/tutorial?section=external-agents" className="inline-flex items-center gap-1 text-[10px] text-purple-400 hover:underline">
+          <Link href="/tutorial" className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors">
             Full SDK documentation <ArrowRight className="size-3" />
           </Link>
         </div>
