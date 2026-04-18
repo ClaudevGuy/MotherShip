@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Bot, Clock, Zap, Coins, CheckCircle, Trash2, Loader2, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { invalidate } from "@/lib/store-cache";
@@ -39,11 +39,63 @@ const MODEL_COLORS: Record<string, string> = {
   Custom: "bg-amber-500/20 text-amber-400 border-amber-500/30",
 };
 
-function generateTrendData(label: string, base: number, variance: number, count = 14) {
-  return Array.from({ length: count }, (_, i) => ({
-    name: `Day ${i + 1}`,
-    value: Math.max(0, base + (Math.random() - 0.5) * variance),
-  }));
+/**
+ * Bucket runs into daily windows for the last N days. Days with no runs
+ * produce zero values and `runCount: 0` — charts can render them honestly
+ * without synthesising data. Replaces a previous Math.random() noise
+ * generator that made empty agents look busy.
+ */
+interface DailyBucket {
+  name: string;
+  successRate: number;  // 0–100
+  latency: number;      // ms, avg of that day's runs
+  tokens: number;       // sum of that day's runs
+  cost: number;         // sum of that day's runs
+  runCount: number;
+}
+function bucketRunsByDay(runs: AgentRun[], days = 14): DailyBucket[] {
+  const DAY_MS = 86_400_000;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  return Array.from({ length: days }, (_, i) => {
+    const dayStart = todayStart.getTime() - (days - 1 - i) * DAY_MS;
+    const dayEnd = dayStart + DAY_MS;
+    const dayRuns = runs.filter((r) => {
+      const t = new Date(r.startedAt).getTime();
+      return t >= dayStart && t < dayEnd;
+    });
+    const successCount = dayRuns.filter((r) => r.status === "success").length;
+    return {
+      name: `Day ${i + 1}`,
+      successRate: dayRuns.length > 0 ? (successCount / dayRuns.length) * 100 : 0,
+      latency: dayRuns.length > 0
+        ? dayRuns.reduce((s, r) => s + r.duration, 0) / dayRuns.length
+        : 0,
+      tokens: dayRuns.reduce((s, r) => s + r.tokensUsed, 0),
+      cost: dayRuns.reduce((s, r) => s + r.cost, 0),
+      runCount: dayRuns.length,
+    };
+  });
+}
+
+/**
+ * First-half vs second-half percent change across a series, ignoring days
+ * with no data. Returns undefined when there aren't enough data points on
+ * either side to draw a meaningful comparison — the MetricCard hides the
+ * trend arrow entirely in that case.
+ */
+function computeTrend(values: number[]): number | undefined {
+  const nonZero = values.filter((v) => v > 0);
+  if (nonZero.length < 2) return undefined;
+  const mid = Math.floor(values.length / 2);
+  const first = values.slice(0, mid).filter((v) => v > 0);
+  const second = values.slice(mid).filter((v) => v > 0);
+  if (first.length === 0 || second.length === 0) return undefined;
+  const firstAvg = first.reduce((s, v) => s + v, 0) / first.length;
+  const secondAvg = second.reduce((s, v) => s + v, 0) / second.length;
+  if (firstAvg === 0) return undefined;
+  return ((secondAvg - firstAvg) / firstAvg) * 100;
 }
 
 const runColumns = [
@@ -179,9 +231,17 @@ export default function AgentDetailPage({
   const successRate = totalRuns > 0 ? (successRuns / totalRuns) * 100 : 0;
   const totalTokens = agent.runs.reduce((sum, r) => sum + r.tokensUsed, 0);
   const totalRunCost = agent.runs.reduce((sum, r) => sum + r.cost, 0);
+  const hasRuns = totalRuns > 0;
 
-  const successTrendData = generateTrendData("Success Rate", successRate, 15);
-  const latencyTrendData = generateTrendData("Latency", agent.avgLatency, agent.avgLatency * 0.4);
+  // Real daily buckets + honest trend percentages. Both return zero-filled
+  // series / undefined trend when there's insufficient data, so the empty
+  // state below is driven by `hasRuns` rather than by graph shape.
+  const buckets = bucketRunsByDay(agent.runs);
+  const successTrend = computeTrend(buckets.map((b) => b.successRate));
+  // Lower latency is better — negate so a real improvement shows as the
+  // green "up" trend indicator that MetricCard renders for positive values.
+  const rawLatencyTrend = computeTrend(buckets.map((b) => b.latency));
+  const latencyTrend = rawLatencyTrend !== undefined ? -rawLatencyTrend : undefined;
 
   return (
     <div className="space-y-6">
@@ -249,87 +309,133 @@ export default function AgentDetailPage({
         {/* ===== OVERVIEW TAB ===== */}
         {tab === "overview" && (
           <div className="space-y-6">
-            {/* Identity */}
+            {/* Identity — single consolidated block. The page-header row
+                above this already carries the name + status badge + delete,
+                so this panel focuses on the description, tags, and
+                provenance metadata rather than repeating the name badge. */}
             <GlassPanel padding="lg">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <Bot className="size-5 text-cyan-400" />
-                    <h2 className="text-xl font-semibold text-foreground">{agent.name}</h2>
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 border border-brand/20">
+                  <Bot className="size-4 text-brand" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-heading text-xl font-semibold text-foreground leading-none">
+                      {agent.name}
+                    </h2>
                     <Badge variant="outline" className={MODEL_COLORS[agent.model] ?? ""}>
                       {agent.model}
                     </Badge>
-                    <StatusBadge status={agent.status} />
                   </div>
-                  <p className="text-sm text-muted-foreground max-w-2xl">{agent.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+                    {agent.description}
+                  </p>
+                  <div className="flex items-center gap-3 pt-0.5 text-[11px] text-muted-foreground/70 font-mono">
                     <span>Created {formatDate(agent.createdAt)}</span>
+                    <span aria-hidden className="text-muted-foreground/30">·</span>
                     <span>by {agent.createdBy}</span>
                   </div>
-                  <div className="flex gap-1.5 mt-1">
-                    {agent.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-[10px] h-5">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+                  {agent.tags.length > 0 && (
+                    <div className="flex gap-1.5 pt-1.5">
+                      {agent.tags.map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-[10px] h-5">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </GlassPanel>
 
-            {/* Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard
-                label="Success Rate"
-                value={successRate}
-                format="percent"
-                icon={CheckCircle}
-                color="#22C55E"
-                trend={2.1}
-              />
-              <MetricCard
-                label="Avg Latency"
-                value={agent.avgLatency}
-                format="number"
-                icon={Clock}
-                color="var(--primary)"
-                trend={-1.3}
-              />
-              <MetricCard
-                label="Total Tokens"
-                value={totalTokens}
-                format="tokens"
-                icon={Zap}
-                color="#A855F7"
-                trend={5.4}
-              />
-              <MetricCard
-                label="Total Cost"
-                value={totalRunCost}
-                format="currency"
-                icon={Coins}
-                color="#F59E0B"
-                trend={3.8}
-              />
-            </div>
+            {hasRuns ? (
+              <>
+                {/* Metrics — real values, real trends. `trend` is undefined
+                    on cumulative metrics (Total Tokens/Cost) since "percent
+                    change" isn't meaningful there; the sparkline carries the
+                    shape story instead. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    label="Success Rate"
+                    value={successRate}
+                    format="percent"
+                    icon={CheckCircle}
+                    color="var(--color-success)"
+                    trend={successTrend}
+                    sparkData={buckets.map((b) => b.successRate)}
+                  />
+                  <MetricCard
+                    label="Avg Latency"
+                    value={agent.avgLatency}
+                    format="number"
+                    icon={Clock}
+                    color="var(--primary)"
+                    trend={latencyTrend}
+                    sparkData={buckets.map((b) => b.latency)}
+                  />
+                  <MetricCard
+                    label="Total Tokens"
+                    value={totalTokens}
+                    format="tokens"
+                    icon={Zap}
+                    color="var(--color-purple)"
+                    sparkData={buckets.map((b) => b.tokens)}
+                  />
+                  <MetricCard
+                    label="Total Cost"
+                    value={totalRunCost}
+                    format="currency"
+                    icon={Coins}
+                    color="var(--color-amber)"
+                    sparkData={buckets.map((b) => b.cost)}
+                  />
+                </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <ChartCard title="Success Rate Trend" subtitle="Last 14 days">
-                <AreaChartWidget
-                  data={successTrendData}
-                  color="#22C55E"
-                  formatValue={(v) => `${v.toFixed(1)}%`}
-                />
-              </ChartCard>
-              <ChartCard title="Latency Trend" subtitle="Last 14 days">
-                <AreaChartWidget
-                  data={latencyTrendData}
-                  color="var(--primary)"
-                  formatValue={(v) => `${Math.round(v)}ms`}
-                />
-              </ChartCard>
-            </div>
+                {/* Charts — real daily buckets */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <ChartCard title="Success Rate Trend" subtitle="Last 14 days">
+                    <AreaChartWidget
+                      data={buckets.map((b) => ({ name: b.name, value: b.successRate }))}
+                      color="var(--color-success)"
+                      formatValue={(v) => `${v.toFixed(1)}%`}
+                    />
+                  </ChartCard>
+                  <ChartCard title="Latency Trend" subtitle="Last 14 days">
+                    <AreaChartWidget
+                      data={buckets.map((b) => ({ name: b.name, value: b.latency }))}
+                      color="var(--primary)"
+                      formatValue={(v) => `${Math.round(v)}ms`}
+                    />
+                  </ChartCard>
+                </div>
+              </>
+            ) : (
+              /* Empty state — replaces the four metric cards + two charts
+                 with one honest block. Clicking "Run agent" drops the user
+                 into the Execution tab where the LiveExecutionPanel lives. */
+              <GlassPanel padding="lg">
+                <div className="flex flex-col items-center text-center py-10 px-4">
+                  <div className="inline-flex size-12 items-center justify-center rounded-full bg-muted/40 border border-border mb-4">
+                    <Play className="size-5 text-muted-foreground/60" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-heading text-lg font-semibold text-foreground">
+                    No runs yet
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1.5 max-w-sm">
+                    Execute this agent to start collecting metrics. Success rate, latency,
+                    token usage, and cost will populate here after the first run.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setTab("execution")}
+                    className="mt-5 bg-brand text-primary-foreground hover:bg-brand/80"
+                  >
+                    <Play className="size-3.5 mr-1.5" aria-hidden="true" />
+                    Run agent
+                  </Button>
+                </div>
+              </GlassPanel>
+            )}
           </div>
         )}
 
