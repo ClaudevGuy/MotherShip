@@ -14,6 +14,7 @@ import { logAuditEvent } from "@/lib/audit";
 import { z } from "zod";
 import { getAdapter } from "@/lib/integrations/registry";
 import { encrypt } from "@/lib/encryption";
+import { rateLimit } from "@/lib/rate-limit";
 
 const connectIntegrationSchema = z.object({
   name: z.string().min(1).max(100),
@@ -70,6 +71,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const user = await requireRole("admin");
   const projectId = await getProjectId();
+
+  // Rate limit: 10 create attempts per minute per user. Guards against
+  // someone hammering POST with bad keys to probe provider adapters.
+  const rl = rateLimit(`integration-create:${user.id}`, { limit: 10, windowMs: 60_000 });
+  if (!rl.success) {
+    return apiError("Too many integration attempts. Try again in about a minute.", 429);
+  }
+
   const body = await validateBody(request, connectIntegrationSchema);
 
   // If config is provided, test the connection via the adapter first

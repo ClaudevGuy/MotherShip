@@ -8,12 +8,43 @@ import { ModalShell } from "@/components/ui/modal-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Search, GitBranch, MessageSquare, Cloud, Cpu, Brain, BarChart3, AlertTriangle as SentryIcon,
   CreditCard, Webhook, Plus, Bug, Boxes, Zap, X, Copy, Check, Loader2, Link2, Plug, Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Integration } from "@/types/integrations";
+
+/* ── Map raw provider errors to friendly copy for the Add modal.
+ *    Anthropic/OpenAI both return cryptic JSON errors when a key is wrong;
+ *    the adapter bubbles those up verbatim. Translate the common cases so
+ *    the first-time user sees actionable text instead of provider jargon. ── */
+function friendlyAdapterError(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes("401") || s.includes("unauthorized") || s.includes("invalid_api_key") || s.includes("incorrect api key") || s.includes("invalid x-api-key")) {
+    return "The API key was rejected. Double-check you copied it correctly and that it hasn't been revoked.";
+  }
+  if (s.includes("403") || s.includes("forbidden") || s.includes("permission")) {
+    return "The key authenticated, but doesn't have permission for this provider. Check the key's scopes.";
+  }
+  if (s.includes("429") || s.includes("rate") || s.includes("quota") || s.includes("insufficient_quota")) {
+    return "The provider rate-limited or rejected the key for billing/quota reasons. Check your provider dashboard.";
+  }
+  if (s.includes("econnrefused") || s.includes("enotfound") || s.includes("fetch failed") || s.includes("network") || s.includes("timeout")) {
+    return "Couldn't reach the provider. Check your internet connection or the provider's status page, then try again.";
+  }
+  return raw;
+}
 
 /* ── Known-brand icons: used for auto-detect when a user types a recognized
  *    service name. Anything not listed falls back to a first-letter badge. ── */
@@ -195,7 +226,7 @@ function AddIntegrationModal({
       onCreated();
       onClose();
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyAdapterError((e as Error).message));
     } finally {
       setSubmitting(false);
     }
@@ -526,6 +557,12 @@ export default function IntegrationsPage() {
   // Add webhook modal state
   const [addWebhookOpen, setAddWebhookOpen] = useState(false);
 
+  // Destructive confirm target — null when the dialog is closed. Keeping the
+  // full record (not just id) lets the dialog render the name and warn about
+  // connected-provider impact without a second lookup.
+  const [confirmRemoveTarget, setConfirmRemoveTarget] = useState<Integration | null>(null);
+  const [removing, setRemoving] = useState(false);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchIntegrations(); }, []);
 
@@ -548,16 +585,22 @@ export default function IntegrationsPage() {
     setAddOpen(true);
   };
 
-  const handleDisconnect = async (integ: Integration) => {
+  const confirmRemove = async () => {
+    if (!confirmRemoveTarget) return;
+    const integ = confirmRemoveTarget;
+    setRemoving(true);
     try {
       const res = await fetch(`/api/integrations/${integ.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to disconnect");
-      toast.success(`${integ.name} disconnected`);
+      toast.success(`${integ.name} removed`);
       fetchIntegrations();
+      setConfirmRemoveTarget(null);
     } catch {
-      toast.error(`Failed to disconnect ${integ.name}`);
+      toast.error(`Failed to remove ${integ.name}`);
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -754,7 +797,7 @@ export default function IntegrationsPage() {
                     <div className="flex justify-end mt-1">
                       <button
                         className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors"
-                        onClick={() => handleDisconnect(integ)}
+                        onClick={() => setConfirmRemoveTarget(integ)}
                       >
                         {isConnected || isError ? "Disconnect" : "Remove"}
                       </button>
@@ -876,6 +919,42 @@ export default function IntegrationsPage() {
         onClose={() => setAddWebhookOpen(false)}
         onCreated={() => fetchIntegrations()}
       />
+
+      {/* Destructive-action confirm. Rendered once at page level; controlled by
+          confirmRemoveTarget state so any tile's Remove button can trigger it.
+          The "agents will fail" warning is shown only for connected rows, since
+          removing a DISCONNECTED row is cosmetic. */}
+      <AlertDialog
+        open={confirmRemoveTarget !== null}
+        onOpenChange={(o) => { if (!o) setConfirmRemoveTarget(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {confirmRemoveTarget?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmRemoveTarget?.status === "connected" ? (
+                <>
+                  The stored credential will be permanently deleted. Any agents or workflows
+                  using <span className="font-semibold text-foreground">{confirmRemoveTarget?.name}</span> will fail
+                  their next run until you add it back.
+                </>
+              ) : (
+                <>This integration will be removed from the list. You can add it again later.</>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={(e) => { e.preventDefault(); confirmRemove(); }}
+              disabled={removing}
+            >
+              {removing ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Removing...</> : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
