@@ -287,45 +287,23 @@ function TemplatesRow() {
     if (scrollRef.current) scrollRef.current.style.cursor = "grab";
   };
 
-  const handleUseTemplate = async (t: typeof TEMPLATES[0]) => {
+  // "Use Template" routes to the builder with every template field pre-filled
+  // via URL params. The builder hydrates its state from these params on mount,
+  // so the user lands on Step 1 with name, description, model, strategy, and
+  // prompt already populated — free to walk or race to Review & Deploy.
+  // This path intentionally does NOT insta-create the agent: a template is a
+  // starting point for customization, and skipping the builder also skips the
+  // safety-override warning banner on Review.
+  const handleUseTemplate = (t: typeof TEMPLATES[0]) => {
     if (hasDragged.current) return; // Ignore clicks at the end of a drag
-    try {
-      const res = await fetch("/api/agents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: t.name,
-          description: t.description,
-          model: t.model,
-          modelStrategy: t.strategy,
-          systemPrompt: t.systemPrompt,
-          temperature: 0.7,
-          maxTokens: 4096,
-          tools: [],
-        }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      // API wraps the created record as { data: agent } — unwrap before using.
-      const { data: agent } = await res.json();
-      if (!agent?.id) throw new Error("Missing agent id in response");
-      // Seed the store so the detail page finds the agent on mount,
-      // avoiding a "not found" flash while the fetch completes.
-      useAgentsStore.setState((s) => ({
-        agents: [{ ...agent, runs: [], evalResults: [] }, ...s.agents],
-      }));
-      invalidate("agents");
-      router.push(`/agents/${agent.id}`);
-    } catch {
-      // Fallback to wizard if quick-create fails
-      const params = new URLSearchParams({
-        name: t.name,
-        model: t.model,
-        strategy: t.strategy,
-        systemPrompt: t.systemPrompt,
-        description: t.description,
-      });
-      router.push(`/agents/builder?${params.toString()}`);
-    }
+    const params = new URLSearchParams({
+      name: t.name,
+      description: t.description,
+      model: t.model,
+      strategy: t.strategy,
+      systemPrompt: t.systemPrompt,
+    });
+    router.push(`/agents/builder?${params.toString()}`);
   };
 
   return (
