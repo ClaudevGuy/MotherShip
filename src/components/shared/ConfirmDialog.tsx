@@ -33,7 +33,12 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      {/* stopPropagation: Radix portals this to document.body but React's
+          synthetic events still bubble through the component tree. When the
+          dialog is rendered inside a clickable row (e.g. the agents table),
+          a Confirm/Cancel click would otherwise fire the row's onClick
+          handler and trigger unwanted navigation. */}
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
