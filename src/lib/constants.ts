@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Settings,
   BookOpen,
+  Plug,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Analytics",      href: "/analytics",   icon: BarChart3,       shortcut: "g n" },
   { label: "Evals",          href: "/evals",       icon: FlaskConical,    shortcut: "g e" },
   { label: "Logs",           href: "/logs",        icon: ScrollText,      shortcut: "g l" },
+  { label: "Integrations",   href: "/integrations",icon: Plug,            shortcut: "g i" },
   { label: "Team",           href: "/team",        icon: Users,           shortcut: "g t" },
   { label: "Incidents",      href: "/incidents",   icon: AlertTriangle,   shortcut: "g !" },
   { label: "Settings",       href: "/settings",    icon: Settings,        shortcut: "g s" },

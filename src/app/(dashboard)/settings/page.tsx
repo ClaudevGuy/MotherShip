@@ -6,13 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Download, Trash2, Pause, RotateCcw, ShieldX, Bell, Shield, Plus, X, Loader2, Link2, Key, Copy } from "lucide-react";
+import { Download, Trash2, Pause, RotateCcw, ShieldX, Bell, Shield, X, Loader2, Link2, Key, Copy } from "lucide-react";
 import { useSettingsStore } from "@/stores/settings-store";
-import { useIntegrationsStore } from "@/stores/integrations-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ModalShell } from "@/components/ui/modal-shell";
-import { invalidate } from "@/lib/store-cache";
 
 const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Audit Log"];
 
@@ -34,16 +32,8 @@ export default function SettingsPage() {
   const [require2FA, setRequire2FA] = useState(false);
   const [polling, setPolling] = useState(true);
   const [pollInterval, setPollInterval] = useState("5s");
-  // Integrations state
-  const { integrations, fetch: fetchIntegrations } = useIntegrationsStore();
-  const [addIntOpen, setAddIntOpen] = useState(false);
-  const [addIntName, setAddIntName] = useState("");
-  const [addIntKey, setAddIntKey] = useState("");
-  const [addIntCategory, setAddIntCategory] = useState("ai");
-  const [addingInt, setAddingInt] = useState(false);
   const [origin, setOrigin] = useState("https://your-dashboard.com");
   useEffect(() => { setOrigin(window.location.origin); }, []);
-  const [addIntError, setAddIntError] = useState<string | null>(null);
   // API Keys state
   const [apiKeys, setApiKeys] = useState<{ id: string; name: string; prefix: string; scopes: string[]; createdAt: string; lastUsed: string | null; expiresAt: string | null; status: string }[]>([]);
   const [apiKeysLoading, setApiKeysLoading] = useState(false);
@@ -606,154 +596,6 @@ export default function SettingsPage() {
                             </div>
                           </>
                         )}
-                      </div>
-                  </ModalShell>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* ─── INTEGRATIONS ─── */}
-          {section === "Integrations" && (() => {
-            const coreServices = [
-              { name: "Anthropic (Claude)", desc: "AI model provider — powers agent execution", color: "#CC785C" },
-              { name: "Neon PostgreSQL", desc: "Serverless database — stores all project data", color: "var(--primary)" },
-            ];
-
-            const handleAddInt = async () => {
-              if (!addIntName.trim() || !addIntKey.trim()) {
-                setAddIntError("Name and API key are required");
-                return;
-              }
-              setAddingInt(true);
-              setAddIntError(null);
-              try {
-                const res = await fetch("/api/integrations", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    name: addIntName.trim(),
-                    description: `${addIntName.trim()} integration`,
-                    icon: addIntName.trim().toLowerCase().replace(/\s+/g, "-"),
-                    category: addIntCategory,
-                    config: { apiKey: addIntKey.trim() },
-                  }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || "Failed to connect");
-                toast.success(`${addIntName} connected successfully`);
-                setAddIntOpen(false);
-                setAddIntName("");
-                setAddIntKey("");
-                invalidate("integrations");
-                fetchIntegrations();
-              } catch (err) {
-                setAddIntError((err as Error).message);
-              } finally {
-                setAddingInt(false);
-              }
-            };
-
-            return (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Connected Services ({coreServices.length + integrations.filter((i) => i.status === "connected").length})
-                  </p>
-                  <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground" onClick={() => setAddIntOpen(true)}>
-                    <Plus className="size-3.5 mr-1" /> Add Integration
-                  </Button>
-                </div>
-
-                {/* Core services (always connected) */}
-                <div className="space-y-2">
-                  {coreServices.map((svc) => (
-                    <div key={svc.name} className="flex items-center justify-between rounded-lg border border-brand/20 bg-brand/[0.03] px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: `${svc.color}15`, color: svc.color }}>
-                          {svc.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{svc.name}</p>
-                          <p className="text-xs text-muted-foreground">{svc.desc}</p>
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
-                        <span className="size-1.5 rounded-full bg-green-400 animate-pulse" /> Active
-                      </span>
-                    </div>
-                  ))}
-
-                  {/* User-added integrations from DB */}
-                  {integrations.filter((i) => i.status === "connected").map((integ) => (
-                    <div key={integ.id} className="flex items-center justify-between rounded-lg border border-brand/20 bg-brand/[0.03] px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-lg flex items-center justify-center text-xs font-bold bg-brand/10 text-brand">
-                          {integ.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{integ.name}</p>
-                          <p className="text-xs text-muted-foreground">{integ.description || integ.category}</p>
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-400">
-                        <span className="size-1.5 rounded-full bg-green-400 animate-pulse" /> Connected
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Fallback note */}
-                <div className="rounded-lg border border-border/50 bg-muted/5 px-4 py-3">
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    <span className="font-medium text-foreground/70">Troubleshooting:</span> If an integration added here isn&apos;t working, you can also add the API key directly to your <code className="font-mono text-brand bg-brand/10 rounded px-1 py-0.5 text-[10px]">.env</code> file as a fallback. See <code className="font-mono text-brand bg-brand/10 rounded px-1 py-0.5 text-[10px]">.env.example</code> for the key names.
-                  </p>
-                </div>
-
-                {/* Add Integration Modal */}
-                {addIntOpen && (
-                  <ModalShell open={addIntOpen} onClose={() => setAddIntOpen(false)} dismissable={!addingInt}>
-                    <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <Link2 className="size-4 text-brand" />
-                            <h2 className="text-sm font-semibold text-foreground">Add Integration</h2>
-                          </div>
-                          <button onClick={() => setAddIntOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
-                        </div>
-                        <div className="px-5 py-5 space-y-4">
-                          <div>
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Service Name</label>
-                            <Input placeholder="e.g. OpenAI, Slack, Vercel..." value={addIntName} onChange={(e) => { setAddIntName(e.target.value); setAddIntError(null); }} className="h-9" autoFocus />
-                          </div>
-                          <div>
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">API Key</label>
-                            <Input type="password" placeholder="sk-..." value={addIntKey} onChange={(e) => { setAddIntKey(e.target.value); setAddIntError(null); }} className="h-9 font-mono" />
-                            <p className="text-[10px] text-muted-foreground/50 mt-1">Stored encrypted in the database. Agents will use this key automatically.</p>
-                          </div>
-                          <div>
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Category</label>
-                            <select value={addIntCategory} onChange={(e) => setAddIntCategory(e.target.value)} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
-                              <option value="ai">AI Provider</option>
-                              <option value="monitoring">Monitoring</option>
-                              <option value="communication">Communication</option>
-                              <option value="source_control">Source Control</option>
-                              <option value="deployment">Deployment</option>
-                              <option value="automation">Automation</option>
-                            </select>
-                          </div>
-                          {addIntError && (
-                            <div className="rounded-lg border border-red-500/30 bg-red-500/[0.05] px-3 py-2">
-                              <p className="text-xs text-red-400">{addIntError}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
-                          <Button variant="outline" size="sm" onClick={() => setAddIntOpen(false)} disabled={addingInt}>Cancel</Button>
-                          <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground" onClick={handleAddInt} disabled={addingInt || !addIntName.trim() || !addIntKey.trim()}>
-                            {addingInt ? <><Loader2 className="size-3.5 mr-1.5 animate-spin" />Connecting...</> : "Connect"}
-                          </Button>
-                        </div>
                       </div>
                   </ModalShell>
                 )}

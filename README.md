@@ -38,6 +38,7 @@ Core capabilities:
 - **Run Detail** — Every run gets its own page: full input/output, model selection reasoning, tier badge, savings vs Tier 1
 - **Agent Runs Stream** — Unified live feed of every run across every agent (/logs → "Agent Runs" tab)
 - **Deployments** — Service deployment tracking across dev/staging/production
+- **Integrations** — First-class sidebar destination for connecting GitHub, Slack, Vercel, AWS, OpenAI, Anthropic, Datadog, PagerDuty, Jira, Linear, Sentry, Stripe, PostHog with search, category filters, and live connection status
 - **Logs & Observability** — Unified log stream, LLM call inspection, distributed traces
 - **Audit Log** — Every admin action, agent change, and deletion. Who, when, what. Searchable + filterable
 - **Incidents** — Alert rules, on-call scheduling, incident management
@@ -456,6 +457,7 @@ landing/
 | `g $` | Costs & Billing |
 | `g n` | Analytics |
 | `g l` | Logs (includes Agent Runs stream) |
+| `g i` | Integrations |
 | `g t` | Team |
 | `g !` | Incidents |
 | `g s` | Settings |
