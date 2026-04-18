@@ -29,20 +29,38 @@ const LEVEL_STYLES: Record<string, { bg: string; text: string; rowBg: string }> 
 const SERVICES: string[] = [];
 
 function formatTime(ts: string) {
-  return new Date(ts).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  const time = d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  if (sameDay) return time;
+  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${date} ${time}`;
 }
 
 export default function LogsPage() {
   const [tab, setTab] = useState<"stream" | "errors" | "llm" | "traces" | "runs">("stream");
   const {
-    getFilteredLogs, errorGroups, llmCalls, traceSpans,
+    getFilteredLogs, errorGroups, llmCalls, llmStats, llmRange, traceSpans,
     levelFilter, serviceFilter, searchQuery, isLive,
-    setLevelFilter, setServiceFilter, setSearchQuery, setIsLive,
-    fetch: fetchLogs,
+    setLevelFilter, setServiceFilter, setSearchQuery, setIsLive, setLLMRange,
+    fetch: fetchLogs, fetchLLM,
   } = useLogsStore();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchLogs(); }, []);
+
+  // Poll LLM calls every 15s while on the LLM tab so new runs appear live
+  useEffect(() => {
+    if (tab !== "llm") return;
+    fetchLLM();
+    const id = setInterval(() => fetchLLM(), 15_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, llmRange]);
 
   // Live log stream via SSE
   const { entries: streamEntries } = useLogStream(isLive);
@@ -74,11 +92,21 @@ export default function LogsPage() {
     { id: "runs" as const, label: "Agent Runs" },
   ];
 
-  // LLM stats — computed from real data
-  const totalLLMCalls = llmCalls.length;
-  const totalTokens = llmCalls.reduce((sum, c) => sum + c.tokensIn + c.tokensOut, 0);
-  const totalLLMCost = llmCalls.reduce((sum, c) => sum + c.cost, 0);
-  const avgLatency = llmCalls.length > 0 ? Math.round(llmCalls.reduce((sum, c) => sum + c.latency, 0) / llmCalls.length) : 0;
+  // LLM stats — server-computed over the selected range (not the
+  // paginated page we happen to be showing). Falls back to zeros when no
+  // data has loaded yet.
+  const totalLLMCalls = llmStats?.calls ?? 0;
+  const totalTokens = (llmStats?.tokensIn ?? 0) + (llmStats?.tokensOut ?? 0);
+  const totalLLMCost = llmStats?.totalCost ?? 0;
+  const avgLatency = llmStats?.avgLatency ?? 0;
+
+  const RANGE_LABEL: Record<typeof llmRange, string> = {
+    today: "Today",
+    "24h": "Last 24h",
+    "7d": "Last 7d",
+    "30d": "Last 30d",
+    all: "All time",
+  };
 
   return (
     <div className="space-y-6">
@@ -225,12 +253,42 @@ export default function LogsPage() {
       {/* ═══ LLM CALLS ═══ */}
       {tab === "llm" && (
         <div className="space-y-4">
+          {/* Range selector */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Range:</span>
+              <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/20 p-0.5">
+                {(["today", "24h", "7d", "30d", "all"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setLLMRange(r)}
+                    className={cn(
+                      "px-2.5 py-1 text-[11px] font-medium rounded transition-colors",
+                      llmRange === r
+                        ? "bg-brand/15 text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {RANGE_LABEL[r]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="relative flex size-1.5">
+                <span className="absolute inset-0 rounded-full bg-emerald-500/60 animate-ping" />
+                <span className="relative size-1.5 rounded-full bg-emerald-500" />
+              </span>
+              Auto-refresh · every 15s
+            </div>
+          </div>
+
           {/* Stats bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <MetricCard label="Calls Today" value={totalLLMCalls} format="number" icon={Zap} color="var(--primary)" />
+            <MetricCard label={`Calls (${RANGE_LABEL[llmRange]})`} value={totalLLMCalls} format="number" icon={Zap} color="var(--primary)" />
             <MetricCard label="Total Tokens" value={totalTokens} format="tokens" icon={Zap} color="#A855F7" />
             <MetricCard label="Total Cost" value={totalLLMCost} format="currency" icon={DollarSign} color="#F59E0B" />
-            <MetricCard label="Avg Latency" value={avgLatency} format="number" icon={Clock} color="var(--primary)" />
+            <MetricCard label="Avg Latency (ms)" value={avgLatency} format="number" icon={Clock} color="var(--primary)" />
             <MetricCard label="Error Rate" value={errorGroups.length > 0 && totalLLMCalls > 0 ? (errorGroups.length / totalLLMCalls) * 100 : 0} format="percent" icon={AlertTriangle} color="#EF4444" />
           </div>
 
