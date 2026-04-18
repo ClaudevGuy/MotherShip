@@ -29,6 +29,76 @@ export interface TaskProfile {
   isFirstRun: boolean;
 }
 
+export type SafetyOverrideRule =
+  | "production_access"
+  | "error_cost_high"
+  | "requires_reasoning"
+  | "security_scanner"
+  | "first_run";
+
+export interface SafetyOverride {
+  rule: SafetyOverrideRule;
+  /** Short phrase, lowercase-first — designed for interpolation after "Safety override: " */
+  reason: string;
+  /**
+   * false → resolves after one successful run (isFirstRun). UI warnings should
+   * filter these out since every new agent trivially hits this on run #1.
+   * true  → driven by persistent agent configuration (tools, prompt, tags, name).
+   */
+  persistent: boolean;
+}
+
+/**
+ * Single source of truth for which safety overrides would fire for a given
+ * profile. `selectModel()` uses the first entry to force tier 1. The agent
+ * builder UI uses the persistent subset to warn users before they pick a
+ * strategy that bypasses these overrides (cost_first, manual).
+ *
+ * Order matches selectModel()'s original first-match priority so refactor is
+ * behavior-preserving.
+ */
+export function detectSafetyOverrides(profile: TaskProfile): SafetyOverride[] {
+  const out: SafetyOverride[] = [];
+
+  if (profile.hasProductionAccess) {
+    out.push({
+      rule: "production_access",
+      reason: "agent has production access",
+      persistent: true,
+    });
+  }
+  if (profile.errorCostHigh) {
+    out.push({
+      rule: "error_cost_high",
+      reason: "high error cost (critical/security/billing)",
+      persistent: true,
+    });
+  }
+  if (profile.requiresReasoning && !profile.isRepetitive) {
+    out.push({
+      rule: "requires_reasoning",
+      reason: "requires reasoning on non-repetitive task",
+      persistent: true,
+    });
+  }
+  if (profile.agentType === "SecurityScanner") {
+    out.push({
+      rule: "security_scanner",
+      reason: "SecurityScanner always uses tier 1",
+      persistent: true,
+    });
+  }
+  if (profile.isFirstRun) {
+    out.push({
+      rule: "first_run",
+      reason: "first run of new agent (unknown risk)",
+      persistent: false,
+    });
+  }
+
+  return out;
+}
+
 // ── Tiers Registry ──
 
 const TIERS: Record<string, Record<Tier, TierConfig>> = {
@@ -77,20 +147,10 @@ export function selectModel(profile: TaskProfile): ModelSelection {
   }
 
   // ── SAFETY OVERRIDES — always tier 1 ──
-  if (profile.hasProductionAccess) {
-    return buildSelection(providerTiers, 1, "Safety override: agent has production access", profile.provider);
-  }
-  if (profile.errorCostHigh) {
-    return buildSelection(providerTiers, 1, "Safety override: high error cost (critical/security/billing)", profile.provider);
-  }
-  if (profile.requiresReasoning && !profile.isRepetitive) {
-    return buildSelection(providerTiers, 1, "Safety override: requires reasoning on non-repetitive task", profile.provider);
-  }
-  if (profile.agentType === "SecurityScanner") {
-    return buildSelection(providerTiers, 1, "Safety override: SecurityScanner always uses tier 1", profile.provider);
-  }
-  if (profile.isFirstRun) {
-    return buildSelection(providerTiers, 1, "Safety override: first run of new agent (unknown risk)", profile.provider);
+  // Rules and priority live in detectSafetyOverrides() so the UI can share them.
+  const overrides = detectSafetyOverrides(profile);
+  if (overrides.length > 0) {
+    return buildSelection(providerTiers, 1, `Safety override: ${overrides[0].reason}`, profile.provider);
   }
 
   // ── COMPLEXITY SCORING ──

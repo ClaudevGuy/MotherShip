@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Rocket, Check, Sparkles, Hand, DollarSign, Shield, Loader2, FileCode } from "lucide-react";
+import { ArrowLeft, ArrowRight, Rocket, Check, Sparkles, Hand, DollarSign, Shield, Loader2, FileCode, AlertTriangle } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
+import { profileTask } from "@/lib/agent-profiler";
+import { detectSafetyOverrides } from "@/lib/model-selector";
 import { toast } from "sonner";
 import { GlassPanel, PageHeader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -629,6 +631,61 @@ export default function AgentBuilderPage() {
                 </div>
               </div>
             </div>
+
+            {/* Safety-override advisory — fires only when user picked a strategy
+                that bypasses overrides AND the profile would have triggered one
+                or more persistent overrides under Auto mode. Informational only —
+                the agent will be created with the user's chosen strategy. */}
+            {(modelStrategy === "cost_first" || modelStrategy === "manual") && (() => {
+              const tools = Object.entries(enabledTools)
+                .filter(([, enabled]) => enabled)
+                .map(([toolName]) => ({ name: toolName, enabled: true }));
+              const profile = profileTask(
+                {
+                  name: name.trim(),
+                  model: MODEL_MAP[model] || "CLAUDE",
+                  tags: [],
+                  tools,
+                  systemPrompt: systemPrompt.trim() || "You are a helpful AI assistant.",
+                  temperature: 0.7,
+                  maxTokens: parseInt(contextSize.replace("K", "")) * 1024 || 4096,
+                  tasksCompleted: 0,
+                },
+                ""
+              );
+              const overrides = detectSafetyOverrides(profile).filter((o) => o.persistent);
+              if (overrides.length === 0) return null;
+              const strategyLabel = modelStrategy === "cost_first" ? "Cost-First" : "Manual";
+              const tierExplain =
+                modelStrategy === "cost_first" ? "the cheapest tier" : "the provider default";
+              return (
+                <div className="rounded-xl border border-amber/30 bg-amber/[0.06] p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="size-4 text-amber" aria-hidden="true" />
+                    <p className="text-sm font-medium text-foreground">
+                      Safety overrides would have fired in Auto mode
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Based on your current configuration, Auto mode would route this agent to tier 1
+                    (highest quality) because:
+                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {overrides.map((o) => (
+                      <li key={o.rule} className="flex items-start gap-2">
+                        <span className="text-amber mt-[1px]" aria-hidden="true">•</span>
+                        <span className="first-letter:uppercase">{o.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground pt-1">
+                    <span className="font-medium text-foreground">{strategyLabel}</span> bypasses
+                    these overrides — you&apos;re telling the system to use {tierExplain} regardless
+                    of the profile. This is informational; your choice will be honored.
+                  </p>
+                </div>
+              );
+            })()}
 
             <div className="pt-4 border-t border-border">
               <Button onClick={handleDeploy} size="lg" disabled={deploying}>
