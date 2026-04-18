@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { GitBranch, Play, Trash2, Plus, Loader2, ArrowRight, Clock, Hand, Webhook, Zap, Pencil, Copy, CheckCircle2, XCircle, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useWorkflowsStore, type Workflow } from "@/stores/workflows-store";
 import { PageHeader, StatusBadge, GlassPanel, ConfirmDialog } from "@/components/shared";
 import { Button } from "@/components/ui/button";
