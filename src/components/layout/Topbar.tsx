@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Bell, ChevronRight, Search, Sun, Moon, Menu, CheckCheck, X,
   CheckCircle2, XCircle, AlertTriangle, Info,
@@ -150,23 +151,26 @@ export function Topbar() {
           <Menu className="size-5" />
         </Button>
 
-        {/* Left: Breadcrumbs */}
+        {/* Left: Breadcrumbs — intermediate crumbs link to their segment path,
+            current (last) crumb stays as plain text per standard breadcrumb UX. */}
         <nav className="flex items-center gap-1 text-sm min-w-0 flex-1 md:flex-none">
           {breadcrumbs.map((crumb, i) => (
             <span key={crumb.href} className="flex items-center gap-1 min-w-0">
               {i > 0 && (
                 <ChevronRight className="hidden sm:block size-3 text-muted-foreground/30 shrink-0" />
               )}
-              <span
-                className={cn(
-                  "font-medium truncate",
-                  crumb.isLast
-                    ? "text-foreground"
-                    : "text-muted-foreground hidden sm:block"
-                )}
-              >
-                {crumb.label}
-              </span>
+              {crumb.isLast ? (
+                <span className="font-medium truncate text-foreground">
+                  {crumb.label}
+                </span>
+              ) : (
+                <Link
+                  href={crumb.href}
+                  className="hidden sm:block font-medium truncate text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {crumb.label}
+                </Link>
+              )}
             </span>
           ))}
         </nav>

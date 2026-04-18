@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, Eye, Trash2, Code2, Shield, FileText, Database, TestTube, Gauge, Globe, Flame, ChevronLeft, ChevronRight as ChevronRightIcon, Loader2 } from "lucide-react";
@@ -391,7 +392,12 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!open) return null;
+  // Mount guard: createPortal needs document, which only exists client-side.
+  // "use client" covers runtime, but this avoids any SSR-hydration edge case.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!open || !mounted) return null;
 
   const handleCreate = async () => {
     if (!name.trim() || !prompt.trim()) return;
@@ -431,9 +437,9 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -492,7 +498,8 @@ function QuickCreateModal({ open, onClose }: { open: boolean; onClose: () => voi
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
