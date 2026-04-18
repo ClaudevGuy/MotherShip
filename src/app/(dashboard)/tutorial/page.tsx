@@ -683,7 +683,14 @@ export default function TutorialPage() {
             <p className="font-serif italic text-[16px] leading-[1.5] text-muted-foreground mb-6 max-w-[46ch]">
               {step.subtitle}
             </p>
-            <div className="prose prose-invert max-w-none text-[14px] leading-[1.65] text-[#c7c3c0] space-y-3.5 [&_strong]:text-foreground [&_strong]:font-medium [&_code]:font-mono [&_code]:text-[12.5px] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-[#d8442e]/10 [&_code]:text-[#d8442e]">
+            {/* Body copy: theme-adaptive token (soft ink on paper / soft
+                parchment on charcoal) replaces the prior hardcoded #c7c3c0
+                which became unreadably washed-out on the warm light-mode
+                paper bg. `prose prose-invert` removed — Typography plugin
+                isn't installed so those classes were dead. Inline <code>
+                uses the brand token so it adapts to oxblood / cream per
+                theme instead of being fixed to #d8442e. */}
+            <div className="max-w-none text-[14px] leading-[1.65] text-foreground/85 space-y-3.5 [&_strong]:text-foreground [&_strong]:font-medium [&_code]:font-mono [&_code]:text-[12.5px] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-brand/10 [&_code]:text-brand">
               {step.body}
             </div>
 
