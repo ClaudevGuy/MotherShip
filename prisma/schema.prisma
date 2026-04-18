@@ -753,6 +753,7 @@ model Integration {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@unique([projectId, name])
   @@index([projectId])
   @@index([projectId, status])
   @@index([projectId, category])

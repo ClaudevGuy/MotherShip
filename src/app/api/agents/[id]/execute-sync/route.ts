@@ -62,41 +62,22 @@ export const POST = withErrorHandler(
       }
     }
 
-    // ── Resolve API key ──
+    // ── Resolve API key (DB-first, env-fallback, logs which source won) ──
     const providerNames: Record<string, string> = { CLAUDE: "Anthropic", GPT4: "OpenAI", GEMINI: "Google AI" };
     const envKeys: Record<string, string> = { CLAUDE: "ANTHROPIC_API_KEY", GPT4: "OPENAI_API_KEY", GEMINI: "GOOGLE_AI_API_KEY" };
     const providerName = providerNames[agent.model] || "Anthropic";
+    const envVar = envKeys[agent.model] || "ANTHROPIC_API_KEY";
 
-    let apiKey: string | null = null;
+    const { resolveProviderKey } = await import("@/lib/integrations/resolve-key");
+    const resolved = await resolveProviderKey(projectId, providerName, envVar);
 
-    const integration = await prisma.integration.findFirst({
-      where: { projectId, name: providerName, status: "CONNECTED" },
-    });
-    if (integration) {
-      const rawConfig = (integration.config as Record<string, string>) || {};
-      for (const [, value] of Object.entries(rawConfig)) {
-        try {
-          const { decrypt } = await import("@/lib/encryption");
-          apiKey = decrypt(value);
-          break;
-        } catch {
-          apiKey = value;
-          break;
-        }
-      }
-    }
-
-    if (!apiKey) {
-      const envKey = envKeys[agent.model] || "ANTHROPIC_API_KEY";
-      apiKey = process.env[envKey] || null;
-    }
-
-    if (!apiKey) {
+    if (!resolved) {
       return apiError(
-        `No API key found for ${providerName}. Add one via Settings → Integrations, or set ${envKeys[agent.model] || "ANTHROPIC_API_KEY"} in your .env file.`,
+        `No API key found for ${providerName}. Add one via Settings → Integrations, or set ${envVar} in your .env file.`,
         400
       );
     }
+    const apiKey = resolved.apiKey;
 
     const body = await validateBody(request, executeSchema);
 

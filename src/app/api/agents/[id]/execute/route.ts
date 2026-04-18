@@ -77,43 +77,24 @@ export async function POST(
       }
     }
 
-    // Resolve API key: check integrations DB first, then fall back to .env
+    // Resolve API key: check integrations DB first, then fall back to .env.
+    // The resolver logs which source it used — useful when a broken DB row
+    // is silently masking a working .env key.
     const providerNames: Record<string, string> = { CLAUDE: "Anthropic", GPT4: "OpenAI", GEMINI: "Google AI" };
     const envKeys: Record<string, string> = { CLAUDE: "ANTHROPIC_API_KEY", GPT4: "OPENAI_API_KEY", GEMINI: "GOOGLE_AI_API_KEY" };
     const providerName = providerNames[agent.model] || "Anthropic";
+    const envVar = envKeys[agent.model] || "ANTHROPIC_API_KEY";
 
-    let apiKey: string | null = null;
+    const { resolveProviderKey } = await import("@/lib/integrations/resolve-key");
+    const resolved = await resolveProviderKey(projectId, providerName, envVar);
 
-    // 1. Try integrations DB (keys added via Settings → Add Integration)
-    const integration = await prisma.integration.findFirst({
-      where: { projectId, name: providerName, status: "CONNECTED" },
-    });
-    if (integration) {
-      const rawConfig = (integration.config as Record<string, string>) || {};
-      for (const [, value] of Object.entries(rawConfig)) {
-        try {
-          const { decrypt } = await import("@/lib/encryption");
-          apiKey = decrypt(value);
-          break;
-        } catch {
-          apiKey = value;
-          break;
-        }
-      }
-    }
-
-    // 2. Fall back to .env
-    if (!apiKey) {
-      const envKey = envKeys[agent.model] || "ANTHROPIC_API_KEY";
-      apiKey = process.env[envKey] || null;
-    }
-
-    if (!apiKey) {
+    if (!resolved) {
       return apiError(
-        `No API key found for ${providerName}. Add one via Settings → Integrations, or set ${envKeys[agent.model] || "ANTHROPIC_API_KEY"} in your .env file.`,
+        `No API key found for ${providerName}. Add one via Settings → Integrations, or set ${envVar} in your .env file.`,
         400
       );
     }
+    const apiKey = resolved.apiKey;
 
     // Parse body
     const body = executeSchema.parse(await request.json());

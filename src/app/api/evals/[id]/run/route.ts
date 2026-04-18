@@ -82,23 +82,11 @@ export const POST = withErrorHandler(
     if (!suite) return apiError("Suite not found", 404);
     if (suite.cases.length === 0) return apiError("Suite has no test cases", 400);
 
-    // Resolve API key
-    let apiKey: string | null = null;
-    const integration = await prisma.integration.findFirst({
-      where: { projectId, name: "Anthropic", status: "CONNECTED" },
-    });
-    if (integration) {
-      const rawConfig = (integration.config as Record<string, string>) || {};
-      for (const [, value] of Object.entries(rawConfig)) {
-        try {
-          const { decrypt } = await import("@/lib/encryption");
-          apiKey = decrypt(value);
-          break;
-        } catch { apiKey = value; break; }
-      }
-    }
-    if (!apiKey) apiKey = process.env.ANTHROPIC_API_KEY || null;
-    if (!apiKey) return apiError("No Anthropic API key configured", 400);
+    // Resolve API key (DB-first, env-fallback, logs which source won)
+    const { resolveProviderKey } = await import("@/lib/integrations/resolve-key");
+    const resolved = await resolveProviderKey(projectId, "Anthropic", "ANTHROPIC_API_KEY");
+    if (!resolved) return apiError("No Anthropic API key configured", 400);
+    const apiKey = resolved.apiKey;
 
     // Create run record
     const startTime = Date.now();
