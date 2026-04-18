@@ -9,26 +9,40 @@ import { Users, Activity, TrendingUp, Bot, BarChart3, Globe, MousePointer, Clock
 import { cn } from "@/lib/utils";
 
 // ── Stat card ────────────────────────────────────────────────────────────────
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: string; icon: React.ComponentType<{ className?: string }>; color: string }) {
+// `color` is any valid CSS color expression — hex, rgb(), or var(--token).
+// The icon chip tint is derived via color-mix so callers don't need to know
+// about alpha channels or hex concatenation quirks.
+function StatCard({ label, value, icon: Icon, color = "var(--foreground)" }: { label: string; value: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-3">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}15` }}>
-        <div style={{ color }}><Icon className="size-4" /></div>
+    <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-3 transition-colors hover:border-border/80">
+      <div
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg"
+        style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }}
+      >
+        <Icon className="size-4" style={{ color }} />
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className="text-xl font-bold font-mono text-foreground mt-0.5 leading-none">{value}</p>
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+          {label}
+        </p>
+        <p className="mt-1 font-heading text-2xl font-semibold leading-none text-foreground tabular-nums">
+          {value}
+        </p>
       </div>
     </div>
   );
 }
 
+// Tight, editorial empty state. Slot is ~120px tall vs the old ~240px — panels
+// no longer dominate the viewport with "nothing here yet" messaging.
 function EmptySection({ icon: Icon, message, sub }: { icon: React.ComponentType<{ className?: string }>; message: string; sub: string }) {
   return (
-    <div className="flex flex-col items-center gap-2 py-12 text-center rounded-xl border border-border bg-card/50">
-      <Icon className="size-8 text-muted-foreground/15" />
-      <p className="text-xs text-muted-foreground/50">{message}</p>
-      <p className="text-[10px] text-muted-foreground/30">{sub}</p>
+    <div className="flex flex-col items-center gap-1.5 py-8 px-4 text-center">
+      <div className="flex size-10 items-center justify-center rounded-full bg-muted/40 border border-border/50 mb-1">
+        <Icon className="size-4 text-muted-foreground/40" aria-hidden="true" />
+      </div>
+      <p className="text-sm font-medium text-foreground/70">{message}</p>
+      <p className="text-xs text-muted-foreground/60 max-w-xs">{sub}</p>
     </div>
   );
 }
@@ -93,9 +107,9 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard label="DAU" value={hasUserData ? overview.dau.toLocaleString() : "0"} icon={Users} color="var(--primary)" />
-            <StatCard label="WAU" value={hasUserData ? overview.wau.toLocaleString() : "0"} icon={Users} color="#A855F7" />
-            <StatCard label="MAU" value={hasUserData ? overview.mau.toLocaleString() : "0"} icon={Users} color="#F59E0B" />
-            <StatCard label="Avg Session" value={overview.avgSession > 0 ? `${overview.avgSession}m` : "—"} icon={Clock} color="#39FF14" />
+            <StatCard label="WAU" value={hasUserData ? overview.wau.toLocaleString() : "0"} icon={Users} color="var(--color-purple)" />
+            <StatCard label="MAU" value={hasUserData ? overview.mau.toLocaleString() : "0"} icon={Users} color="var(--color-amber)" />
+            <StatCard label="Avg Session" value={overview.avgSession > 0 ? `${overview.avgSession}m` : "—"} icon={Clock} color="var(--color-success)" />
           </div>
 
           {/* Retention cohorts */}
@@ -151,9 +165,9 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard label="Pages / Session" value={overview.pagesPerSession > 0 ? overview.pagesPerSession.toFixed(1) : "—"} icon={MousePointer} color="var(--primary)" />
-            <StatCard label="Bounce Rate" value={overview.bounceRate > 0 ? `${overview.bounceRate}%` : "—"} icon={Activity} color="#EF4444" />
-            <StatCard label="Avg Session" value={overview.avgSession > 0 ? `${overview.avgSession}m` : "—"} icon={Clock} color="#A855F7" />
-            <StatCard label="Features Used" value={features.length > 0 ? features.length.toString() : "0"} icon={BarChart3} color="#F59E0B" />
+            <StatCard label="Bounce Rate" value={overview.bounceRate > 0 ? `${overview.bounceRate}%` : "—"} icon={Activity} color="var(--color-crimson)" />
+            <StatCard label="Avg Session" value={overview.avgSession > 0 ? `${overview.avgSession}m` : "—"} icon={Clock} color="var(--color-purple)" />
+            <StatCard label="Features Used" value={features.length > 0 ? features.length.toString() : "0"} icon={BarChart3} color="var(--color-amber)" />
           </div>
 
           {/* Feature usage */}
@@ -211,10 +225,10 @@ export default function AnalyticsPage() {
       {tab === "growth" && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard label="Metrics Tracked" value={growth.length > 0 ? growth.length.toString() : "0"} icon={TrendingUp} color="#39FF14" />
+            <StatCard label="Metrics Tracked" value={growth.length > 0 ? growth.length.toString() : "0"} icon={TrendingUp} color="var(--color-success)" />
             <StatCard label="DAU" value={overview.dau > 0 ? overview.dau.toLocaleString() : "0"} icon={Users} color="var(--primary)" />
-            <StatCard label="WAU" value={overview.wau > 0 ? overview.wau.toLocaleString() : "0"} icon={Users} color="#A855F7" />
-            <StatCard label="MAU" value={overview.mau > 0 ? overview.mau.toLocaleString() : "0"} icon={Users} color="#F59E0B" />
+            <StatCard label="WAU" value={overview.wau > 0 ? overview.wau.toLocaleString() : "0"} icon={Users} color="var(--color-purple)" />
+            <StatCard label="MAU" value={overview.mau > 0 ? overview.mau.toLocaleString() : "0"} icon={Users} color="var(--color-amber)" />
           </div>
 
           <GlassPanel padding="lg">
@@ -224,12 +238,24 @@ export default function AnalyticsPage() {
                 {growth.map((g, i) => {
                   const change = g.previous > 0 ? ((g.current - g.previous) / g.previous) * 100 : 0;
                   return (
-                    <div key={i} className="flex items-center justify-between text-sm border-b border-border/30 py-2">
-                      <span className="text-xs text-foreground font-medium">{g.metric}</span>
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs font-mono text-muted-foreground">prev: {g.previous.toLocaleString()}</span>
-                        <span className="text-xs font-mono text-foreground">now: {g.current.toLocaleString()}</span>
-                        <span className={cn("text-xs font-mono font-bold", change >= 0 ? "text-green-400" : "text-red-400")}>
+                    <div key={i} className="flex items-center justify-between gap-4 py-2.5 border-b border-border/40 last:border-0">
+                      <span className="text-sm font-medium text-foreground min-w-0 truncate">{g.metric}</span>
+                      <div className="flex items-center gap-3 font-mono text-xs shrink-0">
+                        <span className="text-muted-foreground/60 tabular-nums">
+                          {g.previous.toLocaleString()}
+                        </span>
+                        <span className="text-muted-foreground/30" aria-hidden="true">→</span>
+                        <span className="text-foreground font-semibold tabular-nums">
+                          {g.current.toLocaleString()}
+                        </span>
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold",
+                            change >= 0
+                              ? "bg-[--color-success]/10 text-[--color-success]"
+                              : "bg-crimson/10 text-crimson"
+                          )}
+                        >
                           {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                         </span>
                       </div>
@@ -249,9 +275,9 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard label="Total Agents" value={agents.length.toString()} icon={Bot} color="var(--primary)" />
-            <StatCard label="Active" value={agents.filter((a) => a.status === "running").length.toString()} icon={Bot} color="#39FF14" />
-            <StatCard label="Total Runs" value={agents.reduce((s, a) => s + a.tasksCompleted, 0).toLocaleString()} icon={Activity} color="#A855F7" />
-            <StatCard label="Total Cost" value={`$${agents.reduce((s, a) => s + a.totalCost, 0).toFixed(2)}`} icon={BarChart3} color="#F59E0B" />
+            <StatCard label="Active" value={agents.filter((a) => a.status === "running").length.toString()} icon={Bot} color="var(--color-success)" />
+            <StatCard label="Total Runs" value={agents.reduce((s, a) => s + a.tasksCompleted, 0).toLocaleString()} icon={Activity} color="var(--color-purple)" />
+            <StatCard label="Total Cost" value={`$${agents.reduce((s, a) => s + a.totalCost, 0).toFixed(2)}`} icon={BarChart3} color="var(--color-amber)" />
           </div>
 
           {hasAgentData ? (
@@ -273,10 +299,10 @@ export default function AnalyticsPage() {
                         <td className="px-3 py-2.5 text-xs text-muted-foreground">{agent.model}</td>
                         <td className="px-3 py-2.5">
                           <span className={cn(
-                            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-                            agent.status === "running" ? "bg-green-500/15 text-green-400" :
-                            agent.status === "error" ? "bg-red-500/15 text-red-400" :
-                            "bg-muted/50 text-muted-foreground"
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide",
+                            agent.status === "running" && "bg-[--color-success]/10 text-[--color-success] border border-[--color-success]/20",
+                            agent.status === "error" && "bg-crimson/10 text-crimson border border-crimson/20",
+                            agent.status !== "running" && agent.status !== "error" && "bg-muted/50 text-muted-foreground border border-border"
                           )}>
                             {agent.status}
                           </span>
@@ -326,74 +352,99 @@ export default function AnalyticsPage() {
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {agents.map((agent) => {
-                  // Calculate health metrics from agent data
+                  // Real, deterministic metrics — no Math.random(). Previously
+                  // this card rendered a 10-bar sparkline where 8 of the 10
+                  // bars were generated with (Math.random() - 0.5) each render,
+                  // producing animated noise that implied history that didn't
+                  // exist. Health history isn't tracked yet, so until it is we
+                  // render a 0–100 scale with the current score marked.
                   const totalRuns = agent.tasksCompleted || 0;
                   const errorRate = agent.errorRate || 0;
                   const healthScore = Math.max(0, Math.min(100, Math.round(100 - errorRate * 5 - (agent.status === "error" ? 20 : 0))));
                   const avgScore = Math.max(0, Math.min(100, Math.round(100 - errorRate * 3)));
                   const drift = avgScore - healthScore;
                   const isDrifting = drift > 10;
-                  const trend = drift > 5 ? "down" : drift < -5 ? "up" : "stable";
-
-                  // Generate sparkline data (simulated from agent stats)
-                  const sparkline: number[] = [];
-                  for (let i = 0; i < 10; i++) {
-                    const base = avgScore;
-                    const variance = i >= 8 ? (isDrifting ? -drift : 0) : (Math.random() * 10 - 5);
-                    sparkline.push(Math.max(0, Math.min(100, Math.round(base + variance))));
-                  }
+                  const trend: "up" | "down" | "stable" = drift > 5 ? "down" : drift < -5 ? "up" : "stable";
 
                   const TrendIcon = trend === "up" ? ArrowUp : trend === "down" ? ArrowDown : Minus;
-                  const trendColor = trend === "up" ? "text-green-400" : trend === "down" ? "text-red-400" : "text-muted-foreground/50";
+                  const trendColorStyle = trend === "up"
+                    ? "text-[--color-success]"
+                    : trend === "down"
+                    ? "text-crimson"
+                    : "text-muted-foreground/50";
+                  const scoreColorStyle = healthScore >= 80
+                    ? "text-[--color-success]"
+                    : healthScore >= 50
+                    ? "text-amber"
+                    : "text-crimson";
+                  const scoreVar = healthScore >= 80
+                    ? "var(--color-success)"
+                    : healthScore >= 50
+                    ? "var(--color-amber)"
+                    : "var(--color-crimson)";
 
                   return (
                     <div
                       key={agent.id}
                       className={cn(
                         "rounded-xl border p-4 space-y-3 transition-colors",
-                        isDrifting ? "border-amber-500/30 bg-amber-500/[0.03]" : "border-border bg-card"
+                        isDrifting
+                          ? "border-amber/30 bg-amber/[0.04]"
+                          : "border-border bg-card hover:border-border/80"
                       )}
                     >
-                      {/* Header */}
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-foreground">{agent.name}</span>
+                      {/* Header — name + provenance left, score right */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-heading text-base font-semibold text-foreground">
+                              {agent.name}
+                            </span>
                             {isDrifting && (
-                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded uppercase">
-                                <AlertTriangle className="size-2.5" /> Drift
+                              <span className="inline-flex items-center gap-1 rounded text-[9px] font-semibold uppercase tracking-wide text-amber border border-amber/30 bg-amber/10 px-1.5 py-0.5">
+                                <AlertTriangle className="size-2.5" aria-hidden="true" /> Drift
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-muted-foreground/50 mt-0.5">{totalRuns} total runs · {errorRate.toFixed(1)}% error rate</p>
+                          <p className="mt-1 text-[11px] font-mono text-muted-foreground/70">
+                            {totalRuns.toLocaleString()} total runs · {errorRate.toFixed(1)}% error rate
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <TrendIcon className={cn("size-3", trendColor)} />
-                          <span className={cn("text-lg font-bold font-mono", healthScore >= 80 ? "text-green-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400")}>
+                        <div className="flex items-baseline gap-1 shrink-0">
+                          <TrendIcon className={cn("size-3", trendColorStyle)} aria-hidden="true" />
+                          <span className={cn("font-heading text-2xl font-semibold tabular-nums", scoreColorStyle)}>
                             {healthScore}
                           </span>
                         </div>
                       </div>
 
-                      {/* Sparkline */}
-                      <div className="flex items-end gap-[3px] h-8">
-                        {sparkline.map((val, i) => {
-                          const height = Math.max(4, (val / 100) * 32);
-                          const isLast = i === sparkline.length - 1;
-                          return (
-                            <div
-                              key={i}
-                              className={cn("flex-1 rounded-sm transition-colors", isLast ? (val < avgScore - 10 ? "bg-red-400" : "bg-brand") : "bg-muted-foreground/15")}
-                              style={{ height: `${height}px` }}
-                            />
-                          );
-                        })}
+                      {/* Score scale — a 0→100 track with the current score
+                          marked. Honest about what we actually know: no fake
+                          historical bars, just "here's where this agent sits
+                          right now, out of 100". */}
+                      <div className="pt-1">
+                        <div className="relative h-2 rounded-full bg-muted/40 overflow-hidden">
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-300"
+                            style={{
+                              width: `${healthScore}%`,
+                              background: `linear-gradient(90deg, ${scoreVar} 0%, color-mix(in srgb, ${scoreVar} 60%, transparent) 100%)`,
+                            }}
+                          />
+                        </div>
+                        <div className="mt-1 flex justify-between font-mono text-[9px] text-muted-foreground/40">
+                          <span>0</span>
+                          <span>50</span>
+                          <span>100</span>
+                        </div>
                       </div>
 
-                      {/* Average line label */}
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-muted-foreground/40">30d avg: <span className="font-mono">{avgScore}</span></span>
-                        <span className={cn("font-mono", trendColor)}>
+                      {/* Footer: 30d avg + trend label */}
+                      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border/40">
+                        <span className="text-muted-foreground/60">
+                          30d avg <span className="font-mono text-foreground/70">{avgScore}</span>
+                        </span>
+                        <span className={cn("font-mono", trendColorStyle)}>
                           {trend === "up" ? "↑ Improving" : trend === "down" ? "↓ Degrading" : "→ Stable"}
                         </span>
                       </div>
