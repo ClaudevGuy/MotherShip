@@ -103,9 +103,11 @@ export default function EvalsPage() {
           <h1 className="text-xl font-bold text-foreground">Evals</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Automated test suites for measuring agent quality</p>
         </div>
-        <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground gap-1.5" onClick={() => setCreateOpen(true)}>
-          <Plus className="size-3.5" /> New Eval Suite
-        </Button>
+        {suites.length > 0 && (
+          <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground gap-1.5" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-3.5" /> New Eval Suite
+          </Button>
+        )}
       </div>
 
       {/* Stats bar */}

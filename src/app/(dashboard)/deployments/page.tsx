@@ -184,9 +184,11 @@ export default function DeploymentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Deployments" description="Track deployment pipelines, rollouts, and release history">
-        <Button size="default" onClick={() => setDeployOpen(true)} className="bg-brand hover:bg-brand/90 text-primary-foreground">
-          <Rocket className="size-4 mr-2" /> Deploy
-        </Button>
+        {hasDeployments && (
+          <Button size="default" onClick={() => setDeployOpen(true)} className="bg-brand hover:bg-brand/90 text-primary-foreground">
+            <Rocket className="size-4 mr-2" /> Deploy
+          </Button>
+        )}
       </PageHeader>
 
       {/* Tab bar */}

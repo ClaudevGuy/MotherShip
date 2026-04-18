@@ -283,24 +283,26 @@ export default function WorkflowsPage() {
         title="Workflows"
         description="Multi-agent pipelines that chain outputs between agents"
       >
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push("/workflows/builder")}
-          >
-            <GitBranch className="size-3.5 mr-1.5" />
-            Visual Builder
-          </Button>
-          <Button
-            onClick={() => setCreateOpen(true)}
-            size="sm"
-            className="bg-brand hover:bg-brand/90 text-primary-foreground"
-          >
-            <Plus className="size-3.5 mr-1.5" />
-            New Workflow
-          </Button>
-        </div>
+        {workflows.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/workflows/builder")}
+            >
+              <GitBranch className="size-3.5 mr-1.5" />
+              Visual Builder
+            </Button>
+            <Button
+              onClick={() => setCreateOpen(true)}
+              size="sm"
+              className="bg-brand hover:bg-brand/90 text-primary-foreground"
+            >
+              <Plus className="size-3.5 mr-1.5" />
+              New Workflow
+            </Button>
+          </div>
+        )}
       </PageHeader>
 
       {/* Stats bar — only when workflows exist */}
