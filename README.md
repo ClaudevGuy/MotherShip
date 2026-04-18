@@ -38,7 +38,7 @@ Core capabilities:
 - **Run Detail** — Every run gets its own page: full input/output, model selection reasoning, tier badge, savings vs Tier 1
 - **Agent Runs Stream** — Unified live feed of every run across every agent (/logs → "Agent Runs" tab)
 - **Deployments** — Service deployment tracking across dev/staging/production
-- **Integrations** — First-class sidebar destination for connecting GitHub, Slack, Vercel, AWS, OpenAI, Anthropic, Datadog, PagerDuty, Jira, Linear, Sentry, Stripe, PostHog with search, category filters, and live connection status
+- **Integrations** — First-class sidebar destination for connecting GitHub, Slack, Vercel, AWS, OpenAI, Anthropic, Datadog, PagerDuty, Jira, Linear, Sentry, Stripe, PostHog with search, category filters, and live connection status. Always-visible catalog means the grid is never empty on fresh installs. Outbound webhook subscriptions (HTTPS + HMAC-SHA256 signing secret) for 11 event types including `agent.run.completed`, `workflow.failed`, `deployment.started`, `incident.opened`
 - **Logs & Observability** — Unified log stream, LLM call inspection, distributed traces
 - **Audit Log** — Every admin action, agent change, and deletion. Who, when, what. Searchable + filterable
 - **Incidents** — Alert rules, on-call scheduling, incident management
@@ -107,9 +107,9 @@ To run AI agents, you need at least one AI provider API key.
 
 ### Option A: Through the UI
 
-1. Go to **Integrations > + Add Integration**
-2. Enter the service name (e.g. "Anthropic") and paste your API key
-3. The key is encrypted at rest in the database
+1. Go to **Integrations** (sidebar, or press `g i`)
+2. Click **Connect** on the Anthropic / OpenAI tile in the catalog grid
+3. Paste your API key — it's encrypted at rest in the database
 4. Create an agent and run it — it picks up the key automatically
 
 ### Option B: Through `.env`
