@@ -494,87 +494,124 @@ export default function AgentsPage() {
     getFilteredAgents,
     fetch: fetchAgents,
   } = useAgentsStore();
+  const allAgents = useAgentsStore((s) => s.agents);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchAgents(); }, []);
 
   const agents = getFilteredAgents();
+  const hasAgents = allAgents.length > 0;
+  const hasActiveFilters =
+    searchQuery.trim() !== "" || statusFilter !== "all" || modelFilter !== "all";
 
   return (
     <div className="space-y-6">
       <PageHeader title="AI Agents" description="Monitor, manage, and deploy autonomous AI agents">
-        <Button size="sm" onClick={() => setQuickCreateOpen(true)}>
-          <Plus className="size-3.5 mr-1" />
-          Create Agent
-        </Button>
+        {hasAgents && (
+          <Button size="sm" onClick={() => setQuickCreateOpen(true)}>
+            <Plus className="size-3.5 mr-1" />
+            Create Agent
+          </Button>
+        )}
       </PageHeader>
 
       <QuickCreateModal open={quickCreateOpen} onClose={() => setQuickCreateOpen(false)} />
 
-      {/* Templates */}
-      <TemplatesRow />
+      {!hasAgents ? (
+        <>
+          {/* Empty state — templates become the primary path forward */}
+          <div className="rounded-xl border border-dashed border-border/60 bg-card/40 px-8 py-10 text-center">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-brand/10 border border-brand/20">
+              <Plus className="size-5 text-brand" />
+            </div>
+            <h2 className="text-base font-semibold text-foreground">No agents yet</h2>
+            <p className="mt-1 mx-auto max-w-sm text-sm text-muted-foreground">
+              Deploy a template in one click, or build a custom agent from scratch.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-2">
+              <Button size="sm" onClick={() => setQuickCreateOpen(true)}>
+                <Plus className="size-3.5 mr-1" /> Quick Create
+              </Button>
+              <Link href="/agents/builder">
+                <Button size="sm" variant="outline">Advanced Builder</Button>
+              </Link>
+            </div>
+          </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search agents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+          <TemplatesRow />
+        </>
+      ) : (
+        <>
+          {/* Filters — only shown when there's data to filter */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search agents..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+
+            <Select
+              value={statusFilter}
+              onValueChange={(val) =>
+                val && setStatusFilter(val as typeof statusFilter)
+              }
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="running">Running</SelectItem>
+                <SelectItem value="idle">Idle</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+                <SelectItem value="deploying">Deploying</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={modelFilter}
+              onValueChange={(val) =>
+                val && setModelFilter(val as typeof modelFilter)
+              }
+            >
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Models</SelectItem>
+                <SelectItem value="Claude">Claude</SelectItem>
+                <SelectItem value="GPT-4">GPT-4</SelectItem>
+                <SelectItem value="Gemini">Gemini</SelectItem>
+                <SelectItem value="Custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Data Table */}
+          <DataTable
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            columns={columns as any}
+            data={agents as unknown as Record<string, unknown>[]}
+            onRowClick={(item) => {
+              const agent = item as unknown as Agent;
+              router.push(`/agents/${agent.id}`);
+            }}
+            emptyMessage={
+              hasActiveFilters ? "No agents match your filters." : "No agents yet."
+            }
           />
-        </div>
 
-        <Select
-          value={statusFilter}
-          onValueChange={(val) =>
-            val && setStatusFilter(val as typeof statusFilter)
-          }
-        >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="running">Running</SelectItem>
-            <SelectItem value="idle">Idle</SelectItem>
-            <SelectItem value="paused">Paused</SelectItem>
-            <SelectItem value="error">Error</SelectItem>
-            <SelectItem value="deploying">Deploying</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={modelFilter}
-          onValueChange={(val) =>
-            val && setModelFilter(val as typeof modelFilter)
-          }
-        >
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Model" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Models</SelectItem>
-            <SelectItem value="Claude">Claude</SelectItem>
-            <SelectItem value="GPT-4">GPT-4</SelectItem>
-            <SelectItem value="Gemini">Gemini</SelectItem>
-            <SelectItem value="Custom">Custom</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Data Table */}
-      <DataTable
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        columns={columns as any}
-        data={agents as unknown as Record<string, unknown>[]}
-        onRowClick={(item) => {
-          const agent = item as unknown as Agent;
-          router.push(`/agents/${agent.id}`);
-        }}
-        emptyMessage="No agents match your filters."
-      />
+          {/* Templates — subordinate position when user already has agents */}
+          <div className="pt-6 border-t border-border/40">
+            <TemplatesRow />
+          </div>
+        </>
+      )}
     </div>
   );
 }

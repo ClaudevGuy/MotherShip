@@ -11,6 +11,7 @@ import { useSettingsStore } from "@/stores/settings-store";
 import { useIntegrationsStore } from "@/stores/integrations-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { invalidate } from "@/lib/store-cache";
 
 const NAV_ITEMS = ["General", "Appearance", "Notifications", "Data & Privacy", "Security", "Audit Log"];
@@ -98,13 +99,13 @@ export default function SettingsPage() {
         </div>
 
         {/* Right content */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 max-w-xl space-y-6">
 
           {/* ─── GENERAL ─── */}
           {section === "General" && (
             <GlassPanel padding="lg">
               <h3 className="text-sm font-semibold text-foreground mb-4">Project Identity</h3>
-              <div className="space-y-4 max-w-lg">
+              <div className="space-y-4">
                 <div><label className="text-xs text-muted-foreground block mb-1">Project Name</label><input value={projectName} onChange={(e) => storeSetProjectName(e.target.value)} className="h-9 w-full rounded-lg border border-border bg-muted/30 px-3 text-sm text-foreground outline-none focus:border-brand/50" /></div>
                 <div><label className="text-xs text-muted-foreground block mb-1">Description</label><textarea value={projectDescription} onChange={(e) => storeSetProjectDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none resize-none focus:border-brand/50" /></div>
                 <div>
@@ -528,10 +529,8 @@ export default function SettingsPage() {
 
                 {/* Create Key Modal */}
                 {createKeyOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => !createdKeyRaw && handleDoneKey()} />
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                      <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
+                  <ModalShell open={createKeyOpen} onClose={handleDoneKey} dismissable={!createdKeyRaw && !creatingKey}>
+                    <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
                         <div className="flex items-center justify-between border-b border-border px-5 py-4">
                           <div className="flex items-center gap-2">
                             <Key className="size-4 text-brand" />
@@ -608,8 +607,7 @@ export default function SettingsPage() {
                           </>
                         )}
                       </div>
-                    </div>
-                  </>
+                  </ModalShell>
                 )}
               </div>
             );
@@ -714,10 +712,8 @@ export default function SettingsPage() {
 
                 {/* Add Integration Modal */}
                 {addIntOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setAddIntOpen(false)} />
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                      <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
+                  <ModalShell open={addIntOpen} onClose={() => setAddIntOpen(false)} dismissable={!addingInt}>
+                    <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
                         <div className="flex items-center justify-between border-b border-border px-5 py-4">
                           <div className="flex items-center gap-2">
                             <Link2 className="size-4 text-brand" />
@@ -759,8 +755,7 @@ export default function SettingsPage() {
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  </>
+                  </ModalShell>
                 )}
               </div>
             );

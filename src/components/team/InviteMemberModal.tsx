@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "sonner";
 
 interface Props {
@@ -24,8 +25,6 @@ export function InviteMemberModal({ open, onOpenChange, onInviteSent }: Props) {
   const [role, setRole] = useState("viewer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!open) return null;
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -59,10 +58,8 @@ export function InviteMemberModal({ open, onOpenChange, onInviteSent }: Props) {
   };
 
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
+    <ModalShell open={open} onClose={() => onOpenChange(false)} dismissable={!loading}>
+      <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div className="flex items-center gap-2">
@@ -131,7 +128,6 @@ export function InviteMemberModal({ open, onOpenChange, onInviteSent }: Props) {
             </Button>
           </div>
         </div>
-      </div>
-    </>
+    </ModalShell>
   );
 }

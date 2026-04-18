@@ -12,6 +12,7 @@ import type { TeamRole } from "@/types/common";
 import { InviteMemberModal } from "@/components/team/InviteMemberModal";
 import { CreateApiKeyModal } from "@/components/team/CreateApiKeyModal";
 import { PendingInvites } from "@/components/team/PendingInvites";
+import { ModalShell } from "@/components/ui/modal-shell";
 
 // Generate consistent avatar color from name
 const PALETTE = ["var(--primary)", "#A855F7", "#F59E0B", "#39FF14", "#EF4444", "#EC4899", "#10A37F"];
@@ -371,8 +372,8 @@ export default function TeamPage() {
 
       {/* Edit Role Modal */}
       {editRoleTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]" onClick={() => setEditRoleTarget(null)}>
-          <div className="w-[380px] rounded-xl border border-border bg-card p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <ModalShell open={!!editRoleTarget} onClose={() => setEditRoleTarget(null)}>
+          <div className="w-[380px] rounded-xl border border-border bg-card p-6 shadow-2xl">
             <h3 className="text-sm font-semibold text-foreground mb-1">Edit Role</h3>
             <p className="text-xs text-muted-foreground/60 mb-4">Change role for {editRoleTarget.name}</p>
             <div className="space-y-2 mb-4">
@@ -425,7 +426,7 @@ export default function TeamPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
 
       <InviteMemberModal

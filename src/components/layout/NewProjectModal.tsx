@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, FolderPlus } from "lucide-react";
+import { ModalShell } from "@/components/ui/modal-shell";
 
 interface Props {
   open: boolean;
@@ -13,8 +14,6 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  if (!open) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -24,15 +23,8 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
     onOpenChange(false);
   };
 
-  const handleBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onOpenChange(false);
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      onClick={handleBackdrop}
-    >
+    <ModalShell open={open} onClose={() => onOpenChange(false)}>
       <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
@@ -103,6 +95,6 @@ export function NewProjectModal({ open, onOpenChange, onConfirm }: Props) {
           </div>
         </form>
       </div>
-    </div>
+    </ModalShell>
   );
 }

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { apiFetch } from "@/lib/api-client";
 import { useAgentsStore } from "@/stores/agents-store";
 import { toast } from "sonner";
@@ -310,8 +311,8 @@ function CreateEvalModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]" onClick={onClose}>
-      <div className="w-[600px] max-h-[85vh] rounded-xl border border-border bg-card shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <ModalShell open={true} onClose={onClose} dismissable={!creating}>
+      <div className="w-[600px] max-h-[85vh] rounded-xl border border-border bg-card shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
           <div>
@@ -464,6 +465,6 @@ function CreateEvalModal({
           )}
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }

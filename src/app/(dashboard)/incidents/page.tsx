@@ -5,6 +5,7 @@ import { useIncidentsStore } from "@/stores/incidents-store";
 import { PageHeader, GlassPanel, MetricCard } from "@/components/shared";
 import { Switch } from "@/components/ui/switch";
 import { AlertTriangle, Clock, Activity, TrendingDown, Pencil, Trash2, Plus, Shield } from "lucide-react";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { IncidentSeverity } from "@/types/common";
@@ -316,10 +317,8 @@ export default function IncidentsPage() {
 
       {/* ═══ CREATE ALERT RULE MODAL ═══ */}
       {alertRuleOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setAlertRuleOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
+        <ModalShell open={alertRuleOpen} onClose={() => setAlertRuleOpen(false)}>
+          <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
               <div className="flex items-center justify-between border-b border-border px-5 py-4">
                 <h2 className="text-sm font-semibold text-foreground">Create Alert Rule</h2>
                 <button onClick={() => setAlertRuleOpen(false)} className="text-muted-foreground hover:text-foreground">×</button>
@@ -374,9 +373,8 @@ export default function IncidentsPage() {
                 <button className="px-3 py-1.5 text-xs rounded-lg border border-border text-muted-foreground hover:text-foreground" onClick={() => setAlertRuleOpen(false)}>Cancel</button>
                 <button className="px-4 py-1.5 text-xs rounded-lg bg-brand text-primary-foreground font-medium hover:bg-brand/90" onClick={() => { setAlertRuleOpen(false); toast.success("Alert rule created"); }}>Create Rule</button>
               </div>
-            </div>
           </div>
-        </>
+        </ModalShell>
       )}
     </div>
   );

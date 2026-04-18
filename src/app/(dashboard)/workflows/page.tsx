@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useWorkflowsStore, type Workflow } from "@/stores/workflows-store";
 import { PageHeader, StatusBadge, GlassPanel, ConfirmDialog } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { NewWorkflowModal } from "@/components/overview/NewWorkflowModal";
 import { WorkflowDetailPanel } from "@/components/workflows/WorkflowDetailPanel";
 import { formatRelativeTime } from "@/lib/format";
@@ -69,7 +70,7 @@ function RunWorkflowPanel({ workflow, onClose }: { workflow: Workflow; onClose: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <ModalShell open={true} onClose={onClose} dismissable={!isRunning}>
       <div className="w-full max-w-xl rounded-xl border border-border bg-card shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <div className="flex items-center gap-2">
@@ -131,7 +132,7 @@ function RunWorkflowPanel({ workflow, onClose }: { workflow: Workflow; onClose: 
           </Button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
@@ -259,6 +260,7 @@ export default function WorkflowsPage() {
   const [runTarget, setRunTarget] = useState<Workflow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Workflow | null>(null);
   const [detailTarget, setDetailTarget] = useState<Workflow | null>(null);
+  const [learnOpen, setLearnOpen] = useState(false);
 
   useEffect(() => {
     fetchWorkflows();
@@ -354,9 +356,13 @@ export default function WorkflowsPage() {
               <Plus className="size-4 mr-1.5" />
               Create your first workflow
             </Button>
-            <Link href="/tutorial" className="text-xs text-muted-foreground hover:text-brand transition-colors">
+            <button
+              type="button"
+              onClick={() => setLearnOpen(true)}
+              className="text-xs text-muted-foreground hover:text-brand transition-colors"
+            >
               Learn about workflows &rarr;
-            </Link>
+            </button>
           </div>
         </div>
       ) : (
@@ -393,6 +399,107 @@ export default function WorkflowsPage() {
         variant="danger"
         onConfirm={handleDelete}
       />
+
+      {/* ── Learn About Workflows modal ── */}
+      <ModalShell open={learnOpen} onClose={() => setLearnOpen(false)}>
+        <div className="w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+            <div className="flex items-center gap-2">
+              <GitBranch className="size-4 text-brand" />
+              <span className="text-sm font-semibold">What are Workflows?</span>
+            </div>
+            <button
+              onClick={() => setLearnOpen(false)}
+              className="text-muted-foreground hover:text-foreground text-lg leading-none"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+          <div className="px-5 py-5 space-y-5 text-sm">
+            <p className="text-muted-foreground leading-relaxed">
+              Workflows are multi-agent pipelines that chain AI agents together. The output of one
+              agent becomes the input of the next — letting you break complex tasks into focused steps.
+            </p>
+
+            {/* Visual chain */}
+            <div className="rounded-lg border border-border bg-muted/20 p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground/60 mb-3">Example pipeline</p>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <div className="flex-1 rounded-md border border-border bg-card px-2.5 py-2 text-center">
+                  <p className="font-medium text-foreground">Research</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Gather sources</p>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground/50 shrink-0" />
+                <div className="flex-1 rounded-md border border-border bg-card px-2.5 py-2 text-center">
+                  <p className="font-medium text-foreground">Summarize</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Condense findings</p>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground/50 shrink-0" />
+                <div className="flex-1 rounded-md border border-border bg-card px-2.5 py-2 text-center">
+                  <p className="font-medium text-foreground">Publish</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Format &amp; ship</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide">How triggers work</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-start gap-2 rounded-md border border-border/60 px-2.5 py-2">
+                  <Clock className="size-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground">Schedule</p>
+                    <p className="text-muted-foreground text-[11px]">Cron-based runs</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-md border border-border/60 px-2.5 py-2">
+                  <Webhook className="size-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground">Webhook</p>
+                    <p className="text-muted-foreground text-[11px]">External event</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-md border border-border/60 px-2.5 py-2">
+                  <Hand className="size-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground">Manual</p>
+                    <p className="text-muted-foreground text-[11px]">Run on demand</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 rounded-md border border-border/60 px-2.5 py-2">
+                  <Zap className="size-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground">Event</p>
+                    <p className="text-muted-foreground text-[11px]">Reactive trigger</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-brand/20 bg-brand/[0.04] px-3.5 py-3 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Tip:</span> Keep each step narrow — one
+              agent, one job. Short focused prompts chain together more reliably than a single giant one.
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3 bg-muted/10">
+            <Button variant="outline" size="sm" onClick={() => setLearnOpen(false)}>
+              Close
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setLearnOpen(false);
+                setCreateOpen(true);
+              }}
+              className="bg-brand hover:bg-brand/90 text-primary-foreground"
+            >
+              <Plus className="size-3.5 mr-1" />
+              Create your first workflow
+            </Button>
+          </div>
+        </div>
+      </ModalShell>
     </div>
   );
 }

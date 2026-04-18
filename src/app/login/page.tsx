@@ -4,7 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { MothershipMark } from "@/components/shared";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-3">
           <div className="relative flex size-12 items-center justify-center">
             <div className="absolute inset-0 rounded-xl bg-brand/[0.08]" />
-            <Zap className="relative z-10 size-6 text-brand" strokeWidth={2.5} fill="rgb(var(--brand-rgb) / 0.15)" />
+            <MothershipMark className="relative z-10 size-7 text-brand" strokeWidth={1.8} fill="rgb(var(--brand-rgb) / 0.15)" />
           </div>
           <h1 className="font-heading text-xl font-bold uppercase tracking-[0.12em] text-foreground">
             MOTHERSHIP

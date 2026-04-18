@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/format";
@@ -433,8 +434,8 @@ export default function PromptStudioPage() {
 
       {/* ── Create Prompt Modal ── */}
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]" onClick={() => setCreateOpen(false)}>
-          <div className="w-[400px] rounded-xl border border-border bg-card p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <ModalShell open={createOpen} onClose={() => setCreateOpen(false)}>
+          <div className="w-[400px] rounded-xl border border-border bg-card p-6 shadow-2xl">
             <h3 className="text-sm font-semibold text-foreground mb-4">New Prompt</h3>
             <Input
               value={newName}
@@ -449,7 +450,7 @@ export default function PromptStudioPage() {
               <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground" onClick={handleCreate}>Create</Button>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
     </div>
   );

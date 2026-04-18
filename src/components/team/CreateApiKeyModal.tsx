@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, Loader2, Key, Copy, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { toast } from "sonner";
 
 interface Props {
@@ -33,8 +34,6 @@ export function CreateApiKeyModal({ open, onOpenChange, onKeyCreated }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
-
-  if (!open) return null;
 
   const toggleScope = (scope: string) => {
     setScopes((prev) =>
@@ -81,10 +80,8 @@ export function CreateApiKeyModal({ open, onOpenChange, onKeyCreated }: Props) {
   };
 
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => !createdKey && onOpenChange(false)} />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
+    <ModalShell open={open} onClose={() => onOpenChange(false)} dismissable={!createdKey && !loading}>
+      <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div className="flex items-center gap-2">
@@ -191,7 +188,6 @@ export function CreateApiKeyModal({ open, onOpenChange, onKeyCreated }: Props) {
             </>
           )}
         </div>
-      </div>
-    </>
+    </ModalShell>
   );
 }

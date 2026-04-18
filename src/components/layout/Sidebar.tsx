@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, Zap } from "lucide-react";
+import { ChevronsLeft } from "lucide-react";
+import { MothershipMark } from "@/components/shared";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useUIStore } from "@/stores/ui-store";
 import { useIncidentsStore } from "@/stores/incidents-store";
@@ -62,10 +63,10 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
           <div className="absolute -inset-1 rounded-[12px] opacity-0 group-hover/logo:opacity-100 transition-opacity duration-500 pointer-events-none"
             style={{ background: "radial-gradient(circle at 30% 30%, rgb(var(--brand-rgb) / 0.3) 0%, transparent 60%)", filter: "blur(8px)" }}
           />
-          <Zap
-            className="relative z-10 size-[14px] text-brand drop-shadow-[0_0_6px_rgb(var(--brand-rgb)/0.5)]"
-            strokeWidth={2.5}
-            fill="rgb(var(--brand-rgb) / 0.35)"
+          <MothershipMark
+            className="relative z-10 size-[18px] text-brand drop-shadow-[0_0_6px_rgb(var(--brand-rgb)/0.5)]"
+            strokeWidth={1.8}
+            fill="rgb(var(--brand-rgb) / 0.2)"
           />
           <div className="absolute inset-0 rounded-[10px] pointer-events-none"
             style={{ boxShadow: "0 0 16px rgb(var(--brand-rgb) / 0.18), inset 0 1px 0 rgb(var(--ink-rgb) / 0.06)" }}

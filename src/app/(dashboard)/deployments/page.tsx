@@ -6,6 +6,7 @@ import { PageHeader, GlassPanel, StatusBadge, ConfirmDialog } from "@/components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { ModalShell } from "@/components/ui/modal-shell";
 import { Rocket, Bot, User, RotateCcw, ScrollText, ChevronDown, ChevronRight, Globe, Cog, Database, Radio, Shield, BarChart3, Search, Layers, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatRelativeTime, formatDuration } from "@/lib/format";
@@ -32,8 +33,6 @@ function DeployModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [version, setVersion] = useState("");
   const [environment, setEnvironment] = useState<DeployStage>("dev");
   const [deploying, setDeploying] = useState(false);
-
-  if (!open) return null;
 
   const handleDeploy = async () => {
     if (!service.trim() || !version.trim()) {
@@ -73,10 +72,8 @@ function DeployModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   };
 
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
+    <ModalShell open={open} onClose={onClose} dismissable={!deploying}>
+      <div className="w-full max-w-md rounded-lg border border-border bg-card shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div className="flex items-center gap-2">
               <Rocket className="size-4 text-brand" />
@@ -121,8 +118,7 @@ function DeployModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             </Button>
           </div>
         </div>
-      </div>
-    </>
+    </ModalShell>
   );
 }
 
