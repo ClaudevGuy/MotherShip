@@ -46,34 +46,43 @@ interface TutorialStep {
   plate: React.ReactNode;
 }
 
-// ── Step 1 — Install & configure ─────────────────────────────────────────────
-// The plate mirrors the full setup flow (not just git clone): env bootstrap,
-// secret generation, schema push, dev server. Output is stylized but hews to
-// the real command shapes so a new user pasting along sees recognizable lines.
-function PlateTerminal() {
+// ── Step 1 — Setup status ────────────────────────────────────────────────────
+// If the user is looking at this page, they're already logged in on localhost:
+// clone, env, schema push, and admin registration all happened. The plate
+// reflects that reality — it's a status check, not a command script. The two
+// amber items are the hygiene steps most people forget right after install.
+function PlateSetupCheck() {
   return (
-    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden font-mono text-[12.5px] leading-[1.7]">
+    <div className="rounded-md border border-[#3d3a39] bg-[#0d0c0a] shadow-[6px_6px_0_rgba(0,0,0,0.4)] overflow-hidden font-mono text-[12.5px] leading-[1.85]">
       <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2.5">
         <div className="flex gap-1.5">
           <span className="size-2.5 rounded-full bg-[#e96d5a]" />
           <span className="size-2.5 rounded-full bg-[#e8b24d]" />
           <span className="size-2.5 rounded-full bg-[#5fbf7a]" />
         </div>
-        <span className="text-[10px] tracking-[0.22em] text-white/30 uppercase ml-auto">terminal · illustrative</span>
+        <span className="text-[10px] tracking-[0.22em] text-white/30 uppercase ml-auto">setup · status</span>
       </div>
-      <div className="px-5 py-4 text-[#e7e2d3] space-y-0.5">
-        <div><span className="text-[#d8442e] font-medium">$</span> <span className="text-[#f0a87a]">git</span> clone <span className="text-[#5fbf7a]">https://github.com/ClaudevGuy/MotherShip</span></div>
-        <div><span className="text-[#d8442e] font-medium">$</span> cd MotherShip &amp;&amp; <span className="text-[#f0a87a]">npm</span> install</div>
-        <div className="pl-5 text-white/45 text-[11.5px]">added 827 packages, audited 828 in 14s</div>
-        <div className="mt-1.5"><span className="text-[#d8442e] font-medium">$</span> cp .env.example .env <span className="text-white/35"># fill in DATABASE_URL</span></div>
-        <div><span className="text-[#d8442e] font-medium">$</span> openssl rand -hex 32 <span className="text-white/35"># → ENCRYPTION_KEY</span></div>
-        <div><span className="text-[#d8442e] font-medium">$</span> openssl rand -base64 32 <span className="text-white/35"># → NEXTAUTH_SECRET</span></div>
-        <div className="mt-1.5"><span className="text-[#d8442e] font-medium">$</span> <span className="text-[#f0a87a]">npx</span> prisma db push</div>
-        <div className="pl-5 text-white/45 text-[11.5px]">✔ Your database is now in sync with your schema.</div>
-        <div className="mt-1.5"><span className="text-[#d8442e] font-medium">$</span> <span className="text-[#f0a87a]">npm</span> run dev</div>
-        <div className="pl-5 text-white/55 text-[11.5px]"><span className="text-[#5fbf7a]">▲ Next.js 14.2.35</span></div>
-        <div className="pl-5 text-white/55 text-[11.5px]"> - Local: <span className="text-[#f0a87a]">http://localhost:3000</span></div>
-        <div className="pl-5 text-white/45 text-[11.5px]"> ✓ Ready in 2.8s</div>
+      <div className="px-5 py-4 text-[#e7e2d3]">
+        <div className="text-[9.5px] tracking-[0.22em] uppercase mb-2" style={{ color: EMERALD }}>Done</div>
+        <div className="flex items-center gap-3"><Check className="size-3.5 shrink-0" style={{ color: EMERALD }} /><span>Repository cloned</span></div>
+        <div className="flex items-center gap-3"><Check className="size-3.5 shrink-0" style={{ color: EMERALD }} /><span>Postgres connected</span></div>
+        <div className="flex items-center gap-3"><Check className="size-3.5 shrink-0" style={{ color: EMERALD }} /><span>Schema pushed</span></div>
+        <div className="flex items-center gap-3"><Check className="size-3.5 shrink-0" style={{ color: EMERALD }} /><span>Admin account registered</span></div>
+        <div className="flex items-center gap-3"><Check className="size-3.5 shrink-0" style={{ color: EMERALD }} /><span>Keys encrypted at rest</span></div>
+
+        <div className="text-[9.5px] tracking-[0.22em] uppercase mt-4 mb-2" style={{ color: "#e8b24d" }}>Before you continue</div>
+        <div className="flex items-center gap-3">
+          <div className="size-3.5 shrink-0 rounded-full border border-[#e8b24d] flex items-center justify-center">
+            <div className="size-1 rounded-full bg-[#e8b24d]" />
+          </div>
+          <span className="text-white/80">Set <span className="text-[#f0a87a]">ALLOW_REGISTRATION=false</span></span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="size-3.5 shrink-0 rounded-full border border-[#e8b24d] flex items-center justify-center">
+            <div className="size-1 rounded-full bg-[#e8b24d]" />
+          </div>
+          <span className="text-white/80">Back up <span className="text-[#f0a87a]">ENCRYPTION_KEY</span></span>
+        </div>
       </div>
     </div>
   );
@@ -278,25 +287,23 @@ const STEPS: TutorialStep[] = [
     id: "install",
     n: 1,
     icon: Terminal,
-    title: "Install & configure Mothership",
-    subtitle: "Clone, paste two secrets, push the schema. The console comes up on localhost:3000.",
-    readTime: "4 min",
-    ctaLabel: "Open the repository",
+    title: "You're in — finish the setup",
+    subtitle: "Two quick items to lock down before your first agent.",
+    readTime: "2 min",
+    ctaLabel: "View the README",
     ctaHref: "https://github.com/ClaudevGuy/MotherShip",
     body: (
       <>
-        <p>Mothership is self-hosted by design — no signup, no hosted tier, no email wall. You clone the repo, paste two secrets into <code>.env</code>, push the schema, register yourself, and the console is live. Your keys stay on your machine.</p>
-        <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground/70 !mt-6 !mb-2">Setup checklist</p>
-        <ul className="space-y-1.5 text-[13.5px] text-foreground/85 list-none pl-0 !mt-2">
-          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Node 20+ and a Postgres URL — local, Neon, or Supabase all work</span></li>
-          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Generate <code>ENCRYPTION_KEY</code> and <code>NEXTAUTH_SECRET</code> with <code>openssl</code></span></li>
-          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Push the schema with <code>npx prisma db push</code></span></li>
-          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Register the first admin, then set <code>ALLOW_REGISTRATION=false</code></span></li>
+        <p>You've cloned the repo, pushed the schema, and registered as admin — the hardest part is done. Everything from here happens inside the console you're looking at now.</p>
+        <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-muted-foreground/70 !mt-6 !mb-2">Two items before you continue</p>
+        <ul className="space-y-2 text-[13.5px] text-foreground/85 list-none pl-0 !mt-2">
+          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Set <code>ALLOW_REGISTRATION=false</code> in your <code>.env</code> so nobody else can create an admin account on this instance.</span></li>
+          <li className="flex gap-2"><span className="text-brand shrink-0">▸</span><span>Back up your <code>ENCRYPTION_KEY</code> somewhere safe. If it's lost, encrypted provider credentials can't be recovered — you'd have to re-enter every key.</span></li>
         </ul>
-        <p className="text-[12.5px] text-muted-foreground !mt-5">Back up your <code>ENCRYPTION_KEY</code> somewhere safe — if you lose it, stored provider credentials can't be recovered. Full commands and a threat-model section live in the repo README.</p>
+        <p className="!mt-5">The next six steps walk through the loop: create an agent, watch it stream, version the prompt, write an eval, see what auto-routing saved you, and turn on the safeguards.</p>
       </>
     ),
-    plate: <PlateTerminal />,
+    plate: <PlateSetupCheck />,
   },
   {
     id: "create-agent",
@@ -467,7 +474,7 @@ export default function TutorialPage() {
             <div className="h-px w-8" style={{ background: OXBLOOD }} />
             <span style={{ color: OXBLOOD }}>Tutorial</span>
             <span className="text-muted-foreground/40">·</span>
-            <span>From clone to streaming agent in seven steps</span>
+            <span>Seven steps from fresh install to streaming agent</span>
           </div>
           <h1 className="font-serif text-[44px] leading-[1.05] tracking-[-0.02em] text-foreground max-w-[20ch]">
             Get your first agent running.
