@@ -12,6 +12,7 @@
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 import { getTierConfig, type Tier, type ProviderKey } from "@/lib/model-selector";
+import { scorePair } from "@/lib/downshift/judge";
 
 const VALID_PROVIDERS: ProviderKey[] = ["CLAUDE", "GPT4", "GEMINI"];
 
@@ -91,6 +92,15 @@ export async function maybeDispatchShadow(opts: ShadowDispatchOpts): Promise<voi
       Math.round((shadowTokensIn * inputRate + shadowTokensOut * outputRate) * 10000) /
       10000;
 
+    // ── Score the pair (LLM-as-judge, best-effort) ──
+    const judged = await scorePair({
+      apiKey: opts.apiKey,
+      input: opts.input,
+      systemPrompt: opts.systemPrompt,
+      productionOutput: opts.productionOutput,
+      shadowOutput,
+    });
+
     // ── Persist ──
     await prisma.shadowRun.create({
       data: {
@@ -112,6 +122,10 @@ export async function maybeDispatchShadow(opts: ShadowDispatchOpts): Promise<voi
         shadowTokensIn,
         shadowTokensOut,
         shadowLatencyMs: latencyMs,
+        productionScore: judged.productionScore,
+        shadowScore: judged.shadowScore,
+        judgeMethod: judged.judgeMethod,
+        scoredAt: judged.judgeMethod ? new Date() : null,
       },
     });
   } catch (err) {
