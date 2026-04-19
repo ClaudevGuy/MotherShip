@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   FileCode, Plus, Search, Bot, Save, CheckCircle2, Play, Square, Copy,
-  ChevronRight, Sparkles, X, RotateCcw,
+  ChevronRight, Sparkles, X, RotateCcw, GitBranch, FlaskConical, FileDiff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -267,34 +267,49 @@ export default function PromptStudioPage() {
     <div className="flex h-[calc(100vh-54px)] -m-4 md:-m-6 overflow-hidden">
       {/* ── LEFT PANEL — Prompt Library ── */}
       <div className="w-[320px] shrink-0 border-r border-border flex flex-col bg-card/30">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <FileCode className="size-4 text-brand" />
-            <span className="text-sm font-semibold text-foreground">Prompts</span>
+        {/* Header with subtle gradient + eyebrow + big heading */}
+        <div className="relative px-4 pt-4 pb-3 border-b border-border/50">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px"
+            style={{ background: "linear-gradient(90deg, rgb(var(--brand-rgb) / 0.8) 0%, rgb(var(--brand-rgb) / 0.2) 60%, transparent 100%)" }}
+          />
+          <div className="flex items-center gap-1.5 text-[9px] font-mono tracking-[0.2em] uppercase text-muted-foreground/60 mb-2">
+            <FileCode className="size-3 text-brand" />
+            <span>Prompt Studio</span>
           </div>
-          <Button
-            size="sm"
-            className="h-7 gap-1.5 bg-brand hover:bg-brand/90 text-primary-foreground text-xs font-medium"
-            onClick={() => setCreateOpen(true)}
-          >
-            <Plus className="size-3" />
-            New Prompt
-          </Button>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-serif text-xl leading-none text-foreground">Library</h2>
+            <Button
+              size="sm"
+              className="h-7 gap-1.5 bg-brand hover:bg-brand/90 text-primary-foreground text-xs font-medium shrink-0"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus className="size-3" />
+              New Prompt
+            </Button>
+          </div>
+          <p className="mt-1.5 text-[11px] text-muted-foreground/60 leading-snug">
+            {prompts.length > 0
+              ? `${prompts.length} prompt${prompts.length === 1 ? "" : "s"} · ${prompts.filter(p => p.activeVersion).length} active`
+              : "Version and test prompts like code"}
+          </p>
         </div>
 
-        {/* Search */}
-        <div className="px-3 py-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/50" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search prompts..."
-              className="h-8 pl-8 text-xs bg-muted/30 border-border/50"
-            />
+        {/* Search — only show when there's something to filter */}
+        {prompts.length > 0 && (
+          <div className="px-3 py-2 border-b border-border/30">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/50" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Filter prompts..."
+                className="h-8 pl-8 text-xs bg-muted/30 border-border/50"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* List */}
         <div className="flex-1 overflow-y-auto">
@@ -353,10 +368,61 @@ export default function PromptStudioPage() {
       {/* ── RIGHT PANEL ── */}
       <div className="flex-1 flex flex-col min-w-0 bg-background">
         {!selectedId || !currentVersion ? (
-          /* No prompt selected */
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground/40">
-            <FileCode className="size-8" />
-            <p className="text-sm">Select a prompt or create a new one</p>
+          /* No prompt selected — editorial hero */
+          <div className="flex-1 flex items-center justify-center px-8">
+            <div className="max-w-lg w-full">
+              {/* Eyebrow */}
+              <div className="flex items-center gap-2 text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground/70 mb-4">
+                <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+                <FileCode className="size-3 text-brand" />
+                <span>Prompt Studio</span>
+              </div>
+
+              {/* Big editorial headline */}
+              <h1 className="font-serif text-3xl leading-[1.1] tracking-[-0.02em] text-foreground">
+                Version your prompts<br />
+                <span className="italic text-muted-foreground">like code.</span>
+              </h1>
+              <p className="mt-4 font-serif italic text-[15px] leading-relaxed text-muted-foreground/80 max-w-md">
+                Every save creates an immutable version. Activate one and the next agent run uses it — no deployment, no redeploy.
+              </p>
+
+              {/* Feature tiles */}
+              <div className="mt-8 grid grid-cols-3 gap-3">
+                {[
+                  { icon: GitBranch, label: "Versioning", desc: "Every save is immutable" },
+                  { icon: FlaskConical, label: "Playground", desc: "Stream-test any model" },
+                  { icon: FileDiff, label: "Diff viewer", desc: "Compare two versions" },
+                ].map((f) => (
+                  <div key={f.label} className="rounded-lg border border-border/60 bg-card/40 px-3 py-3">
+                    <div className="flex size-7 items-center justify-center rounded-md bg-brand/10 text-brand mb-2">
+                      <f.icon className="size-3.5" />
+                    </div>
+                    <p className="text-[11px] font-semibold text-foreground leading-tight">{f.label}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">{f.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div className="mt-8 flex items-center gap-3">
+                <Button
+                  onClick={() => setCreateOpen(true)}
+                  className="bg-brand hover:bg-brand/90 text-primary-foreground"
+                >
+                  <Plus className="size-3.5 mr-1.5" /> Create Prompt
+                </Button>
+                {prompts.length > 0 && (
+                  <button
+                    onClick={() => selectPrompt(prompts[0].id)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+                  >
+                    Or open <span className="font-medium text-foreground">{prompts[0].name}</span>
+                    <ChevronRight className="size-3" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         ) : (
           <>
