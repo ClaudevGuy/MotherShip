@@ -136,17 +136,54 @@ export default function EvalsPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground/40"><Loader2 className="size-5 animate-spin" /></div>
       ) : suites.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <div className="flex size-14 items-center justify-center rounded-full bg-muted/30">
-            <FlaskConical className="size-6 text-muted-foreground/30" />
+        /* Editorial hero — explain what Evals do + invite action */
+        <div className="flex items-center justify-center py-12 px-4">
+          <div className="max-w-xl w-full text-center">
+            {/* Eyebrow */}
+            <div className="flex items-center justify-center gap-2 text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground/70 mb-4">
+              <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+              <FlaskConical className="size-3 text-brand" />
+              <span>Evals</span>
+              <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+            </div>
+
+            {/* Big editorial headline */}
+            <h1 className="font-serif text-3xl sm:text-4xl leading-[1.1] tracking-[-0.02em] text-foreground">
+              Measure agent quality<br />
+              <span className="italic text-muted-foreground">before it drifts.</span>
+            </h1>
+            <p className="mt-4 font-serif italic text-[15px] leading-relaxed text-muted-foreground/80 max-w-md mx-auto">
+              Test suites run every agent against your expectations. Two scoring engines — deterministic string matching plus Claude-as-judge for tone and nuance.
+            </p>
+
+            {/* Feature tiles */}
+            <div className="mt-8 grid grid-cols-3 gap-3 max-w-lg mx-auto">
+              {[
+                { icon: Hash, label: "String match", desc: "Deterministic checks" },
+                { icon: Bot, label: "AI judge", desc: "Tone and nuance" },
+                { icon: BarChart3, label: "Track drift", desc: "Score history over time" },
+              ].map((f) => (
+                <div key={f.label} className="rounded-lg border border-border/60 bg-card/40 px-3 py-3 text-left">
+                  <div className="flex size-7 items-center justify-center rounded-md bg-brand/10 text-brand mb-2">
+                    <f.icon className="size-3.5" />
+                  </div>
+                  <p className="text-[11px] font-semibold text-foreground leading-tight">{f.label}</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="mt-8">
+              <Button
+                onClick={() => setCreateOpen(true)}
+                className="bg-brand hover:bg-brand/90 text-primary-foreground"
+              >
+                <Plus className="size-4 mr-1.5" />
+                Create your first eval suite
+              </Button>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">No eval suites yet</p>
-            <p className="text-xs text-muted-foreground/50 mt-1 max-w-[280px]">Create test suites to measure and track agent quality over time</p>
-          </div>
-          <Button size="sm" className="bg-brand hover:bg-brand/90 text-primary-foreground gap-1.5" onClick={() => setCreateOpen(true)}>
-            <Plus className="size-3" /> Create your first eval suite
-          </Button>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

@@ -338,39 +338,67 @@ export default function WorkflowsPage() {
           Loading workflows...
         </div>
       ) : workflows.length === 0 ? (
-        /* ── Empty state ── */
-        <div className="flex flex-col items-center gap-4 py-20 text-center">
-          <div className="flex items-center justify-center size-16 rounded-2xl bg-muted/30 border border-border/50">
-            <GitBranch className="size-7 text-muted-foreground/30" />
-          </div>
-          <div>
-            <p className="text-base font-semibold text-foreground">No workflows yet</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              Chain multiple AI agents together into automated pipelines
+        /* ── Empty state — editorial hero ── */
+        <div className="flex items-center justify-center py-12 px-4">
+          <div className="max-w-xl w-full text-center">
+            {/* Eyebrow */}
+            <div className="flex items-center justify-center gap-2 text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground/70 mb-4">
+              <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+              <GitBranch className="size-3 text-brand" />
+              <span>Workflows</span>
+              <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+            </div>
+
+            {/* Big editorial headline */}
+            <h1 className="font-serif text-3xl sm:text-4xl leading-[1.1] tracking-[-0.02em] text-foreground">
+              Orchestrate agents<br />
+              <span className="italic text-muted-foreground">into pipelines.</span>
+            </h1>
+            <p className="mt-4 font-serif italic text-[15px] leading-relaxed text-muted-foreground/80 max-w-md mx-auto">
+              Chain agent outputs, branch on conditions, schedule triggers. Every step replayable, every run auditable.
             </p>
-          </div>
-          <div className="flex items-center gap-3 mt-2">
-            <Button
-              onClick={() => setCreateOpen(true)}
-              className="bg-brand hover:bg-brand/90 text-primary-foreground"
-            >
-              <Plus className="size-4 mr-1.5" />
-              Create your first workflow
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/workflows/builder")}
-            >
-              <GitBranch className="size-4 mr-1.5" />
-              Visual Builder
-            </Button>
-            <button
-              type="button"
-              onClick={() => setLearnOpen(true)}
-              className="text-xs text-muted-foreground hover:text-brand transition-colors"
-            >
-              Learn about workflows &rarr;
-            </button>
+
+            {/* Feature tiles */}
+            <div className="mt-8 grid grid-cols-3 gap-3 max-w-lg mx-auto">
+              {[
+                { icon: ArrowRight, label: "Chain agents", desc: "Output flows to next step" },
+                { icon: Clock, label: "Scheduled", desc: "Cron, webhooks, manual" },
+                { icon: Play, label: "Step replay", desc: "Re-run any failed step" },
+              ].map((f) => (
+                <div key={f.label} className="rounded-lg border border-border/60 bg-card/40 px-3 py-3 text-left">
+                  <div className="flex size-7 items-center justify-center rounded-md bg-brand/10 text-brand mb-2">
+                    <f.icon className="size-3.5" />
+                  </div>
+                  <p className="text-[11px] font-semibold text-foreground leading-tight">{f.label}</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="mt-8 flex items-center justify-center flex-wrap gap-3">
+              <Button
+                onClick={() => setCreateOpen(true)}
+                className="bg-brand hover:bg-brand/90 text-primary-foreground"
+              >
+                <Plus className="size-4 mr-1.5" />
+                Create your first workflow
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/workflows/builder")}
+              >
+                <GitBranch className="size-4 mr-1.5" />
+                Open Visual Builder
+              </Button>
+              <button
+                type="button"
+                onClick={() => setLearnOpen(true)}
+                className="text-xs text-muted-foreground hover:text-brand transition-colors"
+              >
+                Learn more &rarr;
+              </button>
+            </div>
           </div>
         </div>
       ) : (
