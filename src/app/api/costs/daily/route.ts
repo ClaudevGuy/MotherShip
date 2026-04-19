@@ -8,56 +8,65 @@ import {
 } from "@/lib/api-helpers";
 
 // ── GET /api/costs/daily ──
-// Computes daily cost from LlmCall records when DailyCost table is empty
+//
+// Returns a DENSE daily-cost series for the requested window. Every calendar
+// day in [today - days + 1, today] gets exactly one entry; days with no
+// activity get 0. This prevents stale data from visually "drifting" into
+// today on charts that plot a sparse series as if it were consecutive.
+//
+// Query params:
+//   days=<7|14|30|90|...>   (default 30, max 365)
+//
+// Returns: { costs: [{ date: "YYYY-MM-DD", value: number }, ...] }
+
+const DAY_MS = 86_400_000;
+
+function toDateKey(d: Date): string {
+  // YYYY-MM-DD in UTC — stable, timezone-independent
+  return d.toISOString().slice(0, 10);
+}
+
+function startOfUTCDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   await requireAuth();
   const projectId = await getProjectId();
   const { searchParams } = request.nextUrl;
 
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
+  const rawDays = parseInt(searchParams.get("days") ?? "30", 10);
+  const days = Math.min(Math.max(Number.isFinite(rawDays) ? rawDays : 30, 1), 365);
 
-  // Try DailyCost table first
-  const where = {
-    projectId,
-    ...(from || to
-      ? {
-          date: {
-            ...(from && { gte: new Date(from) }),
-            ...(to && { lte: new Date(to) }),
-          },
-        }
-      : {}),
-  };
+  const now = new Date();
+  const todayUTC = startOfUTCDay(now);
+  const startUTC = new Date(todayUTC.getTime() - (days - 1) * DAY_MS);
 
-  const dailyCosts = await prisma.dailyCost.findMany({
-    where,
-    orderBy: { date: "asc" },
-  });
-
-  if (dailyCosts.length > 0) {
-    return apiResponse({ costs: dailyCosts });
-  }
-
-  // Fall back: aggregate from LlmCall records
+  // Aggregate spend per UTC day from LlmCall (source of truth for real spend)
   const llmCalls = await prisma.llmCall.findMany({
-    where: { projectId },
+    where: {
+      projectId,
+      timestamp: { gte: startUTC },
+    },
     select: { timestamp: true, cost: true },
-    orderBy: { timestamp: "asc" },
   });
 
-  // Group by date
   const byDate = new Map<string, number>();
   for (const call of llmCalls) {
-    const dateKey = call.timestamp.toISOString().split("T")[0];
-    byDate.set(dateKey, (byDate.get(dateKey) || 0) + call.cost);
+    const key = toDateKey(call.timestamp);
+    byDate.set(key, (byDate.get(key) ?? 0) + call.cost);
   }
 
-  const costs = Array.from(byDate.entries()).map(([date, value]) => ({
-    date,
-    value,
-  }));
+  // Build dense series — exactly one entry per day in the window
+  const costs: { date: string; value: number }[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(startUTC.getTime() + i * DAY_MS);
+    const key = toDateKey(d);
+    costs.push({
+      date: key,
+      value: Math.round((byDate.get(key) ?? 0) * 10000) / 10000,
+    });
+  }
 
-  return apiResponse({ costs });
+  return apiResponse({ costs, days });
 });
