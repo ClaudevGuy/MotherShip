@@ -211,19 +211,53 @@ export default function DeploymentsPage() {
       {tab === "pipeline" && (
         <div className="space-y-4">
           {!hasDeployments ? (
-            <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex items-center justify-center size-14 rounded-2xl bg-muted/30 border border-border/50">
-                <Rocket className="size-7 text-muted-foreground/25" />
-              </div>
-              <div>
-                <p className="text-base font-semibold text-foreground">No deployments yet</p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-                  Deploy your first service to see the pipeline matrix
+            /* Editorial hero — matches /prompts, /workflows, /evals */
+            <div className="flex items-center justify-center py-12 px-4">
+              <div className="max-w-xl w-full text-center">
+                {/* Eyebrow */}
+                <div className="flex items-center justify-center gap-2 text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground/70 mb-4">
+                  <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+                  <Rocket className="size-3 text-brand" />
+                  <span>Deployments</span>
+                  <span className="h-px w-6" style={{ background: "rgb(var(--ink-rgb) / 0.2)" }} />
+                </div>
+
+                {/* Big editorial headline */}
+                <h1 className="font-serif text-3xl sm:text-4xl leading-[1.1] tracking-[-0.02em] text-foreground">
+                  Ship to dev, stage, prod<br />
+                  <span className="italic text-muted-foreground">with a paper trail.</span>
+                </h1>
+                <p className="mt-4 font-serif italic text-[15px] leading-relaxed text-muted-foreground/80 max-w-md mx-auto">
+                  Track every rollout across environments. See who deployed what, when it went live, and what&apos;s in the pipeline right now.
                 </p>
+
+                {/* Feature tiles */}
+                <div className="mt-8 grid grid-cols-3 gap-3 max-w-lg mx-auto">
+                  {[
+                    { icon: Layers, label: "Environments", desc: "Dev · staging · prod" },
+                    { icon: ScrollText, label: "Release history", desc: "Every rollout logged" },
+                    { icon: Radio, label: "Feature flags", desc: "Gradual rollouts" },
+                  ].map((f) => (
+                    <div key={f.label} className="rounded-lg border border-border/60 bg-card/40 px-3 py-3 text-left">
+                      <div className="flex size-7 items-center justify-center rounded-md bg-brand/10 text-brand mb-2">
+                        <f.icon className="size-3.5" />
+                      </div>
+                      <p className="text-[11px] font-semibold text-foreground leading-tight">{f.label}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-tight">{f.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <div className="mt-8">
+                  <Button
+                    onClick={() => setDeployOpen(true)}
+                    className="bg-brand hover:bg-brand/90 text-primary-foreground"
+                  >
+                    <Rocket className="size-4 mr-1.5" /> Create your first deployment
+                  </Button>
+                </div>
               </div>
-              <Button onClick={() => setDeployOpen(true)} className="bg-brand hover:bg-brand/90 text-primary-foreground mt-2">
-                <Rocket className="size-4 mr-1.5" /> Create First Deployment
-              </Button>
             </div>
           ) : (
             <>
